@@ -1,11 +1,17 @@
 {
-  "name": "aplicativo",
+  "name": "blog-pessoal",
   "private": true,
   "workspaces": [
+    "frontend",
     "packages/*",
-    "backend",
-    "app"
+    "backend"
   ],
+  "scripts": {
+    "dev:frontend": "npm run dev -w @blog/frontend",
+    "dev:backend": "npm run dev -w backend",
+    "build:shared": "npm run build -w @blog/shared",
+    "build:frontend": "npm run build -w @blog/frontend"
+  },
   "engines": {
     "node": "22.x"
   },
