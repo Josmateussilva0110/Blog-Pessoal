@@ -4,7 +4,6 @@ import { validate } from "../middleware/validate"
 import { RegisterSchema } from "../schemas/registerSchema"
 import { LoginSchema } from "../schemas/loginSchema"
 import { UpdateProfileSchema } from "../schemas/updateProfileSchema"
-import { UpdateEarningsPercentSchema } from "../schemas/updateEarningsPercentSchema"
 import { RefreshSchema } from "../schemas/refreshSchema"
 import { ChangePasswordSchema } from "../schemas/changePasswordSchema"
 import { PasswordResetRequestSchema } from "../schemas/passwordResetRequestSchema"
@@ -31,12 +30,6 @@ router.put(
   authMiddleware,
   validate(ChangePasswordSchema),
   UserController.changePassword
-)
-router.patch(
-  "/profile/earnings-percent",
-  authMiddleware,
-  validate(UpdateEarningsPercentSchema),
-  UserController.updateEarningsPercent
 )
 router.post("/logout", authMiddleware, UserController.logout)
 router.post("/auth/refresh", refreshRateLimiter, validate(RefreshSchema), UserController.refresh.bind(UserController))

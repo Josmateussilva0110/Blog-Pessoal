@@ -294,46 +294,6 @@ class UserService {
         }
     }
 
-    async updateEarningsPercent(
-        accessToken: string,
-        earningsPercent: number
-    ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
-        try {
-            const supabase = createSupabaseClientForUser(accessToken)
-
-            const { data, error } = await supabase
-                .from("users")
-                .update({ earnings_percent: earningsPercent })
-                .select(USER_PROFILE_SELECT)
-                .single()
-
-            if (error || !data) {
-                return {
-                    status: false,
-                    error: {
-                        code: UserErrorCode.USER_UPDATE_FAILED,
-                        message: "Não foi possível salvar o percentual de ganho.",
-                    },
-                }
-            }
-
-            return {
-                status: true,
-                data: mapUserProfileRow(data),
-            }
-        } catch (error) {
-            console.error("[UserService.updateEarningsPercent] error:", error)
-
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.USER_UPDATE_FAILED,
-                    message: "Erro ao salvar o percentual de ganho.",
-                },
-            }
-        }
-    }
-
     async changePassword(
         accessToken: string,
         payload: ChangePasswordDTO

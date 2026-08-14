@@ -136,32 +136,6 @@ class UserController {
     })
   }
 
-  async updateEarningsPercent(request: Request, response: Response): Promise<Response> {
-    const { earnings_percent } = request.body
-
-    const result = await UserService.updateEarningsPercent(
-      getAccessToken(request),
-      earnings_percent
-    )
-
-    if (!result.status) {
-      const httpStatus = getHttpStatusFromError(
-        result.error.code,
-        userErrorHttpStatusMap
-      )
-      return response.status(httpStatus).json({
-        success: false,
-        message: result.error.message,
-      })
-    }
-
-    return response.status(200).json({
-      success: true,
-      message: "Percentual de ganho salvo com sucesso.",
-      data: result.data,
-    })
-  }
-
   async changePassword(request: Request, response: Response): Promise<Response> {
     const result = await UserService.changePassword(
       getAccessToken(request),
