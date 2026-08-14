@@ -1,23 +1,35 @@
 import { HeroSection } from "@/features/projects/components/HeroSection";
 import { ProjectGrid } from "@/features/projects/components/ProjectGrid";
+import {
+  ChartsLoadingSkeleton,
+  DistributedCharts,
+} from "@/features/projects/components/charts/DistributedCharts";
 import { useProjects } from "@/features/projects/hooks/useProjects";
+import { Badge } from "@/components/ui/Badge";
 
 export function HomePage() {
   const { data: projects, isLoading } = useProjects();
+  const hasProjects = !isLoading && projects && projects.length > 0;
 
   return (
     <>
       <HeroSection />
 
-      <section id="projetos" className="py-16 scroll-mt-20">
+      {isLoading ? (
+        <ChartsLoadingSkeleton variant="hero" />
+      ) : (
+        hasProjects && <DistributedCharts projects={projects} variant="hero" />
+      )}
+
+      <section id="projetos" className="py-16 md:py-20 scroll-mt-28">
         <div className="flex items-end justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-text">Projetos</h2>
             <p className="text-sm text-text-muted mt-1">
-              Apps, sites e experimentos em código.
+              Apps, sites e experimentos.
             </p>
           </div>
-          <span className="font-mono text-xs text-text-subtle hidden sm:block">
+          <span className="text-xs text-text-subtle hidden sm:block glass rounded-full px-3 py-1">
             {projects?.length ?? "—"} projetos
           </span>
         </div>
@@ -27,7 +39,7 @@ export function HomePage() {
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-48 rounded-lg border border-border-subtle bg-surface-raised animate-pulse"
+                className="h-48 glass rounded-2xl animate-pulse"
               />
             ))}
           </div>
@@ -36,20 +48,26 @@ export function HomePage() {
         )}
       </section>
 
-      <section id="sobre" className="py-16 scroll-mt-20 border-t border-border-subtle">
-        <h2 className="text-2xl font-bold text-text mb-4">Sobre</h2>
-        <div className="max-w-2xl">
+      {isLoading ? (
+        <ChartsLoadingSkeleton variant="middle" />
+      ) : (
+        hasProjects && <DistributedCharts projects={projects} variant="middle" />
+      )}
+
+      <section id="sobre" className="py-16 md:py-20 scroll-mt-28">
+        <div className="glass-strong rounded-3xl p-8 md:p-10 max-w-2xl">
+          <h2 className="text-2xl font-bold text-text mb-4">Sobre</h2>
           <p className="text-text-muted leading-relaxed">
             Desenvolvedor apaixonado por criar produtos digitais com foco em
-            experiência do usuário e código limpo. Este blog serve como vitrine
-            dos meus projetos — cada um documentado como um README do GitHub,
-            com stack, links e contexto técnico.
+            experiência e código limpo. Cada projeto aqui traz stack, links e
+            contexto técnico.
           </p>
-          <div className="mt-6 font-mono text-sm text-text-subtle">
-            <p>stack principal:</p>
-            <p className="text-accent mt-1">
-              react · typescript · node · supabase
-            </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {["React", "TypeScript", "Node.js", "Supabase"].map((tech) => (
+              <Badge key={tech} variant="accent">
+                {tech}
+              </Badge>
+            ))}
           </div>
         </div>
       </section>

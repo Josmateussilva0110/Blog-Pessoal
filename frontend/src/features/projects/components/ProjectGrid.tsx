@@ -8,19 +8,13 @@ interface ProjectGridProps {
 
 export function ProjectGrid({ projects, title }: ProjectGridProps) {
   if (projects.length === 0) {
-    return (
-      <p className="font-mono text-sm text-text-muted">
-        Nenhum projeto encontrado.
-      </p>
-    );
+    return <p className="text-sm text-text-muted">Nenhum projeto encontrado.</p>;
   }
 
   return (
     <section>
       {title && (
-        <h2 className="font-mono text-sm text-accent uppercase tracking-widest mb-6">
-          {title}
-        </h2>
+        <h2 className="text-sm font-medium text-accent mb-6">{title}</h2>
       )}
       <div className="grid gap-4 sm:grid-cols-2">
         {projects.map((project) => (

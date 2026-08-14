@@ -7,8 +7,8 @@ export function ProtectedRoute() {
   if (isLoading) {
     return (
       <div className="min-h-dvh flex items-center justify-center">
-        <span className="font-mono text-sm text-text-muted animate-pulse">
-          verificando sessão...
+        <span className="text-sm text-text-muted animate-pulse">
+          Verificando sessão...
         </span>
       </div>
     );

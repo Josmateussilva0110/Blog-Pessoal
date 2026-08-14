@@ -3,14 +3,13 @@ import { NAV_LINKS, SITE } from "@/config/constants";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-border-subtle bg-surface/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+    <header className="sticky top-0 z-50 px-4 pt-4">
+      <div className="mx-auto max-w-4xl glass-strong rounded-2xl px-6 py-4 flex items-center justify-between">
         <Link
           to="/"
-          className="font-mono text-sm font-semibold text-text hover:text-accent transition-colors"
+          className="text-sm font-semibold text-text hover:text-accent transition-colors"
         >
           {SITE.name}
-          <span className="text-accent">_</span>dev
         </Link>
 
         <nav className="flex items-center gap-6">
@@ -18,7 +17,7 @@ export function Header() {
             <a
               key={link.href}
               href={link.href}
-              className="font-mono text-xs text-text-muted hover:text-accent transition-colors uppercase tracking-wider"
+              className="text-sm text-text-muted hover:text-text transition-colors"
             >
               {link.label}
             </a>

@@ -1,22 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
 
-  --color-surface: #0c0c10;
-  --color-surface-raised: #12121a;
-  --color-surface-overlay: #1a1a24;
-  --color-border: #2a2a3a;
-  --color-border-subtle: #1e1e2a;
+  --color-surface: #020617;
+  --color-surface-raised: rgb(59 130 246 / 0.04);
+  --color-surface-overlay: rgb(59 130 246 / 0.08);
+  --color-border: rgb(96 165 250 / 0.15);
+  --color-border-subtle: rgb(59 130 246 / 0.08);
 
-  --color-accent: #22d3ee;
-  --color-accent-muted: #0891b2;
-  --color-accent-glow: rgb(34 211 238 / 0.15);
+  --color-accent: #60a5fa;
+  --color-accent-muted: #3b82f6;
+  --color-accent-soft: rgb(59 130 246 / 0.15);
 
-  --color-text: #e8e8ed;
-  --color-text-muted: #8b8b9e;
-  --color-text-subtle: #5c5c6e;
+  --color-text: #e0f2fe;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #64748b;
 }
 
 @layer base {
@@ -36,20 +35,41 @@
   }
 
   ::selection {
-    background-color: rgb(34 211 238 / 0.3);
+    background-color: rgb(59 130 246 / 0.4);
     color: #fff;
   }
 }
 
 @layer utilities {
-  .grid-bg {
-    background-image:
-      linear-gradient(rgb(42 42 58 / 0.4) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(42 42 58 / 0.4) 1px, transparent 1px);
-    background-size: 48px 48px;
+  .glass {
+    background: rgb(15 23 42 / 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgb(96 165 250 / 0.12);
   }
 
-  .glow-accent {
-    box-shadow: 0 0 40px var(--color-accent-glow);
+  .glass-strong {
+    background: rgb(15 23 42 / 0.75);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgb(96 165 250 / 0.18);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #e0f2fe 0%, #60a5fa 50%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .chart-panel-shine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      rgb(96 165 250 / 0.05) 0%,
+      transparent 50%
+    );
+    pointer-events: none;
   }
 }

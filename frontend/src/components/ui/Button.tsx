@@ -11,18 +11,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-accent text-surface font-semibold hover:bg-accent/90 glow-accent",
-  secondary:
-    "bg-surface-overlay text-text border border-border hover:border-accent/50 hover:text-accent",
-  ghost: "text-text-muted hover:text-accent hover:bg-accent/5",
-  outline:
-    "border border-border text-text-muted hover:border-accent hover:text-accent",
+    "bg-gradient-to-r from-blue-600/90 to-sky-500/90 text-white border border-blue-400/30 hover:from-blue-500 hover:to-sky-400 shadow-lg shadow-blue-600/25",
+  secondary: "glass text-text hover:bg-white/10",
+  ghost: "text-text-muted hover:text-text hover:bg-white/5",
+  outline: "glass text-text-muted hover:text-text hover:bg-white/10",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-xs",
-  md: "px-4 py-2 text-sm",
-  lg: "px-6 py-3 text-base",
+  sm: "px-3 py-1.5 text-xs rounded-xl",
+  md: "px-4 py-2 text-sm rounded-xl",
+  lg: "px-6 py-3 text-sm rounded-xl",
 };
 
 export function Button({
@@ -35,7 +33,7 @@ export function Button({
   return (
     <button
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-md font-mono transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed",
+        "inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed",
         variantStyles[variant],
         sizeStyles[size],
         className,

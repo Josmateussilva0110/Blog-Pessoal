@@ -10,28 +10,25 @@ export function Input({ label, error, className, id, ...props }: InputProps) {
   const inputId = id ?? label?.toLowerCase().replace(/\s/g, "-");
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       {label && (
-        <label
-          htmlFor={inputId}
-          className="font-mono text-xs text-text-muted uppercase tracking-wider"
-        >
+        <label htmlFor={inputId} className="text-sm text-text-muted">
           {label}
         </label>
       )}
       <input
         id={inputId}
         className={cn(
-          "rounded-md border border-border bg-surface-overlay px-3 py-2 font-mono text-sm text-text",
+          "glass rounded-xl px-3 py-2 text-sm text-text",
           "placeholder:text-text-subtle",
-          "focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/20",
-          "transition-colors duration-200",
-          error && "border-red-500/50",
+          "focus:outline-none focus:border-blue-400/50 focus:ring-2 focus:ring-blue-500/25",
+          "transition-all duration-200",
+          error && "border-red-400/40",
           className,
         )}
         {...props}
       />
-      {error && <span className="text-xs text-red-400">{error}</span>}
+      {error && <span className="text-xs text-red-300">{error}</span>}
     </div>
   );
 }
