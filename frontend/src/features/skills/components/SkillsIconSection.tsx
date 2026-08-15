@@ -1,6 +1,7 @@
 import { SKILLS } from "@/config/skills";
 import { Image } from "@/components/ui/Image";
 import { getSkillIconUrl } from "@/lib/skillicons";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 
 function SkillCard({
   name,
@@ -53,17 +54,11 @@ export function SkillsIconSection() {
 
   return (
     <section id="skills" className="py-16 md:py-20 scroll-mt-28">
-      <header className="mb-8 max-w-lg">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-accent/70 mb-2">
-          Tecnologias
-        </p>
-        <h2 className="text-2xl font-bold text-text tracking-tight">
-          Linguagens & ferramentas
-        </h2>
-        <p className="text-sm text-text-muted mt-2 leading-relaxed">
-          Stack que utilizo no dia a dia.
-        </p>
-      </header>
+      <SectionHeader
+        tag="Tecnologias"
+        title="Linguagens & ferramentas"
+        subtitle="Stack que utilizo no dia a dia."
+      />
 
       <div className="glass-strong rounded-3xl overflow-hidden relative">
         <div className="chart-panel-shine" aria-hidden />

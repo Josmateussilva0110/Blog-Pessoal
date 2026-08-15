@@ -29,7 +29,9 @@ export function DistributedCharts({ projects, variant }: DistributedChartsProps)
       title="Radar de habilidades"
       subtitle="Visão comparativa das tecnologias mais presentes."
     >
-      <TechRadarChart projects={projects} />
+      <div className="flex justify-center">
+        <TechRadarChart projects={projects} />
+      </div>
     </ChartPanel>
   );
 }
@@ -38,7 +40,7 @@ export function ChartsLoadingSkeleton({ variant }: { variant: DistributedChartsP
   if (variant === "middle") {
     return (
       <div className="py-6 md:py-10">
-        <div className="h-80 glass-strong rounded-3xl animate-pulse" />
+        <div className="h-80 max-w-sm mx-auto w-full glass-strong rounded-3xl animate-pulse" />
       </div>
     );
   }

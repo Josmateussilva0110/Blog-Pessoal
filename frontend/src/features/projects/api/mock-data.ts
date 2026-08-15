@@ -26,7 +26,7 @@ export const MOCK_PROJECTS: Project[] = [
       "Painel que consome APIs de clima para exibir previsões de 7 dias, alertas meteorológicos e mapas de temperatura. Interface responsiva com gráficos animados.",
     status: "active",
     tags: ["dados", "visualização"],
-    techStack: ["Next.js", "TypeScript", "Chart.js", "OpenWeather API"],
+    techStack: ["Next.js", "TypeScript"],
     repoUrl: "https://github.com",
     liveUrl: "https://example.com",
     featured: true,
@@ -47,22 +47,6 @@ export const MOCK_PROJECTS: Project[] = [
     featured: false,
     createdAt: "2026-01-20T12:00:00.000Z",
     updatedAt: "2026-03-01T18:00:00.000Z",
-  },
-  {
-    id: "d4e5f6a7-b8c9-0123-def0-234567890123",
-    slug: "pixel-snake",
-    title: "Pixel Snake",
-    summary: "Jogo snake retrô feito com canvas e game loop otimizado.",
-    description:
-      "Releitura clássica do Snake com estética pixel art, ranking local e modos de dificuldade. Projeto para estudar performance em canvas.",
-    status: "archived",
-    tags: ["jogos", "canvas"],
-    techStack: ["Vanilla JS", "Canvas API", "Vite"],
-    repoUrl: "https://github.com",
-    liveUrl: "https://example.com",
-    featured: false,
-    createdAt: "2024-06-01T10:00:00.000Z",
-    updatedAt: "2024-08-10T10:00:00.000Z",
   },
 ];
 
