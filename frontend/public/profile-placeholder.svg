@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" fill="none">
+  <rect width="400" height="400" fill="#0f172a"/>
+  <circle cx="200" cy="160" r="72" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+  <path d="M80 340c20-64 68-96 120-96s100 32 120 96" fill="#1e3a5f" stroke="#3b82f6" stroke-width="2"/>
+  <text x="200" y="380" text-anchor="middle" fill="#64748b" font-family="system-ui,sans-serif" font-size="14">Sua foto aqui</text>
+</svg>
