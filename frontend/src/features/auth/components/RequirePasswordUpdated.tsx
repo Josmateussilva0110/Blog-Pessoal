@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-export function ProtectedRoute() {
-  const { isAuthenticated, isLoading, refreshUser } = useAuth();
+export function RequirePasswordUpdated() {
+  const { user, isLoading, refreshUser } = useAuth();
   const [isVerifying, setIsVerifying] = useState(true);
 
   useEffect(() => {
@@ -28,8 +28,8 @@ export function ProtectedRoute() {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />;
+  if (user?.mustChangePassword) {
+    return <Navigate to="/admin/new-password" replace />;
   }
 
   return <Outlet />;

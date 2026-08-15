@@ -9,4 +9,6 @@ export type {
   AuthUser,
   LoginCredentials,
   LoginResponse,
+  ChangePasswordPayload,
+  UserProfile,
 } from "./types";

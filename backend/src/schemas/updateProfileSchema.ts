@@ -1,8 +1,10 @@
 import { z } from "zod"
 import { usernameField } from "./usernameSchema"
 
-export const UpdateProfileSchema = z.object({
-  username: usernameField,
-})
+export const UpdateProfileSchema = z
+  .object({
+    username: usernameField,
+  })
+  .strict()
 
 export type UpdateProfileDTO = z.infer<typeof UpdateProfileSchema>

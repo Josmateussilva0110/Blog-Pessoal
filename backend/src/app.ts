@@ -2,6 +2,7 @@ import express, { type Request, type Response } from "express"
 import cors from "cors"
 import helmet from "helmet"
 import compression from "compression"
+import cookieParser from "cookie-parser"
 import { env } from "./config/env"
 import { rateLimiter } from "./middleware/rateLimiter"
 import { healthRateLimiter } from "./middleware/healthRateLimit"
@@ -24,6 +25,7 @@ app.set("trust proxy", env.TRUST_PROXY_HOPS)
 
 app.use(helmet())
 app.use(compression())
+app.use(cookieParser())
 
 app.use(cors({
     origin(origin, callback) {

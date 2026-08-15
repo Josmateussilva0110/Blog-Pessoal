@@ -3,32 +3,23 @@ import UserService from "../services/UserService"
 import { userErrorHttpStatusMap } from "../errors/userErrorHttpMapper"
 import { getAccessToken } from "../utils/getAccessToken"
 import { getHttpStatusFromError } from "../utils/getHttpStatusFromError"
+import {
+  clearAuthCookies,
+  getAccessTokenFromCookies,
+  getRefreshTokenFromCookies,
+  setAuthCookies,
+} from "../utils/authCookies"
+
+async function getSessionUser(accessToken: string) {
+  const profileResult = await UserService.getProfile(accessToken)
+  return profileResult.status ? profileResult.data : null
+}
 
 class UserController {
-  async register(request: Request, response: Response): Promise<Response> {
-    const result = await UserService.register(request.body)
-
-    if (!result.status) {
-      const httpStatus = getHttpStatusFromError(
-        result.error.code,
-        userErrorHttpStatusMap
-      )
-      return response.status(httpStatus).json({
-        success: false,
-        message: result.error.message,
-      })
-    }
-
-    return response.status(201).json({
-      success: true,
-      message: "Usuário cadastrado com sucesso",
-      data: result.data,
-    })
-  }
-
   async login(request: Request, response: Response): Promise<Response> {
-    const { email, password } = request.body
+    const { email, password } = request.body as { email: string; password: string }
     const result = await UserService.login(email, password)
+
     if (!result.status) {
       const httpStatus = getHttpStatusFromError(
         result.error.code,
@@ -40,28 +31,25 @@ class UserController {
       })
     }
 
+    setAuthCookies(response, result.data)
+
+    const user = await getSessionUser(result.data.accessToken)
 
     return response.status(200).json({
       success: true,
       message: "Login Realizado com sucesso",
-      data: result.data,
+      data: { user },
     })
   }
 
   async logout(request: Request, response: Response): Promise<Response> {
+    const accessToken = getAccessTokenFromCookies(request)
 
-    const result = await UserService.logout(request.accessToken!)
-
-    if (!result.status) {
-      const httpStatus = getHttpStatusFromError(
-        result.error.code,
-        userErrorHttpStatusMap
-      )
-      return response.status(httpStatus).json({
-        success: false,
-        message: result.error.message,
-      })
+    if (accessToken) {
+      await UserService.logout(accessToken)
     }
+
+    clearAuthCookies(response)
 
     return response.status(200).json({
       success: true,
@@ -70,11 +58,20 @@ class UserController {
   }
 
   async refresh(request: Request, response: Response): Promise<Response> {
-    const { refreshToken } = request.body
+    const refreshToken = getRefreshTokenFromCookies(request)
+
+    if (!refreshToken) {
+      clearAuthCookies(response)
+      return response.status(401).json({
+        success: false,
+        message: "Sessão expirada. Faça login novamente.",
+      })
+    }
 
     const result = await UserService.refresh(refreshToken)
 
     if (!result.status) {
+      clearAuthCookies(response)
       const httpStatus = getHttpStatusFromError(
         result.error.code,
         userErrorHttpStatusMap
@@ -86,10 +83,14 @@ class UserController {
       })
     }
 
+    setAuthCookies(response, result.data)
+
+    const user = await getSessionUser(result.data.accessToken)
+
     return response.status(200).json({
       success: true,
       message: "Sessão renovada com sucesso.",
-      data: result.data,
+      data: { user },
     })
   }
 

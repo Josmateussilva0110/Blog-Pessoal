@@ -14,7 +14,8 @@ export type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
 export type AuthUser = {
   id: string;
   email: string;
-  name?: string;
+  username?: string;
+  mustChangePassword: boolean;
 };
 
 export type LoginCredentials = {
@@ -23,6 +24,22 @@ export type LoginCredentials = {
 };
 
 export type LoginResponse = {
-  user: AuthUser;
-  accessToken: string;
+  user: UserProfile | null;
+};
+
+export type SessionResponse = {
+  user: UserProfile | null;
+};
+
+export type ChangePasswordPayload = {
+  new_password: string;
+  confirm_password: string;
+  current_password?: string;
+};
+
+export type UserProfile = {
+  id: string;
+  username: string;
+  email: string;
+  must_change_password: boolean;
 };

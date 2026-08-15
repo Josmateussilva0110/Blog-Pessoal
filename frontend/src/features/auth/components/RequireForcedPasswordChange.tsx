@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-export function ProtectedRoute() {
-  const { isAuthenticated, isLoading, refreshUser } = useAuth();
+export function RequireForcedPasswordChange() {
+  const { user, isLoading, refreshUser } = useAuth();
   const [isVerifying, setIsVerifying] = useState(true);
 
   useEffect(() => {
@@ -22,14 +22,18 @@ export function ProtectedRoute() {
     return (
       <div className="min-h-dvh flex items-center justify-center">
         <span className="text-sm text-text-muted animate-pulse">
-          Verificando sessão...
+          Carregando...
         </span>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return <Navigate to="/admin/login" replace />;
+  }
+
+  if (!user.mustChangePassword) {
+    return <Navigate to="/admin" replace />;
   }
 
   return <Outlet />;

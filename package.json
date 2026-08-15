@@ -10,12 +10,17 @@
     "dev:frontend": "npm run dev -w @blog/frontend",
     "dev:backend": "npm run dev -w backend",
     "build:shared": "npm run build -w @blog/shared",
-    "build:frontend": "npm run build -w @blog/frontend"
+    "build:frontend": "npm run build -w @blog/frontend",
+    "create-user": "npm run create-user -w backend",
+    "reset-user-password": "npm run reset-user-password -w backend"
   },
   "engines": {
     "node": "22.x"
   },
   "devDependencies": {
     "supabase": "^2.114.0"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7"
   }
 }

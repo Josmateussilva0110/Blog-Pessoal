@@ -22,9 +22,10 @@ const envSchema = z.object({
         .transform((s) => s.trim()),
     ALLOWED_ORIGINS: z
         .string()
-        .default("http://localhost:8081")
+        .default("http://localhost:5173,http://localhost:8081")
         .transform((val) => val.split(",").map((s) => s.trim()).filter(Boolean)),
     TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(1),
+    REFRESH_COOKIE_MAX_AGE_DAYS: z.coerce.number().int().min(1).max(90).default(30),
     RENDER_EXTERNAL_URL: z.string().url().optional(),
     REDIS_URL: z.string().url().optional(),
 }).transform((data) => {

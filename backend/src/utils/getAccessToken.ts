@@ -1,5 +1,9 @@
 import { Request } from "express"
 
 export function getAccessToken(request: Request): string {
-  return request.accessToken ?? request.headers.authorization!.split(" ")[1]
+  if (!request.accessToken) {
+    throw new Error("Access token ausente no contexto da requisição.")
+  }
+
+  return request.accessToken
 }

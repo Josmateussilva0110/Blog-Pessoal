@@ -1,13 +1,24 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { cn } from "@/lib/format";
 import { BackgroundOrbs } from "./BackgroundOrbs";
 
 const adminNav = [
   { to: "/admin", label: "Dashboard", end: true },
-  { to: "/admin/projetos", label: "Projetos", end: false },
+  { to: "/admin/projects", label: "Projetos", end: false },
+  { to: "/admin/settings", label: "Conta", end: false },
 ];
 
 export function AdminLayout() {
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    await logout();
+    navigate("/admin/login", { replace: true });
+  }
+
   return (
     <div className="min-h-dvh flex relative">
       <BackgroundOrbs />
@@ -30,6 +41,21 @@ export function AdminLayout() {
             {item.label}
           </NavLink>
         ))}
+        <div className="mt-auto pt-4 border-t border-white/10">
+          {user?.email && (
+            <p className="text-[11px] text-text-muted px-3 py-2 truncate">
+              {user.email}
+            </p>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start"
+            onClick={handleLogout}
+          >
+            Sair
+          </Button>
+        </div>
       </aside>
       <main className="flex-1 p-4 pr-6">
         <div className="glass-strong rounded-2xl p-8 min-h-[calc(100dvh-2rem)]">

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken"
 import type { User } from "@supabase/supabase-js"
 import { env } from "../config/env"
 import { supabaseAdmin } from "../database/supabase/supabase"
+import { getAccessTokenFromCookies } from "../utils/authCookies"
 import { isAccessTokenRevoked, isUserSessionRevoked } from "../utils/tokenRevocation"
 
 type SupabaseJwtPayload = jwt.JwtPayload & {
@@ -45,14 +46,12 @@ export async function authMiddleware(
   response: Response,
   next: NextFunction
 ): Promise<void> {
-  const authHeader = request.headers.authorization
+  const token = getAccessTokenFromCookies(request)
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    response.status(401).json({ success: false, message: "Token não fornecido" })
+  if (!token) {
+    response.status(401).json({ success: false, message: "Sessão não encontrada." })
     return
   }
-
-  const token = authHeader.split(" ")[1]
 
   const localUser = await verifyJwtLocally(token)
   if (localUser) {

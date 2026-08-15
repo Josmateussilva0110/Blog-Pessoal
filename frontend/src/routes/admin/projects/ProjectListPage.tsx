@@ -10,7 +10,7 @@ export function ProjectListPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-medium text-text">Projetos</h1>
-        <Link to="/admin/projetos/novo">
+        <Link to="/admin/projects/new">
           <Button size="sm">+ Novo projeto</Button>
         </Link>
       </div>

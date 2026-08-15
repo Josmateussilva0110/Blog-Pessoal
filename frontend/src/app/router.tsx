@@ -3,12 +3,25 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
+import { GuestRoute } from "@/features/auth/components/GuestRoute";
+import { RequirePasswordUpdated } from "@/features/auth/components/RequirePasswordUpdated";
+import { RequireForcedPasswordChange } from "@/features/auth/components/RequireForcedPasswordChange";
 import { HomePage } from "@/routes/public/home/HomePage";
 import { ProjectDetailPage } from "@/routes/public/project/ProjectDetailPage";
 
 const LoginPage = lazy(() =>
   import("@/routes/admin/login/LoginPage").then((m) => ({
     default: m.LoginPage,
+  })),
+);
+const ChangePasswordPage = lazy(() =>
+  import("@/routes/admin/change-password/ChangePasswordPage").then((m) => ({
+    default: m.ChangePasswordPage,
+  })),
+);
+const SettingsPage = lazy(() =>
+  import("@/routes/admin/settings/SettingsPage").then((m) => ({
+    default: m.SettingsPage,
   })),
 );
 const DashboardPage = lazy(() =>
@@ -50,32 +63,56 @@ export const router = createBrowserRouter([
     element: <PublicLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "projetos/:slug", element: <ProjectDetailPage /> },
+      { path: "projects/:slug", element: <ProjectDetailPage /> },
     ],
   },
   {
-    path: "admin/login",
-    element: withSuspense(LoginPage),
+    element: <GuestRoute />,
+    children: [
+      {
+        path: "admin/login",
+        element: withSuspense(LoginPage),
+      },
+    ],
   },
   {
     path: "admin",
     element: <ProtectedRoute />,
     children: [
       {
-        element: <AdminLayout />,
+        path: "new-password",
+        element: <RequireForcedPasswordChange />,
         children: [
-          { index: true, element: withSuspense(DashboardPage) },
           {
-            path: "projetos",
-            element: withSuspense(ProjectListPage),
+            index: true,
+            element: withSuspense(ChangePasswordPage),
           },
+        ],
+      },
+      {
+        element: <RequirePasswordUpdated />,
+        children: [
           {
-            path: "projetos/novo",
-            element: withSuspense(ProjectFormPage),
-          },
-          {
-            path: "projetos/:id/editar",
-            element: withSuspense(ProjectFormPage),
+            element: <AdminLayout />,
+            children: [
+              { index: true, element: withSuspense(DashboardPage) },
+              {
+                path: "projects",
+                element: withSuspense(ProjectListPage),
+              },
+              {
+                path: "projects/new",
+                element: withSuspense(ProjectFormPage),
+              },
+              {
+                path: "projects/:id/edit",
+                element: withSuspense(ProjectFormPage),
+              },
+              {
+                path: "settings",
+                element: withSuspense(SettingsPage),
+              },
+            ],
           },
         ],
       },

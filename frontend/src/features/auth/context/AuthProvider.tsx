@@ -6,15 +6,21 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { AuthUser, LoginCredentials } from "@/service";
+import type { AuthUser, ChangePasswordPayload, LoginCredentials } from "@/service";
 import * as authApi from "../api/auth.api";
+import {
+  PASSWORD_CHANGE_REQUIRED_EVENT,
+  SESSION_EXPIRED_EVENT,
+} from "../lib/sessionEvents";
 
 export type AuthContextValue = {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<AuthUser>;
   logout: () => Promise<void>;
+  changePassword: (payload: ChangePasswordPayload) => Promise<AuthUser>;
+  refreshUser: () => Promise<AuthUser | null>;
 };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -23,18 +29,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadUser = useCallback(async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      setUser(null);
-      setIsLoading(false);
-      return;
-    }
-
+  const refreshUser = useCallback(async () => {
     const currentUser = await authApi.getCurrentUser();
     setUser(currentUser);
-    setIsLoading(false);
+    return currentUser;
   }, []);
+
+  const loadUser = useCallback(async () => {
+    await refreshUser();
+    setIsLoading(false);
+  }, [refreshUser]);
 
   useEffect(() => {
     loadUser();
@@ -42,23 +46,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     function handleSessionExpired() {
-      localStorage.removeItem("accessToken");
       setUser(null);
     }
 
-    window.addEventListener("SESSION_EXPIRED", handleSessionExpired);
-    return () =>
-      window.removeEventListener("SESSION_EXPIRED", handleSessionExpired);
-  }, []);
+    function handlePasswordChangeRequired() {
+      void refreshUser();
+    }
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+    window.addEventListener(
+      PASSWORD_CHANGE_REQUIRED_EVENT,
+      handlePasswordChangeRequired,
+    );
+
+    return () => {
+      window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+      window.removeEventListener(
+        PASSWORD_CHANGE_REQUIRED_EVENT,
+        handlePasswordChangeRequired,
+      );
+    };
+  }, [refreshUser]);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     const { user: loggedUser } = await authApi.login(credentials);
     setUser(loggedUser);
+    return loggedUser;
   }, []);
 
   const logout = useCallback(async () => {
     await authApi.logout();
     setUser(null);
+  }, []);
+
+  const changePassword = useCallback(async (payload: ChangePasswordPayload) => {
+    const updatedUser = await authApi.changePassword(payload);
+    setUser(updatedUser);
+    return updatedUser;
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -68,8 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       login,
       logout,
+      changePassword,
+      refreshUser,
     }),
-    [user, isLoading, login, logout],
+    [user, isLoading, login, logout, changePassword, refreshUser],
   );
 
   return (

@@ -1,21 +1,20 @@
 import { Router } from "express"
 import UserController from "../controllers/userController"
 import { validate } from "../middleware/validate"
-import { RegisterSchema } from "../schemas/registerSchema"
 import { LoginSchema } from "../schemas/loginSchema"
 import { UpdateProfileSchema } from "../schemas/updateProfileSchema"
-import { RefreshSchema } from "../schemas/refreshSchema"
-import { ChangePasswordSchema } from "../schemas/changePasswordSchema"
 import { PasswordResetRequestSchema } from "../schemas/passwordResetRequestSchema"
 import { loginRateLimiter } from "../middleware/loginRateLimit"
 import { refreshRateLimiter } from "../middleware/refreshRateLimit"
+import { changePasswordRateLimiter } from "../middleware/changePasswordRateLimit"
 import { authMiddleware } from "../middleware/auth"
+import { validateChangePassword } from "../middleware/validateChangePassword"
+import { rejectIfMustChangePassword } from "../middleware/rejectIfMustChangePassword"
 
 
 const router = Router()
 
 
-router.post("/register", loginRateLimiter, validate(RegisterSchema), UserController.register)
 router.post("/login", loginRateLimiter, validate(LoginSchema), UserController.login)
 router.post(
   "/auth/password-reset-request",
@@ -24,15 +23,22 @@ router.post(
   UserController.requestPasswordReset
 )
 router.get("/profile", authMiddleware, UserController.getProfile)
-router.put("/profile", authMiddleware, validate(UpdateProfileSchema), UserController.updateProfile)
+router.put(
+  "/profile",
+  authMiddleware,
+  rejectIfMustChangePassword,
+  validate(UpdateProfileSchema),
+  UserController.updateProfile
+)
 router.put(
   "/profile/password",
   authMiddleware,
-  validate(ChangePasswordSchema),
+  changePasswordRateLimiter,
+  validateChangePassword,
   UserController.changePassword
 )
-router.post("/logout", authMiddleware, UserController.logout)
-router.post("/auth/refresh", refreshRateLimiter, validate(RefreshSchema), UserController.refresh.bind(UserController))
+router.post("/logout", UserController.logout)
+router.post("/auth/refresh", refreshRateLimiter, UserController.refresh.bind(UserController))
 
 
 export default router

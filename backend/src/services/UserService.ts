@@ -4,7 +4,6 @@ import { ServiceResult } from "../types/serviceResults/ServiceResult"
 import { UserErrorCode } from "../types/code/userCode"
 import { AuthTokens } from "../types/auth/auth.types"
 import { UserProfile } from "../types/users/profile"
-import { RegisterDTO } from "../types/users/register"
 import { ChangePasswordDTO } from "../schemas/changePasswordSchema"
 import { PasswordResetRequestDTO } from "../schemas/passwordResetRequestSchema"
 import { getUserIdFromAccessToken } from "../utils/accessToken"
@@ -28,66 +27,6 @@ function mapPasswordUpdateError(message: string | undefined): string {
 }
 
 class UserService {
-    async register(data: RegisterDTO): Promise<ServiceResult<{ id: string }, UserErrorCode>> {
-        try {
-            const { username, email, password } = data
-
-            const { data: authData, error } = await supabaseAuth.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: { username },
-                },
-            })
-
-            if (error) {
-                console.error("[UserService.register] Supabase Auth error:", error)
-
-                if (error.code === "user_already_exists" || error.status === 422) {
-                    return {
-                        status: false,
-                        error: {
-                            code: UserErrorCode.EMAIL_ALREADY_EXISTS,
-                            message: "Não foi possível criar a conta. Verifique os dados ou tente outro e-mail.",
-                        },
-                    }
-                }
-
-                return {
-                    status: false,
-                    error: {
-                        code: UserErrorCode.USER_CREATE_FAILED,
-                        message: "Não foi possível criar o usuário. Tente novamente.",
-                    },
-                }
-            }
-
-            if (!authData.user?.id) {
-                return {
-                    status: false,
-                    error: {
-                        code: UserErrorCode.USER_CREATE_FAILED,
-                        message: "Não foi possível criar o usuário. Tente novamente.",
-                    },
-                }
-            }
-
-            return {
-                status: true,
-                data: { id: authData.user.id },
-            }
-        } catch (error) {
-            console.error("[UserService.register] error:", error)
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.USER_CREATE_FAILED,
-                    message: "Não foi possível criar o usuário. Tente novamente.",
-                },
-            }
-        }
-    }
-
     async login(email: string, password: string): Promise<ServiceResult<AuthTokens, UserErrorCode>> {
         try {
             const { data, error } = await supabaseAuth.auth.signInWithPassword({
@@ -333,7 +272,10 @@ class UserService {
             const mustChangePassword = profileRow.must_change_password === true
 
             if (!mustChangePassword) {
-                if (!payload.current_password) {
+                const currentPassword =
+                    "current_password" in payload ? payload.current_password : undefined
+
+                if (!currentPassword) {
                     return {
                         status: false,
                         error: {
@@ -348,7 +290,7 @@ class UserService {
                 const { data: reauthData, error: reauthError } =
                     await authClient.auth.signInWithPassword({
                         email: profileRow.email,
-                        password: payload.current_password,
+                        password: currentPassword,
                     })
 
                 if (reauthError || !reauthData.session) {

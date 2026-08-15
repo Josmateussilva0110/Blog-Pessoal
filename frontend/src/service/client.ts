@@ -1,5 +1,7 @@
 import { getApiBaseUrl } from "./apiBaseUrl";
 import type { ApiResponse } from "./types";
+import { tryRefreshSession } from "@/features/auth/lib/refreshSession";
+import { dispatchSessionExpired, dispatchPasswordChangeRequired } from "@/features/auth/lib/sessionEvents";
 
 export class HttpError extends Error {
   constructor(
@@ -17,6 +19,8 @@ type RequestOptions = {
   body?: unknown;
   params?: Record<string, string | number | boolean | undefined>;
   signal?: AbortSignal;
+  /** Evita loop ao renovar sessão ou em rotas públicas de auth. */
+  skipAuthRefresh?: boolean;
 };
 
 function buildUrl(endpoint: string, params?: RequestOptions["params"]): string {
@@ -35,17 +39,39 @@ function buildUrl(endpoint: string, params?: RequestOptions["params"]): string {
   return url.toString();
 }
 
-function getAuthHeaders(): HeadersInit {
-  const token = localStorage.getItem("accessToken");
-  if (!token) return {};
-  return { Authorization: `Bearer ${token}` };
+async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
+  const payload = (await response.json().catch(() => null)) as
+    | ApiResponse<T>
+    | { message?: string; code?: string }
+    | null;
+
+  if (!response.ok) {
+    const errorBody = payload && "message" in payload ? payload : undefined;
+
+    if (response.status === 403 && errorBody?.code === "PASSWORD_CHANGE_REQUIRED") {
+      dispatchPasswordChangeRequired();
+    }
+
+    return {
+      success: false,
+      message: errorBody?.message ?? `Erro ${response.status}`,
+      code: errorBody?.code,
+    };
+  }
+
+  if (payload && "success" in payload) {
+    return payload as ApiResponse<T>;
+  }
+
+  return { success: true, data: payload as T };
 }
 
 export async function request<T>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<ApiResponse<T>> {
-  const { method = "GET", body, params, signal } = options;
+  const { method = "GET", body, params, signal, skipAuthRefresh = false } =
+    options;
 
   try {
     const response = await fetch(buildUrl(endpoint, params), {
@@ -53,37 +79,29 @@ export async function request<T>(
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        ...getAuthHeaders(),
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal,
     });
 
-    const payload = (await response.json().catch(() => null)) as
-      | ApiResponse<T>
-      | { message?: string; code?: string }
-      | null;
+    if (
+      response.status === 401 &&
+      !skipAuthRefresh &&
+      !endpoint.startsWith("/login") &&
+      !endpoint.startsWith("/register") &&
+      !endpoint.startsWith("/auth/refresh") &&
+      !endpoint.startsWith("/logout")
+    ) {
+      const refreshed = await tryRefreshSession();
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        window.dispatchEvent(new Event("SESSION_EXPIRED"));
+      if (refreshed) {
+        return request<T>(endpoint, { ...options, skipAuthRefresh: true });
       }
 
-      const errorBody =
-        payload && "message" in payload ? payload : undefined;
-
-      return {
-        success: false,
-        message: errorBody?.message ?? `Erro ${response.status}`,
-        code: errorBody?.code,
-      };
+      dispatchSessionExpired();
     }
 
-    if (payload && "success" in payload) {
-      return payload as ApiResponse<T>;
-    }
-
-    return { success: true, data: payload as T };
+    return parseResponse<T>(response);
   } catch {
     return {
       success: false,

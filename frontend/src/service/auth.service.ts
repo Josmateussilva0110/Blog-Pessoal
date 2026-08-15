@@ -1,27 +1,43 @@
 import { request } from "./client";
-import type { AuthUser, LoginCredentials, LoginResponse } from "./types";
-
-const BASE = "/auth";
+import type {
+  ChangePasswordPayload,
+  LoginCredentials,
+  LoginResponse,
+  SessionResponse,
+  UserProfile,
+} from "./types";
 
 export const authService = {
   login(credentials: LoginCredentials) {
-    return request<LoginResponse>(`${BASE}/login`, {
+    return request<LoginResponse>("/login", {
       method: "POST",
       body: credentials,
+      skipAuthRefresh: true,
     });
   },
 
   logout() {
-    return request<void>(`${BASE}/logout`, { method: "POST" });
+    return request<void>("/logout", {
+      method: "POST",
+      skipAuthRefresh: true,
+    });
   },
 
   refresh() {
-    return request<{ accessToken: string }>(`${BASE}/refresh`, {
+    return request<SessionResponse>("/auth/refresh", {
       method: "POST",
+      skipAuthRefresh: true,
+    });
+  },
+
+  changePassword(payload: ChangePasswordPayload) {
+    return request<UserProfile>("/profile/password", {
+      method: "PUT",
+      body: payload,
     });
   },
 
   me() {
-    return request<AuthUser>(`${BASE}/me`);
+    return request<UserProfile>("/profile");
   },
 };
