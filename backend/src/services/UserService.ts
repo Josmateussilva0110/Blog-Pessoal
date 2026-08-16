@@ -7,24 +7,10 @@ import { UserProfile } from "../types/users/profile"
 import { ChangePasswordDTO } from "../schemas/changePasswordSchema"
 import { PasswordResetRequestDTO } from "../schemas/passwordResetRequestSchema"
 import { getUserIdFromAccessToken } from "../utils/accessToken"
-import { isRefreshTokenReuseOrRevoked } from "../utils/authErrors"
+import { isRefreshTokenReuseOrRevoked, mapPasswordUpdateError } from "../utils/authErrors"
 import { buildAuthTokens } from "../utils/authSession"
 import { mapUserProfileRow } from "../utils/userProfile"
 import { revokeAccessToken, revokeUserSessions } from "../utils/tokenRevocation"
-
-function mapPasswordUpdateError(message: string | undefined): string {
-    const normalized = (message ?? "").toLowerCase()
-
-    if (normalized.includes("different from the old password")) {
-        return "A nova senha deve ser diferente da senha atual."
-    }
-
-    if (normalized.includes("should be at least") || normalized.includes("weak")) {
-        return "A nova senha não atende aos requisitos de segurança."
-    }
-
-    return "Não foi possível atualizar a senha."
-}
 
 class UserService {
     async login(email: string, password: string): Promise<ServiceResult<AuthTokens, UserErrorCode>> {

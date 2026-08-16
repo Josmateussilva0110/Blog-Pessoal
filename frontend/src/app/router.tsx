@@ -11,35 +11,17 @@ import { RequireForcedPasswordChange } from "@/features/auth/components/RequireF
 import { HomePage } from "@/routes/public/home/HomePage";
 import { ProjectDetailPage } from "@/routes/public/project/ProjectDetailPage";
 
-const LoginPage = lazy(() =>
-  import("@/routes/admin/login/LoginPage").then((m) => ({
-    default: m.LoginPage,
-  })),
+const LoginPage = lazy(() => import("@/routes/admin/login/LoginPage"));
+const ChangePasswordPage = lazy(
+  () => import("@/routes/admin/change-password/ChangePasswordPage"),
 );
-const ChangePasswordPage = lazy(() =>
-  import("@/routes/admin/change-password/ChangePasswordPage").then((m) => ({
-    default: m.ChangePasswordPage,
-  })),
+const SettingsPage = lazy(() => import("@/routes/admin/settings/SettingsPage"));
+const DashboardPage = lazy(() => import("@/routes/admin/dashboard/DashboardPage"));
+const ProjectListPage = lazy(
+  () => import("@/routes/admin/projects/ProjectListPage"),
 );
-const SettingsPage = lazy(() =>
-  import("@/routes/admin/settings/SettingsPage").then((m) => ({
-    default: m.SettingsPage,
-  })),
-);
-const DashboardPage = lazy(() =>
-  import("@/routes/admin/dashboard/DashboardPage").then((m) => ({
-    default: m.DashboardPage,
-  })),
-);
-const ProjectListPage = lazy(() =>
-  import("@/routes/admin/projects/ProjectListPage").then((m) => ({
-    default: m.ProjectListPage,
-  })),
-);
-const ProjectFormPage = lazy(() =>
-  import("@/routes/admin/projects/ProjectFormPage").then((m) => ({
-    default: m.ProjectFormPage,
-  })),
+const ProjectFormPage = lazy(
+  () => import("@/routes/admin/projects/ProjectFormPage"),
 );
 
 function AdminFallback() {

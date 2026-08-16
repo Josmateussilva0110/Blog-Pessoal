@@ -1,7 +1,7 @@
 import { UpdatePasswordForm } from "@/features/auth/components/UpdatePasswordForm";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 
-export function SettingsPage() {
+export default function SettingsPage() {
   const { user } = useAuth();
 
   return (

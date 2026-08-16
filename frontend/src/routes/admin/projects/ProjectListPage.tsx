@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/Button";
 import { useProjects } from "@/features/projects/hooks/useProjects";
 import { StatusBadge } from "@/features/projects/components/StatusBadge";
 
-export function ProjectListPage() {
+export default function ProjectListPage() {
   const { data: projects, isLoading } = useProjects();
 
   return (

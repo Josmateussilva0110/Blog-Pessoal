@@ -1,4 +1,4 @@
-export function ProjectFormPage() {
+export default function ProjectFormPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-text mb-2">Novo projeto</h1>

@@ -1,4 +1,4 @@
-export function DashboardPage() {
+export default function DashboardPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-text mb-2">Dashboard</h1>

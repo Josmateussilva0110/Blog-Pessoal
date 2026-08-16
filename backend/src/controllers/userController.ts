@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import UserService from "../services/UserService"
 import { userErrorHttpStatusMap } from "../errors/userErrorHttpMapper"
 import { getAccessToken } from "../utils/getAccessToken"
-import { getHttpStatusFromError } from "../utils/getHttpStatusFromError"
+import { sendServiceError } from "../utils/sendServiceError"
 import {
   clearAuthCookies,
   getAccessTokenFromCookies,
@@ -21,14 +21,7 @@ class UserController {
     const result = await UserService.login(email, password)
 
     if (!result.status) {
-      const httpStatus = getHttpStatusFromError(
-        result.error.code,
-        userErrorHttpStatusMap
-      )
-      return response.status(httpStatus).json({
-        success: false,
-        message: result.error.message,
-      })
+      return sendServiceError(response, result.error, userErrorHttpStatusMap)
     }
 
     setAuthCookies(response, result.data)
@@ -72,14 +65,8 @@ class UserController {
 
     if (!result.status) {
       clearAuthCookies(response)
-      const httpStatus = getHttpStatusFromError(
-        result.error.code,
-        userErrorHttpStatusMap
-      )
-      return response.status(httpStatus).json({
-        success: false,
-        code: result.error.code,
-        message: result.error.message,
+      return sendServiceError(response, result.error, userErrorHttpStatusMap, {
+        includeCode: true,
       })
     }
 
@@ -98,14 +85,7 @@ class UserController {
     const result = await UserService.getProfile(getAccessToken(request))
 
     if (!result.status) {
-      const httpStatus = getHttpStatusFromError(
-        result.error.code,
-        userErrorHttpStatusMap
-      )
-      return response.status(httpStatus).json({
-        success: false,
-        message: result.error.message,
-      })
+      return sendServiceError(response, result.error, userErrorHttpStatusMap)
     }
 
     return response.status(200).json({
@@ -120,14 +100,7 @@ class UserController {
     const result = await UserService.updateProfile(getAccessToken(request), { username })
 
     if (!result.status) {
-      const httpStatus = getHttpStatusFromError(
-        result.error.code,
-        userErrorHttpStatusMap
-      )
-      return response.status(httpStatus).json({
-        success: false,
-        message: result.error.message,
-      })
+      return sendServiceError(response, result.error, userErrorHttpStatusMap)
     }
 
     return response.status(200).json({
@@ -144,14 +117,7 @@ class UserController {
     )
 
     if (!result.status) {
-      const httpStatus = getHttpStatusFromError(
-        result.error.code,
-        userErrorHttpStatusMap
-      )
-      return response.status(httpStatus).json({
-        success: false,
-        message: result.error.message,
-      })
+      return sendServiceError(response, result.error, userErrorHttpStatusMap)
     }
 
     return response.status(200).json({
@@ -165,14 +131,7 @@ class UserController {
     const result = await UserService.requestPasswordReset(request.body)
 
     if (!result.status) {
-      const httpStatus = getHttpStatusFromError(
-        result.error.code,
-        userErrorHttpStatusMap
-      )
-      return response.status(httpStatus).json({
-        success: false,
-        message: result.error.message,
-      })
+      return sendServiceError(response, result.error, userErrorHttpStatusMap)
     }
 
     return response.status(200).json({

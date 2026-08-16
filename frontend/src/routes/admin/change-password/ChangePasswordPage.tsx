@@ -1,7 +1,7 @@
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { ChangePasswordForm } from "@/features/auth/components/ChangePasswordForm";
 
-export function ChangePasswordPage() {
+export default function ChangePasswordPage() {
   return (
     <AuthCard
       title="Nova senha"

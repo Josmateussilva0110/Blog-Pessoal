@@ -1,7 +1,7 @@
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { LoginForm } from "@/features/auth/components/LoginForm";
 
-export function LoginPage() {
+export default function LoginPage() {
   return (
     <AuthCard
       title="Login"
