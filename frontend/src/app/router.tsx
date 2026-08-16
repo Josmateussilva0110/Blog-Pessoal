@@ -1,5 +1,7 @@
 import { lazy, Suspense, type ComponentType } from "react";
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { ToastScope } from "@/components/ui/toast";
+import { AuthScope } from "@/features/auth/components/AuthScope";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
@@ -59,6 +61,15 @@ function withSuspense(Component: ComponentType) {
 }
 
 export const router = createBrowserRouter([
+  {
+    element: (
+      <>
+        <AuthScope />
+        <ToastScope />
+        <Outlet />
+      </>
+    ),
+    children: [
   {
     element: <PublicLayout />,
     children: [
@@ -121,5 +132,7 @@ export const router = createBrowserRouter([
   {
     path: "*",
     element: <Navigate to="/" replace />,
+  },
+    ],
   },
 ]);

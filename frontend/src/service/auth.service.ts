@@ -37,7 +37,9 @@ export const authService = {
     });
   },
 
-  me() {
-    return request<UserProfile>("/profile");
+  me(options?: { skipAuthRefresh?: boolean }) {
+    return request<UserProfile>("/profile", {
+      skipAuthRefresh: options?.skipAuthRefresh,
+    });
   },
 };

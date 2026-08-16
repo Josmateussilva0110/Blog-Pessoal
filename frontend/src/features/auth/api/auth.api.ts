@@ -5,6 +5,7 @@ import type {
   LoginCredentials,
 } from "@/service";
 import { mapAuthUser } from "../lib/mapAuthUser";
+import { restoreSession as restoreAuthSession } from "../lib/restoreSession";
 
 export async function login(credentials: LoginCredentials) {
   const result = await authService.login(credentials);
@@ -30,13 +31,17 @@ export async function logout() {
 }
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
-  const result = await authService.me();
+  const result = await authService.me({ skipAuthRefresh: true });
 
   if (!result.success) {
     return null;
   }
 
   return mapAuthUser(result.data);
+}
+
+export async function restoreSession(): Promise<AuthUser | null> {
+  return restoreAuthSession();
 }
 
 export async function changePassword(payload: ChangePasswordPayload) {

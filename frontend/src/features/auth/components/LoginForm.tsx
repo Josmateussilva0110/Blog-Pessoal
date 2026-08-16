@@ -1,19 +1,20 @@
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
   loginSchema,
   type LoginFormValues,
 } from "@/features/auth/schemas/login.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 export function LoginForm() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [apiError, setApiError] = useState("");
+  const toast = useToast();
 
   const {
     register,
@@ -28,16 +29,15 @@ export function LoginForm() {
   });
 
   async function onSubmit(values: LoginFormValues) {
-    setApiError("");
-
     try {
       const loggedUser = await login(values);
+      toast.success("Login realizado com sucesso.");
       navigate(
         loggedUser.mustChangePassword ? "/admin/new-password" : "/admin",
         { replace: true },
       );
     } catch (error) {
-      setApiError(
+      toast.error(
         error instanceof Error ? error.message : "Não foi possível fazer login.",
       );
     }
@@ -54,20 +54,13 @@ export function LoginForm() {
         {...register("email")}
       />
 
-      <Input
+      <PasswordInput
         label="Senha"
-        type="password"
         autoComplete="current-password"
         placeholder="••••••••"
         error={errors.password?.message}
         {...register("password")}
       />
-
-      {apiError && (
-        <p className="text-xs text-red-300 leading-relaxed" role="alert">
-          {apiError}
-        </p>
-      )}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? "Entrando..." : "Entrar"}

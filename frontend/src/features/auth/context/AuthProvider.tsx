@@ -21,13 +21,15 @@ export type AuthContextValue = {
   logout: () => Promise<void>;
   changePassword: (payload: ChangePasswordPayload) => Promise<AuthUser>;
   refreshUser: () => Promise<AuthUser | null>;
+  bootstrapAuth: () => Promise<void>;
+  clearAuthSession: () => void;
 };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const refreshUser = useCallback(async () => {
     const currentUser = await authApi.getCurrentUser();
@@ -35,14 +37,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return currentUser;
   }, []);
 
-  const loadUser = useCallback(async () => {
-    await refreshUser();
-    setIsLoading(false);
-  }, [refreshUser]);
+  const bootstrapAuth = useCallback(async () => {
+    setIsLoading(true);
 
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
+    try {
+      const currentUser = await authApi.restoreSession();
+      setUser(currentUser);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const clearAuthSession = useCallback(() => {
+    setUser(null);
+    setIsLoading(false);
+  }, []);
 
   useEffect(() => {
     function handleSessionExpired() {
@@ -94,8 +103,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       changePassword,
       refreshUser,
+      bootstrapAuth,
+      clearAuthSession,
     }),
-    [user, isLoading, login, logout, changePassword, refreshUser],
+    [
+      user,
+      isLoading,
+      login,
+      logout,
+      changePassword,
+      refreshUser,
+      bootstrapAuth,
+      clearAuthSession,
+    ],
   );
 
   return (
