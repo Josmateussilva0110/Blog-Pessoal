@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
-import { Image } from "@/components/ui/Image";
+import { Image, DEFAULT_IMAGE_FALLBACK } from "@/components/ui/Image";
 import { SITE } from "@/config/constants";
+import { usePublicProfileImage } from "@/features/profile/hooks/usePublicProfileImage";
 
 export function HeroSection() {
+  const { data: profileImage } = usePublicProfileImage();
+
   return (
     <section className="py-16 md:py-24">
       <div className="glass-strong rounded-3xl p-8 md:p-12 lg:p-14">
@@ -35,7 +38,7 @@ export function HeroSection() {
 
           <div className="order-1 md:order-2 flex justify-center md:justify-end">
             <Image
-              src={SITE.profileImage}
+              src={profileImage?.url ?? DEFAULT_IMAGE_FALLBACK}
               alt={SITE.profileImageAlt}
               variant="avatar"
               size="5xl"

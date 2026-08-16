@@ -141,6 +141,70 @@ class UserController {
     })
   }
 
+  async uploadProfileImage(request: Request, response: Response): Promise<Response> {
+    const file = request.file
+
+    if (!file) {
+      return response.status(422).json({
+        success: false,
+        message: "Envie um arquivo de imagem no campo image.",
+      })
+    }
+
+    const result = await UserService.updateProfileImage(getAccessToken(request), {
+      buffer: file.buffer,
+      mimetype: file.mimetype,
+    })
+
+    if (!result.status) {
+      return sendServiceError(response, result.error, userErrorHttpStatusMap)
+    }
+
+    return response.status(200).json({
+      success: true,
+      message: "Foto de perfil atualizada com sucesso.",
+      data: result.data,
+    })
+  }
+
+  async deleteProfileImage(request: Request, response: Response): Promise<Response> {
+    const result = await UserService.deleteProfileImage(getAccessToken(request))
+
+    if (!result.status) {
+      return sendServiceError(response, result.error, userErrorHttpStatusMap)
+    }
+
+    return response.status(200).json({
+      success: true,
+      message: "Foto de perfil removida com sucesso.",
+      data: result.data,
+    })
+  }
+
+  async getPublicProfileImageMeta(_request: Request, response: Response): Promise<Response> {
+    const result = await UserService.getPublicProfileImageMeta()
+
+    if (!result.status) {
+      return sendServiceError(response, result.error, userErrorHttpStatusMap)
+    }
+
+    return response.status(200).json({
+      success: true,
+      data: result.data,
+    })
+  }
+
+  async getPublicProfileImage(_request: Request, response: Response): Promise<Response> {
+    const result = await UserService.getPublicProfileImage()
+
+    if (!result.status) {
+      return sendServiceError(response, result.error, userErrorHttpStatusMap)
+    }
+
+    response.setHeader("Cache-Control", "public, max-age=300")
+    return response.redirect(302, result.data.publicUrl)
+  }
+
 }
 
 export default new UserController()

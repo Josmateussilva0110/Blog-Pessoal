@@ -9,6 +9,7 @@ import { healthRateLimiter } from "./middleware/healthRateLimit"
 import { errorHandler } from "./middleware/errorHandler"
 import { notFound } from "./middleware/notFound"
 import router from "./routes/routes"
+import { isAllowedCorsOrigin } from "./utils/corsOrigins"
 
 function healthPayload() {
     if (env.NODE_ENV === "production") {
@@ -29,9 +30,11 @@ app.use(cookieParser())
 
 app.use(cors({
     origin(origin, callback) {
-        if (!origin) return callback(null, true)
-        if (env.ALLOWED_ORIGINS.includes(origin)) return callback(null, true)
-        callback(new Error("CORS: origin não permitida"))
+        if (isAllowedCorsOrigin(origin)) {
+            return callback(null, true)
+        }
+
+        callback(new Error(`CORS: origin não permitida (${origin ?? "sem origin"})`))
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],

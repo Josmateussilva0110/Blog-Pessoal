@@ -11,6 +11,11 @@ import { isRefreshTokenReuseOrRevoked, mapPasswordUpdateError } from "../utils/a
 import { buildAuthTokens } from "../utils/authSession"
 import { mapUserProfileRow } from "../utils/userProfile"
 import { revokeAccessToken, revokeUserSessions } from "../utils/tokenRevocation"
+import {
+  deleteProfileImageFromStorage,
+  getProfileImagePublicUrl,
+  uploadProfileImageToStorage,
+} from "../utils/profileImageStorage"
 
 class UserService {
     async login(email: string, password: string): Promise<ServiceResult<AuthTokens, UserErrorCode>> {
@@ -389,6 +394,282 @@ class UserService {
                 error: {
                     code: UserErrorCode.PASSWORD_RESET_REQUEST_FAILED,
                     message: "Não foi possível registrar a solicitação.",
+                },
+            }
+        }
+    }
+
+    async updateProfileImage(
+        accessToken: string,
+        file: { buffer: Buffer; mimetype: string }
+    ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
+        try {
+            const userId = getUserIdFromAccessToken(accessToken)
+
+            if (!userId) {
+                return {
+                    status: false,
+                    error: {
+                        code: UserErrorCode.USER_UPDATE_FAILED,
+                        message: "Sessão inválida.",
+                    },
+                }
+            }
+
+            if (!file.buffer.length) {
+                return {
+                    status: false,
+                    error: {
+                        code: UserErrorCode.PROFILE_IMAGE_INVALID,
+                        message: "Arquivo de imagem vazio.",
+                    },
+                }
+            }
+
+            const now = new Date().toISOString()
+            const supabase = createSupabaseClientForUser(accessToken)
+
+            const { data: currentProfile, error: currentProfileError } = await supabase
+                .from("users")
+                .select("profile_image_url")
+                .eq("id", userId)
+                .single()
+
+            if (currentProfileError) {
+                console.error("[UserService.updateProfileImage] current profile:", currentProfileError)
+            }
+
+            const storagePath = await uploadProfileImageToStorage(
+                userId,
+                file.buffer,
+                file.mimetype
+            )
+
+            const { data, error } = await supabase
+                .from("users")
+                .update({
+                    profile_image_url: storagePath,
+                    profile_image_updated_at: now,
+                    updated_at: now,
+                })
+                .eq("id", userId)
+                .select(USER_PROFILE_SELECT)
+                .single()
+
+            if (error || !data) {
+                console.error("[UserService.updateProfileImage]", error)
+                await deleteProfileImageFromStorage(storagePath).catch((removeError) => {
+                    console.error("[UserService.updateProfileImage] rollback failed:", removeError)
+                })
+
+                return {
+                    status: false,
+                    error: {
+                        code: UserErrorCode.USER_UPDATE_FAILED,
+                        message: "Não foi possível salvar a foto de perfil.",
+                    },
+                }
+            }
+
+            if (
+                currentProfile?.profile_image_url &&
+                currentProfile.profile_image_url !== storagePath
+            ) {
+                await deleteProfileImageFromStorage(currentProfile.profile_image_url).catch(
+                    (removeError) => {
+                        console.error(
+                            "[UserService.updateProfileImage] old image cleanup failed:",
+                            removeError
+                        )
+                    }
+                )
+            }
+
+            return {
+                status: true,
+                data: mapUserProfileRow(data),
+            }
+        } catch (error) {
+            console.error("[UserService.updateProfileImage] error:", error)
+            return {
+                status: false,
+                error: {
+                    code: UserErrorCode.USER_UPDATE_FAILED,
+                    message: "Erro ao salvar a foto de perfil.",
+                },
+            }
+        }
+    }
+
+    async deleteProfileImage(
+        accessToken: string
+    ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
+        try {
+            const userId = getUserIdFromAccessToken(accessToken)
+
+            if (!userId) {
+                return {
+                    status: false,
+                    error: {
+                        code: UserErrorCode.USER_UPDATE_FAILED,
+                        message: "Sessão inválida.",
+                    },
+                }
+            }
+
+            const now = new Date().toISOString()
+            const supabase = createSupabaseClientForUser(accessToken)
+
+            const { data: currentProfile, error: currentProfileError } = await supabase
+                .from("users")
+                .select("profile_image_url")
+                .eq("id", userId)
+                .single()
+
+            if (currentProfileError) {
+                console.error("[UserService.deleteProfileImage] current profile:", currentProfileError)
+            }
+
+            const { data, error } = await supabase
+                .from("users")
+                .update({
+                    profile_image_url: null,
+                    profile_image_updated_at: null,
+                    updated_at: now,
+                })
+                .eq("id", userId)
+                .select(USER_PROFILE_SELECT)
+                .single()
+
+            if (error || !data) {
+                console.error("[UserService.deleteProfileImage]", error)
+                return {
+                    status: false,
+                    error: {
+                        code: UserErrorCode.USER_UPDATE_FAILED,
+                        message: "Não foi possível remover a foto de perfil.",
+                    },
+                }
+            }
+
+            if (currentProfile?.profile_image_url) {
+                await deleteProfileImageFromStorage(currentProfile.profile_image_url).catch(
+                    (removeError) => {
+                        console.error(
+                            "[UserService.deleteProfileImage] storage cleanup failed:",
+                            removeError
+                        )
+                    }
+                )
+            }
+
+            return {
+                status: true,
+                data: mapUserProfileRow(data),
+            }
+        } catch (error) {
+            console.error("[UserService.deleteProfileImage] error:", error)
+            return {
+                status: false,
+                error: {
+                    code: UserErrorCode.USER_UPDATE_FAILED,
+                    message: "Erro ao remover a foto de perfil.",
+                },
+            }
+        }
+    }
+
+    async getPublicProfileImageMeta(): Promise<
+        ServiceResult<{ updated_at: string | null; image_url: string | null }, UserErrorCode>
+    > {
+        try {
+            const { data, error } = await supabaseAdmin
+                .from("users")
+                .select("profile_image_url, profile_image_updated_at")
+                .not("profile_image_url", "is", null)
+                .order("profile_image_updated_at", { ascending: false })
+                .limit(1)
+                .maybeSingle()
+
+            if (error) {
+                console.error("[UserService.getPublicProfileImageMeta]", error)
+                return {
+                    status: false,
+                    error: {
+                        code: UserErrorCode.USER_FETCH_FAILED,
+                        message: "Erro ao buscar foto de perfil.",
+                    },
+                }
+            }
+
+            if (!data?.profile_image_url) {
+                return {
+                    status: true,
+                    data: {
+                        updated_at: null,
+                        image_url: null,
+                    },
+                }
+            }
+
+            return {
+                status: true,
+                data: {
+                    updated_at: data.profile_image_updated_at,
+                    image_url: getProfileImagePublicUrl(
+                        data.profile_image_url,
+                        data.profile_image_updated_at
+                    ),
+                },
+            }
+        } catch (error) {
+            console.error("[UserService.getPublicProfileImageMeta] error:", error)
+            return {
+                status: false,
+                error: {
+                    code: UserErrorCode.USER_FETCH_FAILED,
+                    message: "Erro ao buscar foto de perfil.",
+                },
+            }
+        }
+    }
+
+    async getPublicProfileImage(): Promise<
+        ServiceResult<{ publicUrl: string }, UserErrorCode>
+    > {
+        try {
+            const metaResult = await this.getPublicProfileImageMeta()
+
+            if (!metaResult.status) {
+                return {
+                    status: false,
+                    error: metaResult.error,
+                }
+            }
+
+            if (!metaResult.data.image_url) {
+                return {
+                    status: false,
+                    error: {
+                        code: UserErrorCode.PROFILE_IMAGE_NOT_FOUND,
+                        message: "Foto de perfil não encontrada.",
+                    },
+                }
+            }
+
+            return {
+                status: true,
+                data: {
+                    publicUrl: metaResult.data.image_url,
+                },
+            }
+        } catch (error) {
+            console.error("[UserService.getPublicProfileImage] error:", error)
+            return {
+                status: false,
+                error: {
+                    code: UserErrorCode.USER_FETCH_FAILED,
+                    message: "Erro ao buscar foto de perfil.",
                 },
             }
         }

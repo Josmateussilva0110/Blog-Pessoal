@@ -10,6 +10,7 @@ import { changePasswordRateLimiter } from "../middleware/changePasswordRateLimit
 import { authMiddleware } from "../middleware/auth"
 import { validateChangePassword } from "../middleware/validateChangePassword"
 import { rejectIfMustChangePassword } from "../middleware/rejectIfMustChangePassword"
+import { uploadProfileImage } from "../middleware/uploadProfileImage"
 
 
 const router = Router()
@@ -37,6 +38,21 @@ router.put(
   validateChangePassword,
   UserController.changePassword
 )
+router.put(
+  "/profile/image",
+  authMiddleware,
+  rejectIfMustChangePassword,
+  uploadProfileImage,
+  UserController.uploadProfileImage
+)
+router.delete(
+  "/profile/image",
+  authMiddleware,
+  rejectIfMustChangePassword,
+  UserController.deleteProfileImage
+)
+router.get("/public/profile-image/meta", UserController.getPublicProfileImageMeta)
+router.get("/public/profile-image", UserController.getPublicProfileImage)
 router.post("/logout", UserController.logout)
 router.post("/auth/refresh", refreshRateLimiter, UserController.refresh.bind(UserController))
 

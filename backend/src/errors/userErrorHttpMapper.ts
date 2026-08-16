@@ -15,4 +15,6 @@ export const userErrorHttpStatusMap: Record<UserErrorCode, number> = {
   [UserErrorCode.SESSION_REVOKED]: 401,
   [UserErrorCode.LOGOUT_FAILED]: 500,
   [UserErrorCode.PASSWORD_RESET_REQUEST_FAILED]: 500,
+  [UserErrorCode.PROFILE_IMAGE_INVALID]: 422,
+  [UserErrorCode.PROFILE_IMAGE_NOT_FOUND]: 404,
 }
