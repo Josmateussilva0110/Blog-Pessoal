@@ -3,7 +3,12 @@ import jwt from "jsonwebtoken"
 import type { User } from "@supabase/supabase-js"
 import { env } from "../config/env"
 import { supabaseAdmin } from "../database/supabase/supabase"
-import { getAccessTokenFromCookies } from "../utils/authCookies"
+import UserService from "../services/UserService"
+import {
+  getAccessTokenFromCookies,
+  getRefreshTokenFromCookies,
+  setAuthCookies,
+} from "../utils/authCookies"
 import { isAccessTokenRevoked, isUserSessionRevoked } from "../utils/tokenRevocation"
 
 type SupabaseJwtPayload = jwt.JwtPayload & {
@@ -41,39 +46,78 @@ async function verifyJwtLocally(token: string): Promise<User | null> {
   }
 }
 
+async function resolveUserFromAccessToken(token: string): Promise<User | null> {
+  const localUser = await verifyJwtLocally(token)
+  if (localUser) return localUser
+
+  const { data, error } = await supabaseAdmin.auth.getUser(token)
+
+  if (error || !data.user) {
+    return null
+  }
+
+  if (await isUserSessionRevoked(data.user.id)) {
+    return null
+  }
+
+  return data.user
+}
+
+async function refreshAccessToken(
+  request: Request,
+  response: Response
+): Promise<string | null> {
+  const refreshToken = getRefreshTokenFromCookies(request)
+
+  if (!refreshToken) {
+    return null
+  }
+
+  const result = await UserService.refresh(refreshToken)
+
+  if (!result.status) {
+    return null
+  }
+
+  setAuthCookies(response, result.data)
+  return result.data.accessToken
+}
+
 export async function authMiddleware(
   request: Request,
   response: Response,
   next: NextFunction
 ): Promise<void> {
-  const token = getAccessTokenFromCookies(request)
+  let accessToken = getAccessTokenFromCookies(request)
 
-  if (!token) {
+  if (accessToken) {
+    const user = await resolveUserFromAccessToken(accessToken)
+
+    if (user) {
+      request.user = user
+      request.accessToken = accessToken
+      next()
+      return
+    }
+  }
+
+  const refreshedToken = await refreshAccessToken(request, response)
+
+  if (!refreshedToken) {
     response.status(401).json({ success: false, message: "Sessão não encontrada." })
     return
   }
 
-  const localUser = await verifyJwtLocally(token)
-  if (localUser) {
-    request.user = localUser
-    request.accessToken = token
-    next()
-    return
-  }
+  accessToken = refreshedToken
 
-  const { data, error } = await supabaseAdmin.auth.getUser(token)
+  const user = await resolveUserFromAccessToken(accessToken)
 
-  if (error || !data.user) {
+  if (!user) {
     response.status(401).json({ success: false, message: "Token inválido ou expirado" })
     return
   }
 
-  if (await isUserSessionRevoked(data.user.id)) {
-    response.status(401).json({ success: false, message: "Sessão encerrada. Faça login novamente." })
-    return
-  }
-
-  request.user = data.user
-  request.accessToken = token
+  request.user = user
+  request.accessToken = accessToken
   next()
 }

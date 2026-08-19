@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
-import { useProjects } from "@/features/projects/hooks/useProjects";
+import { useAdminProjects } from "@/features/projects/hooks/useProjects";
 import { StatusBadge } from "@/features/projects/components/StatusBadge";
 
 export default function ProjectListPage() {
-  const { data: projects, isLoading } = useProjects();
+  const { data: projects, isLoading, error } = useAdminProjects();
 
   return (
     <div>
@@ -19,6 +19,14 @@ export default function ProjectListPage() {
 
       {isLoading ? (
         <p className="text-sm text-text-muted animate-pulse">Carregando...</p>
+      ) : error ? (
+        <div className="glass rounded-2xl p-6 text-sm text-red-300">
+          Não foi possível carregar os projetos.
+        </div>
+      ) : projects?.length === 0 ? (
+        <div className="glass rounded-2xl p-6 text-sm text-text-muted">
+          Nenhum projeto cadastrado ainda.
+        </div>
       ) : (
         <>
           <div className="space-y-3 md:hidden">
@@ -28,14 +36,22 @@ export default function ProjectListPage() {
                 className="glass rounded-2xl p-4 space-y-3"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-sm font-medium text-text leading-snug">
+                  <Link
+                    to={`/admin/projects/${project.id}/edit`}
+                    className="text-sm font-medium text-text leading-snug hover:text-accent transition-colors"
+                  >
                     {project.title}
-                  </h2>
+                  </Link>
                   <StatusBadge status={project.status} />
                 </div>
                 <p className="text-xs text-text-subtle">
                   {project.techStack.slice(0, 3).join(" · ")}
                 </p>
+                <Link to={`/admin/projects/${project.id}/edit`}>
+                  <Button size="sm" variant="outline" className="w-full">
+                    Editar
+                  </Button>
+                </Link>
               </article>
             ))}
           </div>
@@ -53,20 +69,37 @@ export default function ProjectListPage() {
                   <th className="text-left px-4 py-3 text-xs font-medium text-text-muted">
                     Stack
                   </th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-text-muted">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {projects?.map((project) => (
-                  <tr
-                    key={project.id}
-                    className="border-b border-border-subtle last:border-0 hover:bg-surface-overlay/60"
-                  >
-                    <td className="px-4 py-3 text-text">{project.title}</td>
+              {projects?.map((project) => (
+                <tr
+                  key={project.id}
+                  className="border-b border-border-subtle last:border-0 hover:bg-surface-overlay/60"
+                >
+                  <td className="px-4 py-3 text-text">
+                    <Link
+                      to={`/admin/projects/${project.id}/edit`}
+                      className="hover:text-accent transition-colors"
+                    >
+                      {project.title}
+                    </Link>
+                  </td>
                     <td className="px-4 py-3">
                       <StatusBadge status={project.status} />
                     </td>
                     <td className="px-4 py-3 text-xs text-text-subtle">
                       {project.techStack.slice(0, 3).join(" · ")}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link to={`/admin/projects/${project.id}/edit`}>
+                        <Button size="sm" variant="outline">
+                          Editar
+                        </Button>
+                      </Link>
                     </td>
                   </tr>
                 ))}

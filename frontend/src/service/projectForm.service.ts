@@ -1,5 +1,6 @@
-import { getApiBaseUrl } from "./apiBaseUrl";
-import type { ApiResponse, UserProfile } from "./types";
+import type { ProjectFormValues } from "@blog/shared";
+import type { ApiResponse } from "./types";
+import type { Project } from "@blog/shared";
 import { fetchMultipartWithAuth } from "./fetchMultipart";
 
 async function parseJsonResponse<T>(response: Response): Promise<ApiResponse<T>> {
@@ -10,7 +11,6 @@ async function parseJsonResponse<T>(response: Response): Promise<ApiResponse<T>>
 
   if (!response.ok) {
     const errorBody = payload && "message" in payload ? payload : undefined;
-
     return {
       success: false,
       message: errorBody?.message ?? `Erro ${response.status}`,
@@ -25,30 +25,32 @@ async function parseJsonResponse<T>(response: Response): Promise<ApiResponse<T>>
   return { success: true, data: payload as T };
 }
 
-export async function uploadProfileImage(
-  file: File,
-): Promise<ApiResponse<UserProfile>> {
+type ProjectFormFiles = {
+  images: File[];
+};
+
+export async function submitProjectForm(
+  payload: ProjectFormValues,
+  files: ProjectFormFiles,
+  projectId?: string,
+): Promise<ApiResponse<Project>> {
+  const endpoint = projectId ? `/projects/${projectId}` : "/projects";
+  const method = projectId ? "PUT" : "POST";
+
   const response = await fetchMultipartWithAuth({
-    method: "PUT",
-    endpoint: "/profile/image",
+    method,
+    endpoint,
     buildFormData: () => {
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("data", JSON.stringify(payload));
+
+      for (const image of files.images) {
+        formData.append("images", image);
+      }
+
       return formData;
     },
   });
 
-  return parseJsonResponse<UserProfile>(response);
-}
-
-export async function deleteProfileImage(): Promise<ApiResponse<UserProfile>> {
-  const response = await fetch(`${getApiBaseUrl()}/profile/image`, {
-    method: "DELETE",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  return parseJsonResponse<UserProfile>(response);
+  return parseJsonResponse<Project>(response);
 }

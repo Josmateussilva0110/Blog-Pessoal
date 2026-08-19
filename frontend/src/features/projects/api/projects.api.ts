@@ -27,6 +27,15 @@ export async function fetchProjects(): Promise<Project[]> {
   return unwrap(result);
 }
 
+export async function fetchAdminProjects(): Promise<Project[]> {
+  if (env.useMock) {
+    return delay([...MOCK_PROJECTS]);
+  }
+
+  const result = await projectsService.listAdmin();
+  return unwrap(result);
+}
+
 export async function fetchFeaturedProjects(): Promise<Project[]> {
   if (env.useMock) {
     return delay(MOCK_PROJECTS.filter((p) => p.featured));

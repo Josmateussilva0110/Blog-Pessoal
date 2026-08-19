@@ -1,0 +1,4 @@
+ALTER TABLE public.projects
+  DROP COLUMN IF EXISTS summary,
+  DROP COLUMN IF EXISTS tags,
+  DROP COLUMN IF EXISTS live_url;

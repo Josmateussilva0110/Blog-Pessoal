@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useProject } from "@/features/projects/hooks/useProjects";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/features/projects/components/StatusBadge";
@@ -8,6 +9,7 @@ import { formatDate } from "@/lib/format";
 export function ProjectDetailPage() {
   const { slug = "" } = useParams<{ slug: string }>();
   const { data: project, isLoading } = useProject(slug);
+  const { isAuthenticated } = useAuth();
 
   if (isLoading) {
     return (
@@ -49,14 +51,27 @@ export function ProjectDetailPage() {
           <h1 className="text-3xl md:text-4xl font-bold text-text">
             {project.title}
           </h1>
-          <p className="text-lg text-text-muted mt-3 leading-relaxed">
-            {project.summary}
-          </p>
         </header>
 
         <div className="text-text-muted leading-relaxed whitespace-pre-line mb-8">
-          {project.description}
+          {project.contentMarkdown || project.description}
         </div>
+
+        {project.images.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-medium text-accent mb-3">Imagens</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {project.images.map((image) => (
+                <img
+                  key={image}
+                  src={image}
+                  alt={`Captura de ${project.title}`}
+                  className="w-full rounded-2xl border border-white/10 object-cover"
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mb-8">
           <h2 className="text-sm font-medium text-accent mb-3">Stack</h2>
@@ -70,14 +85,14 @@ export function ProjectDetailPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
+          {isAuthenticated && (
+            <Link to={`/admin/projects/${project.id}/edit`}>
+              <Button variant="outline">Editar projeto</Button>
+            </Link>
+          )}
           {project.repoUrl && (
             <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">
               <Button variant="secondary">Repositório</Button>
-            </a>
-          )}
-          {project.liveUrl && (
-            <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
-              <Button>Ver ao vivo</Button>
             </a>
           )}
         </div>

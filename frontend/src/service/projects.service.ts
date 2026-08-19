@@ -8,12 +8,20 @@ export const projectsService = {
     return request<Project[]>(BASE);
   },
 
+  listAdmin() {
+    return request<Project[]>(`${BASE}/admin`);
+  },
+
   featured() {
     return request<Project[]>(`${BASE}/featured`);
   },
 
   getBySlug(slug: string) {
     return request<Project>(`${BASE}/${slug}`);
+  },
+
+  getById(id: string) {
+    return request<Project>(`${BASE}/id/${id}`);
   },
 
   create(data: CreateProjectInput) {

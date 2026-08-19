@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
+  fetchAdminProjects,
   fetchFeaturedProjects,
   fetchProjectBySlug,
   fetchProjects,
@@ -7,6 +8,7 @@ import {
 
 export const projectKeys = {
   all: ["projects"] as const,
+  admin: () => [...projectKeys.all, "admin"] as const,
   featured: () => [...projectKeys.all, "featured"] as const,
   detail: (slug: string) => [...projectKeys.all, "detail", slug] as const,
 };
@@ -15,6 +17,13 @@ export function useProjects() {
   return useQuery({
     queryKey: projectKeys.all,
     queryFn: fetchProjects,
+  });
+}
+
+export function useAdminProjects() {
+  return useQuery({
+    queryKey: projectKeys.admin(),
+    queryFn: fetchAdminProjects,
   });
 }
 

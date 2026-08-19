@@ -1,18 +1,23 @@
 import type { ProjectStatus } from "@blog/shared";
 import { Badge } from "@/components/ui/Badge";
 import { getStatusLabel } from "@/lib/utils";
+import { normalizeProjectStatus } from "@/lib/projectStatus";
 
 const statusVariant: Record<
   ProjectStatus,
-  "success" | "warning" | "muted"
+  "success" | "warning" | "accent"
 > = {
-  active: "success",
+  active: "accent",
   wip: "warning",
-  archived: "muted",
+  completed: "success",
 };
 
-export function StatusBadge({ status }: { status: ProjectStatus }) {
+export function StatusBadge({ status }: { status: ProjectStatus | string }) {
+  const normalizedStatus = normalizeProjectStatus(status);
+
   return (
-    <Badge variant={statusVariant[status]}>{getStatusLabel(status)}</Badge>
+    <Badge variant={statusVariant[normalizedStatus]}>
+      {getStatusLabel(normalizedStatus)}
+    </Badge>
   );
 }

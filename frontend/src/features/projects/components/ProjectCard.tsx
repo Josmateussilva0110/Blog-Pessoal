@@ -26,7 +26,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
         </div>
 
         <p className="text-sm text-text-muted leading-relaxed flex-1">
-          {project.summary}
+          {project.description}
         </p>
 
         <div className="flex flex-wrap gap-1.5 pt-2">

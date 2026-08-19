@@ -1,26 +1,78 @@
 import { z } from "zod";
 
-export const projectStatusSchema = z.enum(["active", "archived", "wip"]);
+export const projectStatusSchema = z.enum(["active", "completed", "wip"]);
+
+export const markdownFileSchema = z.object({
+  id: z.string().uuid().optional(),
+  title: z.string().min(1),
+  path: z.string().min(1),
+  url: z.string().url(),
+  sortOrder: z.number().int().min(0),
+});
 
 export const projectSchema = z.object({
   id: z.string().uuid(),
   slug: z.string().min(1),
   title: z.string().min(1),
-  summary: z.string().min(1),
-  description: z.string().min(1),
+  description: z.string().default(""),
+  contentMarkdown: z.string().min(1),
   status: projectStatusSchema,
-  tags: z.array(z.string()),
   techStack: z.array(z.string()),
   repoUrl: z.string().url().optional(),
-  liveUrl: z.string().url().optional(),
   coverImage: z.string().url().optional(),
+  images: z.array(z.string().url()).default([]),
+  markdownFiles: z.array(markdownFileSchema).default([]),
   featured: z.boolean().default(false),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
 
 export type ProjectStatus = z.infer<typeof projectStatusSchema>;
+export type MarkdownFile = z.infer<typeof markdownFileSchema>;
 export type Project = z.infer<typeof projectSchema>;
+
+const LEGACY_COMPLETED_STATUSES = new Set(["archived", "closed"]);
+
+export function normalizeProjectStatus(status: string): ProjectStatus {
+  if (LEGACY_COMPLETED_STATUSES.has(status)) {
+    return "completed";
+  }
+
+  if (status === "active" || status === "wip" || status === "completed") {
+    return status;
+  }
+
+  return "wip";
+}
+
+const normalizedProjectStatusSchema = z.preprocess(
+  (value) => (typeof value === "string" ? normalizeProjectStatus(value) : value),
+  projectStatusSchema,
+);
+
+const optionalUrl = z
+  .string()
+  .url("URL inválida.")
+  .or(z.literal(""))
+  .transform((value) => (value === "" ? undefined : value));
+
+export const projectFormSchema = z.object({
+  title: z.string().trim().min(1, "Título obrigatório.").max(120),
+  slug: z
+    .string()
+    .trim()
+    .min(1, "Slug obrigatório.")
+    .max(120)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use apenas letras minúsculas, números e hífens."),
+  contentMarkdown: z.string().trim().min(1, "Descreva o projeto."),
+  status: normalizedProjectStatusSchema,
+  techStack: z.array(z.string()),
+  repoUrl: optionalUrl.optional(),
+  featured: z.boolean(),
+  images: z.array(z.string().url()),
+});
+
+export type ProjectFormValues = z.infer<typeof projectFormSchema>;
 
 export const createProjectSchema = projectSchema.omit({
   id: true,
