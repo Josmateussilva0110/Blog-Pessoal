@@ -2,7 +2,7 @@ import type { ProjectStatus } from "@blog/shared";
 import { normalizeProjectStatus } from "@/lib/projectStatus";
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
-  active: "Ativo",
+  planned: "Planejado",
   wip: "Em andamento",
   completed: "Concluído",
 };

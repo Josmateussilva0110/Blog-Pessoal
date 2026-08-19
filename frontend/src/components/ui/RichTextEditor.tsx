@@ -45,10 +45,10 @@ function ToolbarButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "inline-flex size-8 items-center justify-center rounded-lg border text-zinc-400 transition-colors",
-        "border-transparent hover:border-white/[0.08] hover:bg-white/[0.05] hover:text-zinc-100",
+        "inline-flex size-8 items-center justify-center rounded-md border font-mono text-text-muted transition-colors",
+        "border-transparent hover:border-accent/20 hover:bg-accent-soft hover:text-text",
         "disabled:cursor-not-allowed disabled:opacity-40",
-        active && "border-emerald-500/20 bg-emerald-500/10 text-emerald-300",
+        active && "border-accent/25 bg-accent-soft text-accent",
       )}
     >
       {children}
@@ -80,7 +80,7 @@ export function RichTextEditor({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: "text-emerald-300 underline underline-offset-2",
+          class: "text-accent underline underline-offset-2",
         },
       }),
       Placeholder.configure({ placeholder }),
@@ -93,7 +93,7 @@ export function RichTextEditor({
     },
     editorProps: {
       attributes: {
-        class: "tiptap-editor min-h-48 px-4 py-3 text-sm text-zinc-100 focus:outline-none",
+        class: "tiptap-editor min-h-48 px-4 py-3 text-sm text-text focus:outline-none",
       },
     },
   });
@@ -158,12 +158,12 @@ sequenceDiagram
     <div className={cn("flex flex-col gap-2", className)}>
       <div
         className={cn(
-          "overflow-hidden rounded-xl border bg-[#18181b]/80",
-          error ? "border-red-400/40" : "border-white/[0.08]",
+          "overflow-hidden rounded-lg border bg-surface-raised/80",
+          error ? "border-red-400/40" : "border-border-subtle",
         )}
       >
         {editor && (
-          <div className="flex flex-wrap items-center gap-1 border-b border-white/[0.06] bg-white/[0.02] px-2 py-2">
+          <div className="flex flex-wrap items-center gap-1 border-b border-border-subtle bg-surface-raised px-2 py-2">
             <ToolbarButton
               label="Negrito"
               active={editor.isActive("bold")}
@@ -196,7 +196,7 @@ sequenceDiagram
               <Strikethrough className="size-4" aria-hidden />
             </ToolbarButton>
 
-            <span className="mx-1 h-6 w-px bg-white/[0.08]" aria-hidden />
+            <span className="mx-1 h-6 w-px bg-border-subtle" aria-hidden />
 
             <ToolbarButton
               label="Título 2"
@@ -214,7 +214,7 @@ sequenceDiagram
               <Heading3 className="size-4" aria-hidden />
             </ToolbarButton>
 
-            <span className="mx-1 h-6 w-px bg-white/[0.08]" aria-hidden />
+            <span className="mx-1 h-6 w-px bg-border-subtle" aria-hidden />
 
             <ToolbarButton
               label="Lista com marcadores"
@@ -252,7 +252,7 @@ sequenceDiagram
               <Workflow className="size-4" aria-hidden />
             </ToolbarButton>
 
-            <span className="mx-1 h-6 w-px bg-white/[0.08]" aria-hidden />
+            <span className="mx-1 h-6 w-px bg-border-subtle" aria-hidden />
 
             <ToolbarButton
               label="Desfazer"

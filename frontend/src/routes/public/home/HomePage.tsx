@@ -11,7 +11,7 @@ export function HomePage() {
 
   return (
     <>
-      <HeroSection />
+      <HeroSection projectCount={projects?.length} />
       <AboutSection />
       <SkillsIconSection />
       <StackAnalyticsSection projects={projects ?? []} isLoading={isLoading} />

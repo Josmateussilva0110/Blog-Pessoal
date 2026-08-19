@@ -90,7 +90,7 @@ export function MermaidDiagram({ chart, className }: MermaidDiagramProps) {
     return (
       <div
         className={cn(
-          "rounded-xl border border-white/[0.08] bg-white/[0.02] p-6 text-sm text-zinc-500 animate-pulse",
+          "rounded-lg border border-border-subtle bg-surface-raised p-6 font-mono text-sm text-text-subtle animate-pulse",
           className,
         )}
       >

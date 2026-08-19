@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { Textarea } from "@/components/ui/Textarea";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { useToast } from "@/components/ui/toast";
 import { normalizeProjectStatus, toFormProjectStatus } from "@/lib/projectStatus";
@@ -52,8 +53,9 @@ export function ProjectForm({ project }: ProjectFormProps) {
     defaultValues: {
       title: project?.title ?? "",
       slug: project?.slug ?? "",
-      contentMarkdown: project?.contentMarkdown ?? project?.description ?? "",
-      status: toFormProjectStatus(project?.status ?? "wip"),
+      description: project?.description ?? "",
+      contentMarkdown: project?.contentMarkdown ?? "",
+      status: toFormProjectStatus(project?.status ?? "planned"),
       techStack: project?.techStack ?? [],
       repoUrl: project?.repoUrl ?? "",
       featured: project?.featured ?? false,
@@ -62,6 +64,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
   });
 
   const title = watch("title");
+  const description = watch("description");
   const contentMarkdown = watch("contentMarkdown");
   const status = watch("status");
   const techStack = watch("techStack");
@@ -79,7 +82,8 @@ export function ProjectForm({ project }: ProjectFormProps) {
     reset({
       title: project.title,
       slug: project.slug,
-      contentMarkdown: project.contentMarkdown || project.description,
+      description: project.description,
+      contentMarkdown: project.contentMarkdown,
       status: toFormProjectStatus(project.status),
       techStack: project.techStack,
       repoUrl: project.repoUrl ?? "",
@@ -194,6 +198,15 @@ export function ProjectForm({ project }: ProjectFormProps) {
         />
       </div>
 
+      <Textarea
+        label="Resumo"
+        placeholder="Breve descrição do projeto para exibir nos cards e listagens"
+        rows={3}
+        maxLength={500}
+        error={errors.description?.message}
+        {...register("description")}
+      />
+
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm font-medium text-text">Sobre o projeto</span>
@@ -226,12 +239,13 @@ export function ProjectForm({ project }: ProjectFormProps) {
           )}
         />
         <p className="text-xs text-text-muted">
-          Use a barra de ferramentas para formatar o texto. Para diagramas, clique no ícone de fluxo ou cole um bloco <code className="text-zinc-300">```mermaid</code>.
+          Use a barra de ferramentas para formatar o texto. Para diagramas, clique no ícone de fluxo ou cole um bloco <code className="font-mono text-accent">```mermaid</code>.
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Select label="Status" error={errors.status?.message} {...register("status")}>
+          <option value="planned">Planejado</option>
           <option value="wip">Em andamento</option>
           <option value="completed">Concluído</option>
         </Select>
@@ -334,6 +348,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
         onClose={() => setPreviewOpen(false)}
         data={{
           title,
+          description,
           contentMarkdown,
           status: normalizeProjectStatus(status) as ProjectStatus,
           techStack,

@@ -15,17 +15,17 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      label: "Projetos cadastrados",
+      label: "projetos cadastrados",
       value: isLoading ? "—" : total,
       icon: FolderKanban,
     },
     {
-      label: "Em destaque",
+      label: "em destaque",
       value: isLoading ? "—" : featured,
       icon: Sparkles,
     },
     {
-      label: "Em andamento",
+      label: "em andamento",
       value: isLoading ? "—" : inProgress,
       icon: Wrench,
     },
@@ -38,7 +38,9 @@ export default function DashboardPage() {
         description="Acompanhe o portfólio e acesse rapidamente as principais ações do painel."
         action={
           <Link to="/admin/projects/new">
-            <Button size="sm">Novo projeto</Button>
+            <Button size="sm" className="font-mono">
+              new_project()
+            </Button>
           </Link>
         }
       />
@@ -50,14 +52,16 @@ export default function DashboardPage() {
           return (
             <article key={stat.label} className="admin-stat p-5">
               <div className="mb-4 flex items-center justify-between gap-3">
-                <span className="flex size-10 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.03] text-emerald-300">
+                <span className="flex size-10 items-center justify-center rounded-lg border border-accent/20 bg-accent-soft text-accent">
                   <Icon className="size-4" aria-hidden />
                 </span>
               </div>
-              <p className="text-3xl font-semibold tracking-tight text-zinc-50">
+              <p className="text-3xl font-bold tracking-tight text-text">
                 {stat.value}
               </p>
-              <p className="mt-1 text-sm text-zinc-500">{stat.label}</p>
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-text-subtle">
+                {stat.label}
+              </p>
             </article>
           );
         })}
@@ -66,26 +70,27 @@ export default function DashboardPage() {
       <section className="admin-card mt-6 p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-base font-semibold text-zinc-100">Atalhos</h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="code-comment mb-1">// atalhos</p>
+            <h2 className="text-base font-semibold text-text">Ações rápidas</h2>
+            <p className="mt-1 text-sm text-text-muted">
               Gerencie projetos, ajuste sua conta ou volte ao site público.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
             <Link to="/admin/projects">
-              <Button variant="outline" size="sm">
-                Ver projetos
+              <Button variant="outline" size="sm" className="font-mono">
+                list_projects()
               </Button>
             </Link>
             <Link to="/admin/settings">
-              <Button variant="ghost" size="sm">
-                Configurações
+              <Button variant="ghost" size="sm" className="font-mono">
+                settings()
               </Button>
             </Link>
             <a href="/" target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost" size="sm">
-                Site público
+              <Button variant="ghost" size="sm" className="font-mono">
+                open_site()
                 <ArrowUpRight className="size-4" aria-hidden />
               </Button>
             </a>

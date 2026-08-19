@@ -22,7 +22,7 @@ export function ChartTooltip({
   const item = payload[0];
 
   return (
-    <div className="glass-strong rounded-xl px-3.5 py-2.5 border border-blue-400/20 shadow-lg shadow-blue-950/40">
+    <div className="glass-strong rounded-xl px-3.5 py-2.5 border border-accent/20 shadow-lg shadow-accent/10">
       <p className="text-xs text-text-muted mb-0.5">{label ?? item.name}</p>
       <p className="text-sm font-semibold text-text tabular-nums">
         {item.value} {valueLabel}

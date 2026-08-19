@@ -17,15 +17,13 @@ export function AdminPageHeader({
     <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
         {eyebrow && (
-          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-            {eyebrow}
-          </p>
+          <p className="code-comment mb-2">{"// "}{eyebrow.toLowerCase()}</p>
         )}
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-50 sm:text-3xl">
+        <h1 className="text-2xl font-bold tracking-tight text-text sm:text-3xl">
           {title}
         </h1>
         {description && (
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-400">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-text-muted">
             {description}
           </p>
         )}

@@ -24,4 +24,4 @@ export function getRadarChartData(projects: Project[]) {
 }
 
 export const CHART_AXIS = { fill: "#64748b", fontSize: 11 };
-export const CHART_GRID = "rgb(96 165 250 / 0.1)";
+export const CHART_GRID = "rgb(34 211 238 / 0.1)";

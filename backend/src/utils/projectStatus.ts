@@ -1,15 +1,20 @@
 import type { ProjectStatus } from "@blog/shared";
 
 const LEGACY_COMPLETED_STATUSES = new Set(["archived", "closed"]);
+const LEGACY_PLANNED_STATUSES = new Set(["active"]);
 
 export function normalizeProjectStatus(status: string): ProjectStatus {
   if (LEGACY_COMPLETED_STATUSES.has(status)) {
     return "completed";
   }
 
-  if (status === "active" || status === "wip" || status === "completed") {
+  if (LEGACY_PLANNED_STATUSES.has(status)) {
+    return "planned";
+  }
+
+  if (status === "planned" || status === "wip" || status === "completed") {
     return status;
   }
 
-  return "wip";
+  return "planned";
 }

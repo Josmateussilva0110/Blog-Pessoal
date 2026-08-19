@@ -45,11 +45,11 @@ export function AboutSection() {
           {HIGHLIGHTS.map(({ icon: Icon, label, text }) => (
             <div
               key={label}
-              className="glass rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:bg-blue-500/5 hover:border-blue-400/25"
+              className="glass rounded-2xl p-5 flex flex-col gap-2 transition-all duration-300 hover:bg-accent-soft hover:border-accent/20"
             >
               <div className="flex items-center gap-2.5">
                 <span
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-accent"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent"
                   aria-hidden
                 >
                   <Icon className="h-4 w-4" strokeWidth={2} />
@@ -66,7 +66,7 @@ export function AboutSection() {
             href={SITE.github}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 glass rounded-xl px-4 py-2.5 text-sm text-text-muted hover:text-accent hover:border-blue-400/30 transition-all duration-200"
+            className="inline-flex items-center gap-2 glass rounded-xl px-4 py-2.5 text-sm text-text-muted hover:text-accent hover:border-accent/30 transition-all duration-200"
           >
             <svg
               className="w-4 h-4"
@@ -82,7 +82,7 @@ export function AboutSection() {
             href={SITE.linkedin}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 glass rounded-xl px-4 py-2.5 text-sm text-text-muted hover:text-accent hover:border-blue-400/30 transition-all duration-200"
+            className="inline-flex items-center gap-2 glass rounded-xl px-4 py-2.5 text-sm text-text-muted hover:text-accent hover:border-accent/30 transition-all duration-200"
           >
             <svg
               className="w-4 h-4"

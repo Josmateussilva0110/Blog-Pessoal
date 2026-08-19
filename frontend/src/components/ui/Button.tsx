@@ -11,16 +11,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-gradient-to-r from-blue-600/90 to-sky-500/90 text-white border border-blue-400/30 hover:from-blue-500 hover:to-sky-400 shadow-lg shadow-blue-600/25",
+    "bg-accent text-surface border border-accent/30 hover:bg-accent-muted shadow-lg shadow-accent/20",
   secondary: "glass text-text hover:bg-white/10",
   ghost: "text-text-muted hover:text-text hover:bg-white/5",
-  outline: "glass text-text-muted hover:text-text hover:bg-white/10",
+  outline:
+    "border border-border-subtle text-text-muted hover:text-text hover:border-border hover:bg-white/5",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-xs rounded-xl",
-  md: "px-4 py-2 text-sm rounded-xl",
-  lg: "px-6 py-3 text-sm rounded-xl",
+  sm: "px-3 py-1.5 text-xs rounded-lg",
+  md: "px-4 py-2 text-sm rounded-lg",
+  lg: "px-6 py-3 text-sm rounded-lg",
 };
 
 export function Button({

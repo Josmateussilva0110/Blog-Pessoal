@@ -62,8 +62,8 @@ export function LoginForm() {
         {...register("password")}
       />
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Entrando..." : "Entrar"}
+      <Button type="submit" className="w-full font-mono" disabled={isSubmitting}>
+        {isSubmitting ? "auth..." : "login()"}
       </Button>
 
       <p className="text-sm text-text-muted text-center">

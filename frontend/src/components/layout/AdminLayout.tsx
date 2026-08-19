@@ -20,9 +20,9 @@ const SIDEBAR_WIDTH_EXPANDED = "15.5rem";
 const SIDEBAR_WIDTH_COLLAPSED = "4.75rem";
 
 const adminNav = [
-  { to: "/admin", label: "Dashboard", end: true, icon: LayoutDashboard },
-  { to: "/admin/projects", label: "Projetos", end: false, icon: FolderKanban },
-  { to: "/admin/settings", label: "Conta", end: false, icon: Settings },
+  { to: "/admin", label: "dashboard", end: true, icon: LayoutDashboard },
+  { to: "/admin/projects", label: "projects", end: false, icon: FolderKanban },
+  { to: "/admin/settings", label: "settings", end: false, icon: Settings },
 ];
 
 function getUserInitials(email?: string | null) {
@@ -79,7 +79,7 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="admin-shell min-h-dvh lg:flex">
+    <div className="admin-shell min-h-dvh lg:flex grid-bg">
       {mobileNavOpen && (
         <button
           type="button"
@@ -98,30 +98,41 @@ export function AdminLayout() {
           } as CSSProperties
         }
         className={cn(
-          "admin-sidebar fixed inset-y-0 left-0 z-50 flex w-[var(--admin-sidebar-width)] flex-col overflow-hidden border-r border-white/[0.06] bg-[#09090b]",
+          "admin-sidebar fixed inset-y-0 left-0 z-50 flex w-[var(--admin-sidebar-width)] flex-col overflow-hidden border-r",
           "transition-[width,transform] duration-200 ease-out lg:static lg:translate-x-0",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border-subtle bg-surface-raised">
+          <span className="h-2 w-2 rounded-full bg-red-500/80 shrink-0" />
+          <span className="h-2 w-2 rounded-full bg-amber-400/80 shrink-0" />
+          <span className="h-2 w-2 rounded-full bg-terminal/80 shrink-0" />
+          {!sidebarCollapsed && (
+            <span className="font-mono text-[10px] ml-1 truncate">
+              <span className="text-terminal">mateus@dev</span>
+              <span className="text-text-subtle">:</span>
+              <span className="text-accent">~/admin</span>
+            </span>
+          )}
+        </div>
+
         <div
           className={cn(
-            "flex items-center border-b border-white/[0.06] py-5",
-            sidebarCollapsed ? "justify-center px-2" : "justify-between gap-3 px-5",
+            "flex items-center border-b border-border-subtle py-4",
+            sidebarCollapsed ? "justify-center px-2" : "justify-between gap-3 px-4",
           )}
         >
           {!sidebarCollapsed && (
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                Admin
-              </p>
-              <p className="mt-1 text-sm font-semibold text-zinc-100">Painel</p>
+              <p className="code-comment">// painel</p>
+              <p className="mt-1 font-mono text-sm font-semibold text-text">admin shell</p>
             </div>
           )}
 
           <div className={cn("flex items-center gap-1", sidebarCollapsed && "flex-col")}>
             <button
               type="button"
-              className="hidden rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 lg:inline-flex"
+              className="hidden rounded-lg p-2 text-text-muted transition-colors hover:bg-accent-soft hover:text-text lg:inline-flex"
               aria-label={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
               aria-expanded={!sidebarCollapsed}
               onClick={toggleSidebar}
@@ -135,7 +146,7 @@ export function AdminLayout() {
 
             <button
               type="button"
-              className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 lg:hidden"
+              className="rounded-lg p-2 text-text-muted transition-colors hover:bg-accent-soft hover:text-text lg:hidden"
               aria-label="Fechar menu"
               onClick={() => setMobileNavOpen(false)}
             >
@@ -156,11 +167,11 @@ export function AdminLayout() {
                 title={sidebarCollapsed ? item.label : undefined}
                 className={({ isActive }) =>
                   cn(
-                    "group flex items-center rounded-xl text-sm font-medium transition-colors",
+                    "group flex items-center rounded-lg font-mono text-sm transition-colors",
                     sidebarCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5",
                     isActive
-                      ? "bg-white/[0.07] text-zinc-50"
-                      : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100",
+                      ? "bg-accent-soft text-accent"
+                      : "text-text-muted hover:bg-accent-soft/50 hover:text-text",
                   )
                 }
               >
@@ -168,15 +179,20 @@ export function AdminLayout() {
                   <>
                     <span
                       className={cn(
-                        "flex size-8 shrink-0 items-center justify-center rounded-lg border transition-colors",
+                        "flex size-8 shrink-0 items-center justify-center rounded-md border transition-colors",
                         isActive
-                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
-                          : "border-white/[0.06] bg-white/[0.02] text-zinc-500 group-hover:text-zinc-300",
+                          ? "border-accent/25 bg-accent-soft text-accent"
+                          : "border-border-subtle bg-surface-raised text-text-subtle group-hover:text-text-muted",
                       )}
                     >
                       <Icon className="size-4" aria-hidden />
                     </span>
-                    {!sidebarCollapsed && item.label}
+                    {!sidebarCollapsed && (
+                      <>
+                        <span className="text-text-subtle">{"// "}</span>
+                        {item.label}
+                      </>
+                    )}
                   </>
                 )}
               </NavLink>
@@ -184,26 +200,31 @@ export function AdminLayout() {
           })}
         </nav>
 
-        <div className={cn("space-y-2 border-t border-white/[0.06]", sidebarCollapsed ? "p-2" : "p-3")}>
+        <div className={cn("space-y-2 border-t border-border-subtle", sidebarCollapsed ? "p-2" : "p-3")}>
           <a
             href="/"
             target="_blank"
             rel="noopener noreferrer"
             title={sidebarCollapsed ? "Ver site" : undefined}
             className={cn(
-              "flex items-center rounded-xl text-sm font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100",
+              "flex items-center rounded-lg font-mono text-sm text-text-muted transition-colors hover:bg-accent-soft/50 hover:text-text",
               sidebarCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5",
             )}
           >
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.02]">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-raised">
               <ExternalLink className="size-4" aria-hidden />
             </span>
-            {!sidebarCollapsed && "Ver site"}
+            {!sidebarCollapsed && (
+              <>
+                <span className="text-text-subtle">{"// "}</span>
+                site
+              </>
+            )}
           </a>
 
           <div
             className={cn(
-              "rounded-xl border border-white/[0.06] bg-white/[0.02]",
+              "rounded-lg border border-border-subtle bg-surface-raised",
               sidebarCollapsed ? "p-2" : "p-3",
             )}
           >
@@ -214,18 +235,20 @@ export function AdminLayout() {
               )}
             >
               <span
-                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-semibold text-emerald-300"
+                className="flex size-9 shrink-0 items-center justify-center rounded-md border border-accent/20 bg-accent-soft font-mono text-xs font-semibold text-accent"
                 title={sidebarCollapsed ? user?.username ?? "Administrador" : undefined}
               >
                 {getUserInitials(user?.email)}
               </span>
               {!sidebarCollapsed && (
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-zinc-100">
-                    {user?.username ?? "Administrador"}
+                  <p className="truncate font-mono text-sm text-text">
+                    {user?.username ?? "admin"}
                   </p>
                   {user?.email && (
-                    <p className="truncate text-xs text-zinc-500">{user.email}</p>
+                    <p className="truncate font-mono text-[10px] text-text-subtle">
+                      {user.email}
+                    </p>
                   )}
                 </div>
               )}
@@ -236,24 +259,24 @@ export function AdminLayout() {
               size="sm"
               title={sidebarCollapsed ? "Sair" : undefined}
               className={cn(
-                "mt-3 rounded-lg text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100",
+                "mt-3 font-mono text-text-muted hover:bg-accent-soft hover:text-text",
                 sidebarCollapsed ? "w-full justify-center px-2" : "w-full justify-start px-2",
               )}
               onClick={handleLogout}
             >
               <LogOut className="size-4" aria-hidden />
-              {!sidebarCollapsed && "Sair"}
+              {!sidebarCollapsed && "logout()"}
             </Button>
           </div>
         </div>
       </aside>
 
-      <div className="admin-main flex min-h-dvh min-w-0 flex-1 flex-col bg-[#0f0f12]">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-white/[0.06] bg-[#0f0f12]/95 px-4 backdrop-blur-md sm:px-6 lg:px-8">
+      <div className="admin-main flex min-h-dvh min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border-subtle bg-surface/90 px-4 backdrop-blur-md sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <button
               type="button"
-              className="rounded-lg border border-white/[0.06] p-2 text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 lg:hidden"
+              className="rounded-lg border border-border-subtle p-2 text-text-muted transition-colors hover:bg-accent-soft hover:text-text lg:hidden"
               aria-label="Abrir menu"
               aria-expanded={mobileNavOpen}
               onClick={() => setMobileNavOpen(true)}
@@ -261,8 +284,9 @@ export function AdminLayout() {
               <Menu className="size-5" aria-hidden />
             </button>
 
-            <p className="truncate text-sm text-zinc-500">
-              Gerenciamento do portfólio
+            <p className="truncate font-mono text-xs text-text-subtle">
+              <span className="text-terminal">$ </span>
+              admin --shell
             </p>
           </div>
         </header>

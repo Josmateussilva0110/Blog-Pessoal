@@ -26,9 +26,10 @@ const ProjectFormPage = lazy(
 
 function AdminFallback() {
   return (
-    <div className="admin-shell flex min-h-dvh items-center justify-center bg-[#0f0f12]">
-      <span className="text-sm text-zinc-500 animate-pulse">
-        Carregando...
+    <div className="admin-shell flex min-h-dvh items-center justify-center grid-bg">
+      <span className="font-mono text-sm text-text-subtle animate-pulse">
+        <span className="text-terminal">$ </span>
+        loading...
       </span>
     </div>
   );

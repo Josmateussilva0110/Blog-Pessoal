@@ -15,15 +15,17 @@ export default function SettingsPage() {
       />
 
       <section className="admin-card p-5 sm:p-6 mb-4 sm:mb-6">
-        <h2 className="text-sm font-semibold text-zinc-100 mb-4">Foto de perfil</h2>
+        <p className="code-comment mb-3">// profile image</p>
+        <h2 className="text-sm font-semibold text-text mb-4">Foto de perfil</h2>
         <ProfileImageForm />
       </section>
 
       <section className="admin-card p-5 sm:p-6">
-        <h2 className="text-sm font-semibold text-zinc-100 mb-1">Alterar senha</h2>
+        <p className="code-comment mb-3">// security</p>
+        <h2 className="text-sm font-semibold text-text mb-1">Alterar senha</h2>
         {user?.email && (
-          <p className="text-xs text-zinc-500 mb-6">
-            Conta: <span className="text-zinc-300">{user.email}</span>
+          <p className="font-mono text-xs text-text-subtle mb-6">
+            user: <span className="text-accent">{user.email}</span>
           </p>
         )}
         <UpdatePasswordForm />

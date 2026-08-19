@@ -9,7 +9,7 @@ export const MOCK_PROJECTS: Project[] = [
       "App web para equipes pequenas organizarem sprints com boards kanban, notificações em tempo real via WebSocket e integração com calendário. Inspirado em ferramentas como Trello, mas com foco em simplicidade.",
     contentMarkdown:
       "App web para equipes pequenas organizarem sprints com boards kanban, notificações em tempo real via WebSocket e integração com calendário. Inspirado em ferramentas como Trello, mas com foco em simplicidade.",
-    status: "active",
+    status: "planned",
     techStack: ["React", "Node.js", "PostgreSQL", "Socket.io"],
     repoUrl: "https://github.com",
     images: [],
@@ -26,7 +26,7 @@ export const MOCK_PROJECTS: Project[] = [
       "Painel que consome APIs de clima para exibir previsões de 7 dias, alertas meteorológicos e mapas de temperatura. Interface responsiva com gráficos animados.",
     contentMarkdown:
       "Painel que consome APIs de clima para exibir previsões de 7 dias, alertas meteorológicos e mapas de temperatura. Interface responsiva com gráficos animados.",
-    status: "active",
+    status: "planned",
     techStack: ["Next.js", "TypeScript"],
     repoUrl: "https://github.com",
     images: [],

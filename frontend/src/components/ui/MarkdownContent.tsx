@@ -20,7 +20,7 @@ function MarkdownCode({ inline, className, children }: CodeProps) {
 
   if (inline) {
     return (
-      <code className="rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[0.9em] text-zinc-100">
+      <code className="rounded-md bg-accent-soft px-1.5 py-0.5 font-mono text-[0.9em] text-accent">
         {code}
       </code>
     );
@@ -33,7 +33,7 @@ function MarkdownCode({ inline, className, children }: CodeProps) {
     return <MermaidDiagram chart={code} className="my-4" />;
   }
 
-  return <code className="text-sm text-zinc-200 whitespace-pre-wrap">{code}</code>;
+  return <code className="font-mono text-sm text-text whitespace-pre-wrap">{code}</code>;
 }
 
 function MarkdownPre({ children }: { children?: ReactNode }) {

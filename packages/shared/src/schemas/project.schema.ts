@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const projectStatusSchema = z.enum(["active", "completed", "wip"]);
+export const projectStatusSchema = z.enum(["planned", "completed", "wip"]);
 
 export const markdownFileSchema = z.object({
   id: z.string().uuid().optional(),
@@ -32,23 +32,23 @@ export type MarkdownFile = z.infer<typeof markdownFileSchema>;
 export type Project = z.infer<typeof projectSchema>;
 
 const LEGACY_COMPLETED_STATUSES = new Set(["archived", "closed"]);
+const LEGACY_PLANNED_STATUSES = new Set(["active"]);
 
 export function normalizeProjectStatus(status: string): ProjectStatus {
   if (LEGACY_COMPLETED_STATUSES.has(status)) {
     return "completed";
   }
 
-  if (status === "active" || status === "wip" || status === "completed") {
+  if (LEGACY_PLANNED_STATUSES.has(status)) {
+    return "planned";
+  }
+
+  if (status === "planned" || status === "wip" || status === "completed") {
     return status;
   }
 
-  return "wip";
+  return "planned";
 }
-
-const normalizedProjectStatusSchema = z.preprocess(
-  (value) => (typeof value === "string" ? normalizeProjectStatus(value) : value),
-  projectStatusSchema,
-);
 
 const optionalUrl = z
   .string()
@@ -65,7 +65,12 @@ export const projectFormSchema = z.object({
     .max(120)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use apenas letras minúsculas, números e hífens."),
   contentMarkdown: z.string().trim().min(1, "Descreva o projeto."),
-  status: normalizedProjectStatusSchema,
+  description: z
+    .string()
+    .trim()
+    .min(1, "Resumo obrigatório.")
+    .max(500, "O resumo deve ter no máximo 500 caracteres."),
+  status: projectStatusSchema,
   techStack: z.array(z.string()),
   repoUrl: optionalUrl.optional(),
   featured: z.boolean(),

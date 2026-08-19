@@ -1,16 +1,20 @@
 export const SITE = {
-  name: "Mateus",
-  title: "Dev Portfolio",
+  name: "mateus.dev",
+  title: "Dev Blog",
+  tagline: "Código que cria coisas.",
   description:
-    "Construo apps e sites com atenção ao detalhe. Aqui compartilho os projetos que desenvolvi.",
+    "Um espaço para documentar cada projeto — da ideia ao deploy. Apps, sites e experimentos com código real.",
   github: "https://github.com",
   linkedin: "https://linkedin.com",
   profileImageAlt: "Foto de perfil",
+  stats: {
+    yearsCoding: 3,
+  },
 } as const;
 
 export const NAV_LINKS = [
-  { label: "Sobre", href: "/#sobre" },
-  { label: "Skills", href: "/#skills" },
-  { label: "Stack", href: "/#stack" },
-  { label: "Projetos", href: "/#projetos" },
+  { label: "home", href: "/" },
+  { label: "projects", href: "/#projetos" },
+  { label: "about", href: "/#sobre" },
+  { label: "github", href: "https://github.com", external: true },
 ] as const;

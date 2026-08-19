@@ -7,8 +7,8 @@ const statusVariant: Record<
   ProjectStatus,
   "success" | "warning" | "accent"
 > = {
-  active: "accent",
-  wip: "warning",
+  planned: "warning",
+  wip: "accent",
   completed: "success",
 };
 

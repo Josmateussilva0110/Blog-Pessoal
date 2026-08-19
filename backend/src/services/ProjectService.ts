@@ -238,7 +238,7 @@ class ProjectService {
           id: projectId,
           slug: payload.slug,
           title: payload.title,
-          description: (payload.contentMarkdown ?? "").slice(0, 500),
+          description: payload.description ?? "",
           content_markdown: payload.contentMarkdown ?? "",
           status: normalizeProjectStatus(payload.status),
           tech_stack: payload.techStack,
@@ -350,7 +350,7 @@ class ProjectService {
         .update({
           slug: payload.slug,
           title: payload.title,
-          description: (payload.contentMarkdown ?? "").slice(0, 500),
+          description: payload.description ?? "",
           content_markdown: payload.contentMarkdown ?? "",
           status: normalizeProjectStatus(payload.status),
           tech_stack: payload.techStack,

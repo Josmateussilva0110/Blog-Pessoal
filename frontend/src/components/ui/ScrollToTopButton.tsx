@@ -15,7 +15,7 @@ export function ScrollToTopButton({ threshold = 0.7 }: ScrollToTopButtonProps) {
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       aria-label="Voltar ao topo"
       className={cn(
-        "fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full glass-strong border border-blue-400/20 text-accent shadow-lg shadow-blue-950/40 transition-all duration-300 hover:bg-blue-500/10 hover:border-blue-400/35",
+        "fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full glass-strong border border-accent/20 text-accent shadow-lg shadow-accent/10 transition-all duration-300 hover:bg-accent-soft hover:border-accent/35",
         visible
           ? "translate-y-0 opacity-100"
           : "pointer-events-none translate-y-2 opacity-0",

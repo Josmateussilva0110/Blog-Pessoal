@@ -27,7 +27,7 @@ function SkillCard({
   );
 
   const className =
-    "group glass rounded-2xl p-4 flex flex-col items-center justify-center gap-2.5 min-h-[100px] transition-all duration-300 hover:bg-blue-500/5 hover:border-blue-400/25 hover:-translate-y-0.5";
+    "group terminal-card rounded-2xl p-4 flex flex-col items-center justify-center gap-2.5 min-h-[100px] transition-all duration-300 hover:bg-accent-soft hover:border-accent/20 hover:-translate-y-0.5";
 
   if (href) {
     return (
