@@ -1,11 +1,61 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { AdminPageHeader } from "@/components/layout/AdminPageHeader";
 import { Button } from "@/components/ui/Button";
-import { useAdminProjects } from "@/features/projects/hooks/useProjects";
+import { TerminalConfirmModal } from "@/components/ui/TerminalConfirmModal";
+import { useToast } from "@/components/ui/toast";
+import { deleteProject } from "@/features/projects/api/projects.api";
+import { useAdminProjects, projectKeys } from "@/features/projects/hooks/useProjects";
 import { StatusBadge } from "@/features/projects/components/StatusBadge";
+import type { Project } from "@blog/shared";
 
 export default function ProjectListPage() {
   const { data: projects, isLoading, error } = useAdminProjects();
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+
+  async function confirmDelete() {
+    if (!projectToDelete) return;
+
+    setDeletingId(projectToDelete.id);
+
+    try {
+      await deleteProject(projectToDelete.id);
+      await queryClient.invalidateQueries({ queryKey: projectKeys.all });
+      toast.success("Projeto removido.");
+      setProjectToDelete(null);
+    } catch {
+      toast.error("Não foi possível remover o projeto.");
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  function renderActions(project: Project, fullWidth = false) {
+    const isDeleting = deletingId === project.id;
+
+    return (
+      <div className={`flex gap-2${fullWidth ? "" : " justify-end"}`}>
+        <Link to={`/admin/projects/${project.id}/edit`} className={fullWidth ? "flex-1" : undefined}>
+          <Button size="sm" variant="outline" className={`font-mono${fullWidth ? " w-full" : ""}`}>
+            edit()
+          </Button>
+        </Link>
+        <Button
+          size="sm"
+          variant="outline"
+          className={`font-mono text-red-300 border-red-500/30 hover:text-red-200 hover:border-red-400/50 hover:bg-red-500/10${fullWidth ? " flex-1" : ""}`}
+          onClick={() => setProjectToDelete(project)}
+          disabled={isDeleting}
+        >
+          {isDeleting ? "removing..." : "rm()"}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -60,11 +110,7 @@ export default function ProjectListPage() {
                 <p className="font-mono text-[10px] text-text-subtle">
                   {project.techStack.slice(0, 3).map((t) => `--${t.toLowerCase()}`).join(" ")}
                 </p>
-                <Link to={`/admin/projects/${project.id}/edit`}>
-                  <Button size="sm" variant="outline" className="w-full font-mono">
-                    edit()
-                  </Button>
-                </Link>
+                {renderActions(project, true)}
               </article>
             ))}
           </div>
@@ -116,11 +162,7 @@ export default function ProjectListPage() {
                       {project.techStack.slice(0, 3).map((t) => `--${t.toLowerCase()}`).join(" ")}
                     </td>
                     <td className="px-5 py-4 text-right">
-                      <Link to={`/admin/projects/${project.id}/edit`}>
-                        <Button size="sm" variant="outline" className="font-mono">
-                          edit()
-                        </Button>
-                      </Link>
+                      {renderActions(project)}
                     </td>
                   </tr>
                 ))}
@@ -129,6 +171,23 @@ export default function ProjectListPage() {
           </div>
         </>
       )}
+
+      <TerminalConfirmModal
+        open={projectToDelete !== null}
+        path="~/projects/rm.sh"
+        title="rm --recursive --force"
+        description="Deseja remover este projeto do portfólio?"
+        targetLabel={projectToDelete?.title}
+        confirmLabel="rm()"
+        cancelLabel="abort()"
+        isLoading={deletingId !== null}
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => {
+          if (deletingId === null) {
+            setProjectToDelete(null);
+          }
+        }}
+      />
     </div>
   );
 }

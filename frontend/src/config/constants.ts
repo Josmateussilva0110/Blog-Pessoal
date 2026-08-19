@@ -7,6 +7,7 @@ export const SITE = {
   github: "https://github.com",
   linkedin: "https://linkedin.com",
   profileImageAlt: "Foto de perfil",
+  role: "full-stack",
   stats: {
     yearsCoding: 3,
   },

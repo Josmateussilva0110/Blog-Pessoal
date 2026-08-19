@@ -1,4 +1,5 @@
 import type { Project } from "@blog/shared";
+import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { ProjectGrid } from "./ProjectGrid";
 
 interface ProjectsSectionProps {
@@ -30,25 +31,36 @@ export function ProjectsSection({ projects, isLoading }: ProjectsSectionProps) {
         )}
       </header>
 
-      {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-64 terminal-card animate-pulse bg-surface-raised"
-            />
-          ))}
-        </div>
-      ) : (
-        <ProjectGrid projects={recentProjects} columns={3} />
-      )}
+      <TerminalWindow path="~/projects" bodyClassName="p-5 md:p-6 lg:p-8 space-y-10">
+        <p className="font-mono text-xs text-text-subtle -mt-2 mb-2">
+          <span className="text-terminal">$ </span>
+          <span className="text-accent">ls</span>
+          <span className="text-text-muted"> --recent</span>
+          {!isLoading && (
+            <span className="text-text-subtle"> · {all.length} repos</span>
+          )}
+        </p>
 
-      {!isLoading && remaining.length > 0 && (
-        <div id="projetos-todos" className="mt-16 scroll-mt-28">
-          <p className="code-comment mb-6">// todos os projetos</p>
-          <ProjectGrid projects={remaining} />
-        </div>
-      )}
+        {isLoading ? (
+          <div className="grid gap-4 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-64 terminal-card-muted animate-pulse bg-surface-raised"
+              />
+            ))}
+          </div>
+        ) : (
+          <ProjectGrid projects={recentProjects} columns={3} />
+        )}
+
+        {!isLoading && remaining.length > 0 && (
+          <div id="projetos-todos" className="scroll-mt-28 pt-8 border-t border-border-subtle">
+            <p className="code-comment mb-6">// todos os projetos</p>
+            <ProjectGrid projects={remaining} />
+          </div>
+        )}
+      </TerminalWindow>
     </section>
   );
 }

@@ -61,6 +61,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
     >
       <article
         ref={cardRef}
+        data-project-slug={project.slug}
         className="terminal-card h-full flex flex-col overflow-hidden project-card-vt"
         style={{ viewTransitionName: projectTransitionName(project.slug) }}
       >

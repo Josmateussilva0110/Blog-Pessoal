@@ -3,11 +3,12 @@ import { AboutSection } from "@/features/about/components/AboutSection";
 import { SkillsIconSection } from "@/features/skills/components/SkillsIconSection";
 import { StackAnalyticsSection } from "@/features/projects/components/StackAnalyticsSection";
 import { ProjectsSection } from "@/features/projects/components/ProjectsSection";
-import { ScrollToTopButton } from "@/components/ui/ScrollToTopButton";
 import { useProjects } from "@/features/projects/hooks/useProjects";
+import { useRestoreProjectsScroll } from "@/hooks/useRestoreProjectsScroll";
 
 export function HomePage() {
   const { data: projects, isLoading } = useProjects();
+  useRestoreProjectsScroll();
 
   return (
     <>
@@ -16,7 +17,6 @@ export function HomePage() {
       <SkillsIconSection />
       <StackAnalyticsSection projects={projects ?? []} isLoading={isLoading} />
       <ProjectsSection projects={projects} isLoading={isLoading} />
-      <ScrollToTopButton threshold={0.7} />
     </>
   );
 }

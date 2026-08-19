@@ -1,4 +1,4 @@
-import type { Project, ProjectStatus } from "@blog/shared";
+import type { Project } from "@blog/shared";
 import {
   createContext,
   useCallback,
@@ -9,208 +9,152 @@ import {
   type ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import { normalizeProjectStatus } from "@/lib/projectStatus";
 import {
+  applySlideTransitionVars,
   prefersReducedMotion,
-  projectTransitionName,
+  scrollToPageTop,
+  scrollToProjectsSectionWhenReady,
+  setSlideNavMode,
+  SLIDE_TRANSITION_MS,
   supportsViewTransitions,
+  type SlideDirection,
 } from "@/lib/viewTransition";
 
-const OPEN_DURATION_MS = 560;
+type SlidePhase = "idle" | "exit" | "enter";
 
 type ProjectTransitionContextValue = {
   openProject: (project: Project, element: HTMLElement) => void;
-  closeProject: (slug: string, onNavigate: () => void) => void;
+  closeProject: (project: Project, onNavigate: () => void) => void;
+  slideDirection: SlideDirection | null;
+  slidePhase: SlidePhase;
+  isTransitioning: boolean;
 };
 
 const ProjectTransitionContext = createContext<ProjectTransitionContextValue | null>(
   null,
 );
 
-type OverlayState = {
-  project: Project;
-  rect: DOMRect;
-  phase: "idle" | "open" | "exit";
-};
-
-const TERMINAL_STATUS: Record<
-  ProjectStatus,
-  { label: string; icon: string; className: string }
-> = {
-  planned: { label: "PLANEJADO", icon: "▲", className: "text-amber-400" },
-  wip: { label: "EM ANDAMENTO", icon: "●", className: "text-terminal" },
-  completed: { label: "CONCLUÍDO", icon: "✓", className: "text-accent" },
-};
-
-function TransitionWindow({ project }: { project: Project }) {
-  const status = normalizeProjectStatus(project.status);
-  const statusInfo = TERMINAL_STATUS[status];
-
-  return (
-    <>
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border-subtle bg-surface-raised shrink-0">
-        <span className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-terminal/80" />
-        <span className="font-mono text-[11px] ml-2 truncate">
-          <span className="text-terminal">mateus@dev</span>
-          <span className="text-text-subtle">:</span>
-          <span className="text-accent">~/{project.slug}</span>
-        </span>
-      </div>
-      <div className="p-5 flex flex-col gap-3 overflow-hidden min-h-0 flex-1">
-        <p className="font-mono text-xs shrink-0">
-          <span className="text-terminal">$ </span>
-          <span className="text-accent">open</span>
-          <span className="text-text-muted"> ./{project.slug}</span>
-        </p>
-        <h3 className="text-lg font-semibold text-text shrink-0">{project.title}</h3>
-        <p className="text-sm text-text-muted leading-relaxed line-clamp-4">
-          {project.description}
-        </p>
-        <div className="mt-auto pt-2 border-t border-border-subtle shrink-0">
-          <span
-            className={`font-mono text-[10px] uppercase tracking-wider ${statusInfo.className}`}
-          >
-            {statusInfo.icon} {statusInfo.label}
-          </span>
-        </div>
-      </div>
-    </>
-  );
+function setBodyTransitionLock(locked: boolean) {
+  document.body.classList.toggle("project-transition-active", locked);
 }
 
-function ProjectTransitionOverlay({
-  overlay,
-}: {
-  overlay: OverlayState;
-}) {
-  const isOpen = overlay.phase === "open";
-  const isExit = overlay.phase === "exit";
-  const { rect } = overlay;
+function runViewTransition(updateDom: () => void, mode: SlideDirection | null) {
+  setSlideNavMode(mode);
 
-  const targetStyle = isExit
-    ? {
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-        height: rect.height,
-      }
-    : {
-        top: "1.25rem",
-        left: "50%",
-        width: "min(calc(100vw - 2rem), 72rem)",
-        height: "calc(100dvh - 2.5rem)",
-        transform: "translateX(-50%)",
-      };
+  if (supportsViewTransitions() && !prefersReducedMotion()) {
+    return document.startViewTransition(updateDom).finished.finally(() => {
+      setSlideNavMode(null);
+    });
+  }
 
-  return (
-    <div className="fixed inset-0 z-[200] pointer-events-none" aria-hidden>
-      <div
-        className="absolute inset-0 mac-backdrop transition-opacity duration-500"
-        style={{
-          opacity: isOpen && !isExit ? 1 : 0,
-          transitionTimingFunction: "cubic-bezier(0.32, 0.72, 0, 1)",
-        }}
-      />
-      <div
-        className="mac-window-shell terminal-card overflow-hidden flex flex-col shadow-2xl shadow-black/50"
-        style={{
-          position: "fixed",
-          borderRadius: "0.75rem",
-          transitionProperty: "top, left, width, height, transform, opacity, border-radius",
-          transitionDuration: "560ms",
-          transitionTimingFunction: "cubic-bezier(0.32, 0.72, 0, 1)",
-          top: isOpen || isExit ? targetStyle.top : rect.top,
-          left: isOpen || isExit ? targetStyle.left : rect.left,
-          width: isOpen || isExit ? targetStyle.width : rect.width,
-          height: isOpen || isExit ? targetStyle.height : rect.height,
-          transform: isOpen && !isExit ? "translateX(-50%)" : "none",
-          opacity: isExit ? 0.85 : 1,
-        }}
-      >
-        <TransitionWindow project={overlay.project} />
-      </div>
-    </div>
-  );
+  updateDom();
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, SLIDE_TRANSITION_MS);
+  }).finally(() => {
+    setSlideNavMode(null);
+  });
 }
 
 export function ProjectTransitionProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
-  const [overlay, setOverlay] = useState<OverlayState | null>(null);
-  const timersRef = useRef<number[]>([]);
+  const [slideDirection, setSlideDirection] = useState<SlideDirection | null>(null);
+  const [slidePhase, setSlidePhase] = useState<SlidePhase>("idle");
+  const exitTimerRef = useRef<number | null>(null);
 
-  const clearTimers = useCallback(() => {
-    timersRef.current.forEach((id) => window.clearTimeout(id));
-    timersRef.current = [];
+  const clearExitTimer = useCallback(() => {
+    if (exitTimerRef.current !== null) {
+      window.clearTimeout(exitTimerRef.current);
+      exitTimerRef.current = null;
+    }
   }, []);
 
-  useEffect(() => clearTimers, [clearTimers]);
+  useEffect(() => {
+    applySlideTransitionVars();
+    return clearExitTimer;
+  }, [clearExitTimer]);
 
-  const runManualOpen = useCallback(
-    (project: Project, element: HTMLElement) => {
-      clearTimers();
-      const rect = element.getBoundingClientRect();
-
-      setOverlay({ project, rect, phase: "idle" });
-
-      const startId = window.setTimeout(() => {
-        setOverlay((current) =>
-          current ? { ...current, phase: "open" } : current,
-        );
-      }, 16);
-
-      const navigateId = window.setTimeout(() => {
-        navigate(`/projects/${project.slug}`);
-        window.setTimeout(() => setOverlay(null), 120);
-      }, OPEN_DURATION_MS);
-
-      timersRef.current.push(startId, navigateId);
-    },
-    [clearTimers, navigate],
-  );
+  const finishTransition = useCallback(() => {
+    setSlideDirection(null);
+    setSlidePhase("idle");
+    setBodyTransitionLock(false);
+  }, []);
 
   const openProject = useCallback(
-    (project: Project, element: HTMLElement) => {
+    (_project: Project, _element: HTMLElement) => {
+      void _element;
+
       if (prefersReducedMotion()) {
-        navigate(`/projects/${project.slug}`);
+        navigate(`/projects/${_project.slug}`);
+        scrollToPageTop("instant");
         return;
       }
 
-      if (supportsViewTransitions()) {
-        element.style.viewTransitionName = projectTransitionName(project.slug);
-        document.startViewTransition(() => {
-          navigate(`/projects/${project.slug}`);
-        });
-        return;
-      }
+      clearExitTimer();
+      setBodyTransitionLock(true);
+      setSlideDirection("push");
+      setSlidePhase("enter");
 
-      runManualOpen(project, element);
+      void runViewTransition(() => {
+        navigate(`/projects/${_project.slug}`);
+        scrollToPageTop("instant");
+      }, "push").finally(finishTransition);
     },
-    [navigate, runManualOpen],
+    [clearExitTimer, finishTransition, navigate],
   );
 
   const closeProject = useCallback(
-    (_slug: string, onNavigate: () => void) => {
+    (_project: Project, onNavigate: () => void) => {
+      const scrollAfterClose = () => {
+        scrollToProjectsSectionWhenReady("instant");
+      };
+
       if (prefersReducedMotion()) {
         onNavigate();
+        scrollAfterClose();
         return;
       }
 
-      if (supportsViewTransitions()) {
-        document.startViewTransition(onNavigate);
+      clearExitTimer();
+      setBodyTransitionLock(true);
+      setSlideDirection("pop");
+      setSlidePhase("exit");
+
+      if (supportsViewTransitions() && !prefersReducedMotion()) {
+        void runViewTransition(() => {
+          onNavigate();
+          setSlidePhase("enter");
+        }, "pop")
+          .finally(() => {
+            finishTransition();
+            scrollAfterClose();
+          });
         return;
       }
 
-      onNavigate();
+      exitTimerRef.current = window.setTimeout(() => {
+        onNavigate();
+        setSlidePhase("enter");
+
+        window.setTimeout(() => {
+          finishTransition();
+          scrollAfterClose();
+        }, SLIDE_TRANSITION_MS);
+      }, SLIDE_TRANSITION_MS);
     },
-    [],
+    [clearExitTimer, finishTransition],
   );
 
   return (
-    <ProjectTransitionContext.Provider value={{ openProject, closeProject }}>
+    <ProjectTransitionContext.Provider
+      value={{
+        openProject,
+        closeProject,
+        slideDirection,
+        slidePhase,
+        isTransitioning: slideDirection !== null,
+      }}
+    >
       {children}
-      {overlay && <ProjectTransitionOverlay overlay={overlay} />}
     </ProjectTransitionContext.Provider>
   );
 }
