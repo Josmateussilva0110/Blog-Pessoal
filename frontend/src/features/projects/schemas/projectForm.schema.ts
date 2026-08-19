@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const projectStatusSchema = z.enum(["active", "completed", "wip"]);
+const projectStatusSchema = z.enum(["wip", "completed"]);
 
 const optionalUrl = z
   .string()

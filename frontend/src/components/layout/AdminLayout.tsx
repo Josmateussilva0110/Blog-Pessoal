@@ -1,22 +1,50 @@
-import { useEffect, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { useEffect, useState, type CSSProperties } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  FolderKanban,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Settings,
+  X,
+} from "lucide-react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { cn } from "@/lib/format";
-import { BackgroundOrbs } from "./BackgroundOrbs";
+
+const SIDEBAR_STORAGE_KEY = "admin-sidebar-collapsed";
+const SIDEBAR_WIDTH_EXPANDED = "15.5rem";
+const SIDEBAR_WIDTH_COLLAPSED = "4.75rem";
 
 const adminNav = [
-  { to: "/admin", label: "Dashboard", end: true },
-  { to: "/admin/projects", label: "Projetos", end: false },
-  { to: "/admin/settings", label: "Conta", end: false },
+  { to: "/admin", label: "Dashboard", end: true, icon: LayoutDashboard },
+  { to: "/admin/projects", label: "Projetos", end: false, icon: FolderKanban },
+  { to: "/admin/settings", label: "Conta", end: false, icon: Settings },
 ];
+
+function getUserInitials(email?: string | null) {
+  if (!email) return "?";
+  const local = email.split("@")[0] ?? "";
+  return local.slice(0, 2).toUpperCase();
+}
+
+function readSidebarCollapsed() {
+  try {
+    return localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
 
 export function AdminLayout() {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed);
 
   useEffect(() => {
     setMobileNavOpen(false);
@@ -33,106 +61,218 @@ export function AdminLayout() {
     };
   }, [mobileNavOpen]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarCollapsed));
+    } catch {
+      // ignore storage errors
+    }
+  }, [sidebarCollapsed]);
+
   async function handleLogout() {
     await logout();
     navigate("/admin/login", { replace: true });
   }
 
+  function toggleSidebar() {
+    setSidebarCollapsed((current) => !current);
+  }
+
   return (
-    <div className="min-h-dvh flex flex-col lg:flex-row relative">
-      <BackgroundOrbs />
-
-      <header className="lg:hidden sticky top-0 z-30 mx-3 mt-3 glass-strong rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-xs font-medium text-accent">Admin</p>
-          {user?.email && (
-            <p className="text-xs text-text-muted truncate">{user.email}</p>
-          )}
-        </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="shrink-0"
-          aria-label="Abrir menu"
-          aria-expanded={mobileNavOpen}
-          onClick={() => setMobileNavOpen(true)}
-        >
-          <Menu className="size-5" aria-hidden />
-        </Button>
-      </header>
-
+    <div className="admin-shell min-h-dvh lg:flex">
       {mobileNavOpen && (
         <button
           type="button"
-          className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-[2px] lg:hidden"
           aria-label="Fechar menu"
           onClick={() => setMobileNavOpen(false)}
         />
       )}
 
       <aside
+        style={
+          {
+            "--admin-sidebar-width": sidebarCollapsed
+              ? SIDEBAR_WIDTH_COLLAPSED
+              : SIDEBAR_WIDTH_EXPANDED,
+          } as CSSProperties
+        }
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-[min(100%,17.5rem)] glass-strong p-4 flex flex-col gap-1",
-          "transition-transform duration-200 ease-out",
-          "lg:static lg:z-auto lg:w-56 lg:m-4 lg:rounded-2xl lg:translate-x-0 lg:self-start lg:sticky lg:top-4",
+          "admin-sidebar fixed inset-y-0 left-0 z-50 flex w-[var(--admin-sidebar-width)] flex-col overflow-hidden border-r border-white/[0.06] bg-[#09090b]",
+          "transition-[width,transform] duration-200 ease-out lg:static lg:translate-x-0",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
-        <div className="flex items-center justify-between mb-1">
-          <p className="text-xs font-medium text-accent px-3 py-2">Admin</p>
-          <button
-            type="button"
-            className="lg:hidden rounded-xl p-2 text-text-muted transition-colors hover:bg-white/5 hover:text-text"
-            aria-label="Fechar menu"
-            onClick={() => setMobileNavOpen(false)}
-          >
-            <X className="size-5" aria-hidden />
-          </button>
+        <div
+          className={cn(
+            "flex items-center border-b border-white/[0.06] py-5",
+            sidebarCollapsed ? "justify-center px-2" : "justify-between gap-3 px-5",
+          )}
+        >
+          {!sidebarCollapsed && (
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                Admin
+              </p>
+              <p className="mt-1 text-sm font-semibold text-zinc-100">Painel</p>
+            </div>
+          )}
+
+          <div className={cn("flex items-center gap-1", sidebarCollapsed && "flex-col")}>
+            <button
+              type="button"
+              className="hidden rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 lg:inline-flex"
+              aria-label={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+              aria-expanded={!sidebarCollapsed}
+              onClick={toggleSidebar}
+            >
+              {sidebarCollapsed ? (
+                <ChevronRight className="size-5" aria-hidden />
+              ) : (
+                <ChevronLeft className="size-5" aria-hidden />
+              )}
+            </button>
+
+            <button
+              type="button"
+              className="rounded-lg p-2 text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 lg:hidden"
+              aria-label="Fechar menu"
+              onClick={() => setMobileNavOpen(false)}
+            >
+              <X className="size-5" aria-hidden />
+            </button>
+          </div>
         </div>
 
-        <nav className="flex flex-col gap-1">
-          {adminNav.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                cn(
-                  "text-sm px-3 py-2.5 rounded-xl transition-all",
-                  isActive
-                    ? "bg-blue-500/15 text-accent border border-blue-400/30"
-                    : "text-text-muted hover:text-text hover:bg-white/5",
-                )
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
+        <nav className={cn("flex-1 space-y-1 py-4", sidebarCollapsed ? "px-2" : "px-3")}>
+          {adminNav.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                title={sidebarCollapsed ? item.label : undefined}
+                className={({ isActive }) =>
+                  cn(
+                    "group flex items-center rounded-xl text-sm font-medium transition-colors",
+                    sidebarCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5",
+                    isActive
+                      ? "bg-white/[0.07] text-zinc-50"
+                      : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100",
+                  )
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <span
+                      className={cn(
+                        "flex size-8 shrink-0 items-center justify-center rounded-lg border transition-colors",
+                        isActive
+                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+                          : "border-white/[0.06] bg-white/[0.02] text-zinc-500 group-hover:text-zinc-300",
+                      )}
+                    >
+                      <Icon className="size-4" aria-hidden />
+                    </span>
+                    {!sidebarCollapsed && item.label}
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
 
-        <div className="mt-auto pt-4 border-t border-white/10">
-          {user?.email && (
-            <p className="hidden lg:block text-[11px] text-text-muted px-3 py-2 truncate">
-              {user.email}
-            </p>
-          )}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start"
-            onClick={handleLogout}
+        <div className={cn("space-y-2 border-t border-white/[0.06]", sidebarCollapsed ? "p-2" : "p-3")}>
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title={sidebarCollapsed ? "Ver site" : undefined}
+            className={cn(
+              "flex items-center rounded-xl text-sm font-medium text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100",
+              sidebarCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5",
+            )}
           >
-            Sair
-          </Button>
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.02]">
+              <ExternalLink className="size-4" aria-hidden />
+            </span>
+            {!sidebarCollapsed && "Ver site"}
+          </a>
+
+          <div
+            className={cn(
+              "rounded-xl border border-white/[0.06] bg-white/[0.02]",
+              sidebarCollapsed ? "p-2" : "p-3",
+            )}
+          >
+            <div
+              className={cn(
+                "flex items-center",
+                sidebarCollapsed ? "justify-center" : "gap-3",
+              )}
+            >
+              <span
+                className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-xs font-semibold text-emerald-300"
+                title={sidebarCollapsed ? user?.username ?? "Administrador" : undefined}
+              >
+                {getUserInitials(user?.email)}
+              </span>
+              {!sidebarCollapsed && (
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-zinc-100">
+                    {user?.username ?? "Administrador"}
+                  </p>
+                  {user?.email && (
+                    <p className="truncate text-xs text-zinc-500">{user.email}</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              title={sidebarCollapsed ? "Sair" : undefined}
+              className={cn(
+                "mt-3 rounded-lg text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-100",
+                sidebarCollapsed ? "w-full justify-center px-2" : "w-full justify-start px-2",
+              )}
+              onClick={handleLogout}
+            >
+              <LogOut className="size-4" aria-hidden />
+              {!sidebarCollapsed && "Sair"}
+            </Button>
+          </div>
         </div>
       </aside>
 
-      <main className="flex-1 min-w-0 p-3 sm:p-4 lg:pr-6 lg:py-4">
-        <div className="glass-strong rounded-2xl p-4 sm:p-6 lg:p-8 min-h-[calc(100dvh-5.5rem)] lg:min-h-[calc(100dvh-2rem)]">
-          <Outlet />
-        </div>
-      </main>
+      <div className="admin-main flex min-h-dvh min-w-0 flex-1 flex-col bg-[#0f0f12]">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-white/[0.06] bg-[#0f0f12]/95 px-4 backdrop-blur-md sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              type="button"
+              className="rounded-lg border border-white/[0.06] p-2 text-zinc-400 transition-colors hover:bg-white/[0.04] hover:text-zinc-100 lg:hidden"
+              aria-label="Abrir menu"
+              aria-expanded={mobileNavOpen}
+              onClick={() => setMobileNavOpen(true)}
+            >
+              <Menu className="size-5" aria-hidden />
+            </button>
+
+            <p className="truncate text-sm text-zinc-500">
+              Gerenciamento do portfólio
+            </p>
+          </div>
+        </header>
+
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <div className="mx-auto w-full max-w-6xl">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

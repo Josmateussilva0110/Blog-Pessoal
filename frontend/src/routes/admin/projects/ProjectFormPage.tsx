@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { AdminPageHeader } from "@/components/layout/AdminPageHeader";
 import { ProjectForm } from "@/features/projects/components/ProjectForm";
 import { projectsService } from "@/service";
 import { env } from "@/config/env";
@@ -30,32 +31,30 @@ export default function ProjectFormPage() {
 
   return (
     <div className="max-w-3xl w-full">
-      <header className="mb-6 sm:mb-8">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-accent/70 mb-2">
-          Projetos
-        </p>
-        <h1 className="text-xl sm:text-2xl font-bold text-text mb-2">
-          {isEditing ? "Editar projeto" : "Novo projeto"}
-        </h1>
-        <p className="text-sm text-text-muted leading-relaxed">
-          Descreva o projeto, envie imagens do sistema e anexe arquivos `.md`.
-        </p>
-      </header>
+      <AdminPageHeader
+        eyebrow="Projetos"
+        title={isEditing ? "Editar projeto" : "Novo projeto"}
+        description="Descreva o projeto, envie imagens do sistema e anexe arquivos `.md`."
+      />
 
       {isEditing && isLoading && (
-        <p className="text-sm text-text-muted animate-pulse">Carregando projeto...</p>
+        <p className="text-sm text-zinc-500 animate-pulse">Carregando projeto...</p>
       )}
 
       {isEditing && error && (
-        <div className="glass rounded-2xl p-4 text-sm text-red-300">
+        <div className="admin-card p-4 text-sm text-red-300">
           Não foi possível carregar o projeto.
-          <Link to="/admin/projects" className="block mt-3 text-accent hover:underline">
+          <Link to="/admin/projects" className="block mt-3 text-emerald-300 hover:underline">
             Voltar para a lista
           </Link>
         </div>
       )}
 
-      {(!isEditing || project) && <ProjectForm project={project ?? undefined} />}
+      {(!isEditing || project) && (
+        <div className="admin-card p-5 sm:p-6">
+          <ProjectForm project={project ?? undefined} />
+        </div>
+      )}
     </div>
   );
 }

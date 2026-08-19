@@ -4,6 +4,7 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/features/projects/components/StatusBadge";
+import { MarkdownContent } from "@/components/ui/MarkdownContent";
 import { formatDate } from "@/lib/format";
 
 export function ProjectDetailPage() {
@@ -53,9 +54,10 @@ export function ProjectDetailPage() {
           </h1>
         </header>
 
-        <div className="text-text-muted leading-relaxed whitespace-pre-line mb-8">
-          {project.contentMarkdown || project.description}
-        </div>
+        <MarkdownContent
+          content={project.contentMarkdown || project.description}
+          className="mb-8"
+        />
 
         {project.images.length > 0 && (
           <div className="mb-8">

@@ -4,17 +4,19 @@ import type { ProjectFormValues as ApiProjectFormValues } from "@blog/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { Textarea } from "@/components/ui/Textarea";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { useToast } from "@/components/ui/toast";
-import { normalizeProjectStatus } from "@/lib/projectStatus";
+import { normalizeProjectStatus, toFormProjectStatus } from "@/lib/projectStatus";
 import { slugify, splitCommaList } from "@/lib/slugify";
 import { projectKeys } from "@/features/projects/hooks/useProjects";
+import { ProjectPreviewModal } from "@/features/projects/components/ProjectPreviewModal";
 import { submitProjectForm } from "@/service/projectForm.service";
+import type { ProjectStatus } from "@blog/shared";
 
 type ProjectFormProps = {
   project?: Project;
@@ -35,6 +37,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
   const markdownInputRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState<LocalImage[]>([]);
   const [slugTouched, setSlugTouched] = useState(Boolean(project));
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const {
     register,
@@ -42,6 +45,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
     watch,
     setValue,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
@@ -49,7 +53,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
       title: project?.title ?? "",
       slug: project?.slug ?? "",
       contentMarkdown: project?.contentMarkdown ?? project?.description ?? "",
-      status: normalizeProjectStatus(project?.status ?? "wip"),
+      status: toFormProjectStatus(project?.status ?? "wip"),
       techStack: project?.techStack ?? [],
       repoUrl: project?.repoUrl ?? "",
       featured: project?.featured ?? false,
@@ -58,6 +62,10 @@ export function ProjectForm({ project }: ProjectFormProps) {
   });
 
   const title = watch("title");
+  const contentMarkdown = watch("contentMarkdown");
+  const status = watch("status");
+  const techStack = watch("techStack");
+  const repoUrl = watch("repoUrl");
 
   useEffect(() => {
     if (!slugTouched) {
@@ -72,7 +80,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
       title: project.title,
       slug: project.slug,
       contentMarkdown: project.contentMarkdown || project.description,
-      status: normalizeProjectStatus(project.status),
+      status: toFormProjectStatus(project.status),
       techStack: project.techStack,
       repoUrl: project.repoUrl ?? "",
       featured: project.featured,
@@ -166,7 +174,8 @@ export function ProjectForm({ project }: ProjectFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+    <>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
       <div className="grid gap-4 md:grid-cols-2">
         <Input
           label="Título"
@@ -205,21 +214,25 @@ export function ProjectForm({ project }: ProjectFormProps) {
           </Button>
         </div>
 
-        <Textarea
-          placeholder="Descreva o contexto, desafios, solução e resultados..."
-          className="min-h-48"
-          error={errors.contentMarkdown?.message}
-          {...register("contentMarkdown")}
+        <Controller
+          name="contentMarkdown"
+          control={control}
+          render={({ field }) => (
+            <RichTextEditor
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.contentMarkdown?.message}
+            />
+          )}
         />
         <p className="text-xs text-text-muted">
-          Você pode escrever direto aqui ou importar um arquivo `.md` para preencher a descrição.
+          Use a barra de ferramentas para formatar o texto. Para diagramas, clique no ícone de fluxo ou cole um bloco <code className="text-zinc-300">```mermaid</code>.
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Select label="Status" error={errors.status?.message} {...register("status")}>
           <option value="wip">Em andamento</option>
-          <option value="active">Ativo</option>
           <option value="completed">Concluído</option>
         </Select>
 
@@ -247,7 +260,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
         {...register("repoUrl")}
       />
 
-      <section className="glass rounded-2xl p-4 sm:p-5 space-y-4">
+      <section className="admin-card-muted p-4 sm:p-5 space-y-4">
         <div>
           <h2 className="text-sm font-semibold text-text">Imagens do sistema</h2>
           <p className="text-xs text-text-muted mt-1">
@@ -303,10 +316,31 @@ export function ProjectForm({ project }: ProjectFormProps) {
         >
           Cancelar
         </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setPreviewOpen(true)}
+        >
+          Pré-visualizar
+        </Button>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Salvando..." : project ? "Salvar alterações" : "Criar projeto"}
         </Button>
       </div>
-    </form>
+      </form>
+
+      <ProjectPreviewModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        data={{
+          title,
+          contentMarkdown,
+          status: normalizeProjectStatus(status) as ProjectStatus,
+          techStack,
+          repoUrl: repoUrl?.trim() || undefined,
+          images: images.map((image) => image.url),
+        }}
+      />
+    </>
   );
 }

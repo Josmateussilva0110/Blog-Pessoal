@@ -13,3 +13,9 @@ export function normalizeProjectStatus(status: string): ProjectStatus {
 
   return "wip";
 }
+
+export type ProjectFormStatus = "wip" | "completed";
+
+export function toFormProjectStatus(status: string): ProjectFormStatus {
+  return normalizeProjectStatus(status) === "completed" ? "completed" : "wip";
+}
