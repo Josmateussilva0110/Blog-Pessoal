@@ -1,18 +1,13 @@
 import type { HeroStats } from "@blog/shared"
 import { heroStatsSchema } from "@blog/shared"
 import { supabaseAdmin } from "../database/supabase/supabase"
+import { DEFAULT_HERO_STATS, HERO_STATS_KEY } from "../constants/siteSettings.constants"
+import { SiteSettingsErrorCode } from "../types/code/siteSettingsCode"
 import { ServiceResult } from "../types/serviceResults/ServiceResult"
-import { ShortCache } from "../utils/shortCache"
-
-const HERO_STATS_KEY = "hero_stats"
-const heroStatsCache = new ShortCache<HeroStats>(60_000)
-
-const DEFAULT_HERO_STATS: HeroStats = {
-  yearsCoding: 4,
-}
+import { heroStatsCache } from "../utils/site-settings/siteSettingsCache"
 
 class SiteSettingsService {
-  async getHeroStats(): Promise<ServiceResult<HeroStats, string>> {
+  async getHeroStats(): Promise<ServiceResult<HeroStats, SiteSettingsErrorCode>> {
     try {
       const cached = heroStatsCache.get("public")
       if (cached) {
@@ -27,7 +22,13 @@ class SiteSettingsService {
 
       if (error) {
         console.error("[SiteSettingsService.getHeroStats]", error)
-        return { status: true, data: DEFAULT_HERO_STATS }
+        return {
+          status: false,
+          error: {
+            code: SiteSettingsErrorCode.SITE_SETTINGS_FETCH_FAILED,
+            message: "Erro ao carregar estatísticas.",
+          },
+        }
       }
 
       const parsed = heroStatsSchema.safeParse(data?.value ?? DEFAULT_HERO_STATS)
@@ -37,11 +38,17 @@ class SiteSettingsService {
       return { status: true, data: stats }
     } catch (error) {
       console.error("[SiteSettingsService.getHeroStats] error:", error)
-      return { status: true, data: DEFAULT_HERO_STATS }
+      return {
+        status: false,
+        error: {
+          code: SiteSettingsErrorCode.SITE_SETTINGS_FETCH_FAILED,
+          message: "Erro ao carregar estatísticas.",
+        },
+      }
     }
   }
 
-  async updateHeroStats(payload: HeroStats): Promise<ServiceResult<HeroStats, string>> {
+  async updateHeroStats(payload: HeroStats): Promise<ServiceResult<HeroStats, SiteSettingsErrorCode>> {
     try {
       const { data, error } = await supabaseAdmin
         .from("site_settings")
@@ -58,7 +65,7 @@ class SiteSettingsService {
         return {
           status: false,
           error: {
-            code: "SITE_SETTINGS_UPDATE_FAILED",
+            code: SiteSettingsErrorCode.SITE_SETTINGS_UPDATE_FAILED,
             message: "Erro ao atualizar estatísticas.",
           },
         }
@@ -73,7 +80,7 @@ class SiteSettingsService {
       return {
         status: false,
         error: {
-          code: "SITE_SETTINGS_UPDATE_FAILED",
+          code: SiteSettingsErrorCode.SITE_SETTINGS_UPDATE_FAILED,
           message: "Erro ao atualizar estatísticas.",
         },
       }

@@ -8,8 +8,8 @@ import {
   getAccessTokenFromCookies,
   getRefreshTokenFromCookies,
   setAuthCookies,
-} from "../utils/authCookies"
-import { isAccessTokenRevoked, isUserSessionRevoked } from "../utils/tokenRevocation"
+} from "../utils/auth/authCookies"
+import { isAccessTokenRevoked, isUserSessionRevoked } from "../utils/auth/tokenRevocation"
 
 type SupabaseJwtPayload = jwt.JwtPayload & {
   sub: string

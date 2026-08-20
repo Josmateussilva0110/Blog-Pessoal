@@ -1,14 +1,5 @@
-import type { SiteLink, SiteLinkCategory } from "@blog/shared"
-
-type SiteLinkRow = {
-  id: string
-  category: SiteLinkCategory
-  label: string
-  href: string | null
-  icon: string | null
-  external: boolean
-  sort_order: number
-}
+import type { SiteLink } from "@blog/shared"
+import type { SiteLinkRow } from "../../types/siteLinks/siteLinkRow"
 
 export const SITE_LINK_SELECT =
   "id, category, label, href, icon, external, sort_order"

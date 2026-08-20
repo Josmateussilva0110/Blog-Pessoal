@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto"
-import { supabaseAdmin } from "../database/supabase/supabase"
+import { supabaseAdmin } from "../../database/supabase/supabase"
+import type { UploadableFile } from "../../types/projects/uploadableFile"
 import {
   expandStoragePathsWithThumbnails,
   processProjectImage,
-} from "./imageProcessing"
+} from "../image/imageProcessing"
 
 export const PROJECT_IMAGES_BUCKET = "project-images"
 export const PROJECT_ASSETS_BUCKET = "project-assets"
@@ -28,6 +29,13 @@ function normalizeImageMime(mime: string): string {
 export function getStoragePublicUrl(bucket: string, path: string): string {
   const { data } = supabaseAdmin.storage.from(bucket).getPublicUrl(path)
   return data.publicUrl
+}
+
+export function extractStoragePathFromUrl(url: string, bucket: string): string | null {
+  const marker = `/storage/v1/object/public/${bucket}/`
+  const index = url.indexOf(marker)
+  if (index === -1) return null
+  return decodeURIComponent(url.slice(index + marker.length))
 }
 
 async function uploadBuffer(
@@ -71,7 +79,7 @@ async function uploadProjectImagePair(
 
 export async function uploadProjectImages(
   projectId: string,
-  files: Array<{ buffer: Buffer; mimetype: string; originalname: string }>,
+  files: UploadableFile[],
 ): Promise<string[]> {
   return Promise.all(files.map((file) => uploadProjectImagePair(projectId, file)))
 }

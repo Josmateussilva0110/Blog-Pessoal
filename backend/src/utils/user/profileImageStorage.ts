@@ -1,13 +1,13 @@
-import { supabaseAdmin } from "../database/supabase/supabase"
+import { supabaseAdmin } from "../../database/supabase/supabase"
 import {
   PROFILE_IMAGE_MIME_TYPES,
   type ProfileImageMimeType,
-} from "../constants/profileImage.constants"
+} from "../../constants/profileImage.constants"
 import {
   expandStoragePathsWithThumbnails,
   processProfileImage,
   toThumbnailStoragePath,
-} from "./imageProcessing"
+} from "../image/imageProcessing"
 
 export const PROFILE_IMAGES_BUCKET = "profile-images"
 

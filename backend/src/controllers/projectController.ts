@@ -2,9 +2,9 @@ import type { Request, Response } from "express"
 import type { ProjectIdParams, ProjectSlugParams } from "../schemas/projectSchema"
 import ProjectService from "../services/ProjectService"
 import { projectErrorHttpStatusMap } from "../errors/projectErrorHttpMapper"
-import { sendServiceError } from "../utils/sendServiceError"
-import { getUploadedImages, parseProjectPayload } from "../utils/projectRequest"
-import { setPublicCacheHeaders } from "../utils/httpCache"
+import { sendServiceError } from "../utils/http/sendServiceError"
+import { getUploadedImages, parseProjectPayload } from "../utils/project/projectRequest"
+import { setPublicCacheHeaders } from "../utils/http/httpCache"
 
 class ProjectController {
   async list(_request: Request, response: Response): Promise<Response> {

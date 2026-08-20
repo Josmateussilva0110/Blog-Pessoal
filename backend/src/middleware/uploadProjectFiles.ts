@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express"
 import multer from "multer"
-import { validateUploadedImage } from "../utils/fileSignature"
+import { validateUploadedImage } from "../utils/image/fileSignature"
 
 const upload = multer({
   storage: multer.memoryStorage(),

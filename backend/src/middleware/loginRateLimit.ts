@@ -1,4 +1,4 @@
-import { createRateLimiter } from "../utils/createRateLimiter"
+import { createRateLimiter } from "../utils/rate-limit/createRateLimiter"
 
 export const loginRateLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,

@@ -1,9 +1,9 @@
 import type { Request, Response } from "express"
 import SiteLinkService from "../services/SiteLinkService"
 import { siteLinkErrorHttpStatusMap } from "../errors/siteLinkErrorHttpMapper"
-import { sendServiceError } from "../utils/sendServiceError"
+import { sendServiceError } from "../utils/http/sendServiceError"
 import type { UpdateSiteLinksInput } from "@blog/shared"
-import { setPublicCacheHeaders } from "../utils/httpCache"
+import { setPublicCacheHeaders } from "../utils/http/httpCache"
 
 class SiteLinkController {
   async list(_request: Request, response: Response): Promise<Response> {

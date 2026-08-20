@@ -2,7 +2,7 @@ import { z } from "zod"
 import { Request, Response, NextFunction } from "express"
 import { HttpResponse } from "../types/http/HttpResponse"
 
-type ValidateTarget = "body" | "params" | "query"
+type ValidateTarget = "body" | "params"
 
 export const validate =
   (schema: z.ZodTypeAny, target: ValidateTarget = "body") =>
@@ -20,9 +20,7 @@ export const validate =
       })
     }
 
-    if (target === "query") {
-      request.validatedQuery = result.data
-    } else if (target === "params") {
+    if (target === "params") {
       request.validatedParams = result.data
     } else {
       request.body = result.data

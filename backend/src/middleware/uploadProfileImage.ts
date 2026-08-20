@@ -4,7 +4,7 @@ import {
   PROFILE_IMAGE_MAX_BYTES,
   PROFILE_IMAGE_MIME_TYPES,
 } from "../constants/profileImage.constants"
-import { validateUploadedImage } from "../utils/fileSignature"
+import { validateUploadedImage } from "../utils/image/fileSignature"
 
 const upload = multer({
   storage: multer.memoryStorage(),

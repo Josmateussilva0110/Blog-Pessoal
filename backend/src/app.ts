@@ -9,7 +9,7 @@ import { healthRateLimiter } from "./middleware/healthRateLimit"
 import { errorHandler } from "./middleware/errorHandler"
 import { notFound } from "./middleware/notFound"
 import router from "./routes/routes"
-import { isAllowedCorsOrigin } from "./utils/corsOrigins"
+import { isAllowedCorsOrigin } from "./utils/http/corsOrigins"
 
 function healthPayload() {
     if (env.NODE_ENV === "production") {

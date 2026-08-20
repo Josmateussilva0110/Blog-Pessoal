@@ -1,17 +1,16 @@
 import type { Request, Response } from "express"
 import type { HeroStats } from "@blog/shared"
 import SiteSettingsService from "../services/SiteSettingsService"
-import { setPublicCacheHeaders } from "../utils/httpCache"
+import { siteSettingsErrorHttpStatusMap } from "../errors/siteSettingsErrorHttpMapper"
+import { sendServiceError } from "../utils/http/sendServiceError"
+import { setPublicCacheHeaders } from "../utils/http/httpCache"
 
 class SiteSettingsController {
   async getHeroStats(_request: Request, response: Response): Promise<Response> {
     const result = await SiteSettingsService.getHeroStats()
 
     if (!result.status) {
-      return response.status(500).json({
-        success: false,
-        message: result.error.message ?? "Erro ao carregar estatísticas.",
-      })
+      return sendServiceError(response, result.error, siteSettingsErrorHttpStatusMap)
     }
 
     setPublicCacheHeaders(response, 300)
@@ -23,10 +22,7 @@ class SiteSettingsController {
     const result = await SiteSettingsService.updateHeroStats(payload)
 
     if (!result.status) {
-      return response.status(500).json({
-        success: false,
-        message: result.error.message ?? "Erro ao atualizar estatísticas.",
-      })
+      return sendServiceError(response, result.error, siteSettingsErrorHttpStatusMap)
     }
 
     return response.status(200).json({

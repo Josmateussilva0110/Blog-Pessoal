@@ -1,6 +1,6 @@
 import type { Request } from "express"
 import type { Express } from "express"
-import { projectPayloadSchema } from "../schemas/projectSchema"
+import { projectPayloadSchema } from "../../schemas/projectSchema"
 
 type UploadedFile = Express.Multer.File
 

@@ -1,39 +1,11 @@
-import { randomUUID } from "node:crypto"
-import type { SiteLink, SiteLinksGrouped, SiteLinkInput, UpdateSiteLinksInput } from "@blog/shared"
+import type { SiteLinksGrouped, UpdateSiteLinksInput } from "@blog/shared"
 import { supabaseAdmin } from "../database/supabase/supabase"
-import { SITE_LINK_SELECT, mapSiteLinkRow } from "../utils/siteLinkMapper"
+import { SITE_LINK_SELECT, mapSiteLinkRow } from "../utils/site-link/siteLinkMapper"
+import { siteLinksCache } from "../utils/site-link/siteLinkCache"
+import { groupSiteLinks, toSiteLinkInsertRow } from "../utils/site-link/siteLinkHelpers"
 import { ServiceResult } from "../types/serviceResults/ServiceResult"
 import { SiteLinkErrorCode } from "../types/code/siteLinkCode"
-import { ShortCache } from "../utils/shortCache"
-
-type SiteLinkRow = Parameters<typeof mapSiteLinkRow>[0]
-
-const siteLinksCache = new ShortCache<SiteLinksGrouped>(60_000)
-
-function groupLinks(links: SiteLink[]): SiteLinksGrouped {
-  return {
-    nav: links.filter((link) => link.category === "nav"),
-    social: links.filter((link) => link.category === "social"),
-    skill: links.filter((link) => link.category === "skill"),
-  }
-}
-
-function toInsertRow(
-  category: keyof SiteLinksGrouped,
-  link: SiteLinkInput,
-  sortOrder: number
-) {
-  return {
-    id: link.id ?? randomUUID(),
-    category,
-    label: link.label,
-    href: link.href ?? null,
-    icon: link.icon ?? null,
-    external: link.external ?? false,
-    sort_order: sortOrder,
-    updated_at: new Date().toISOString(),
-  }
-}
+import type { SiteLinkRow } from "../types/siteLinks/siteLinkRow"
 
 class SiteLinkService {
   async list(): Promise<ServiceResult<SiteLinksGrouped, SiteLinkErrorCode>> {
@@ -60,7 +32,7 @@ class SiteLinkService {
       }
 
       const links = (data as SiteLinkRow[] | null)?.map(mapSiteLinkRow) ?? []
-      const grouped = groupLinks(links)
+      const grouped = groupSiteLinks(links)
       siteLinksCache.set("public", grouped)
 
       return {
@@ -84,9 +56,9 @@ class SiteLinkService {
   ): Promise<ServiceResult<SiteLinksGrouped, SiteLinkErrorCode>> {
     try {
       const rows = [
-        ...payload.nav.map((link, index) => toInsertRow("nav", link, index)),
-        ...payload.social.map((link, index) => toInsertRow("social", link, index)),
-        ...payload.skill.map((link, index) => toInsertRow("skill", link, index)),
+        ...payload.nav.map((link, index) => toSiteLinkInsertRow("nav", link, index)),
+        ...payload.social.map((link, index) => toSiteLinkInsertRow("social", link, index)),
+        ...payload.skill.map((link, index) => toSiteLinkInsertRow("skill", link, index)),
       ]
 
       const { error: deleteError } = await supabaseAdmin
@@ -124,7 +96,7 @@ class SiteLinkService {
         }
 
         const links = (data as SiteLinkRow[] | null)?.map(mapSiteLinkRow) ?? []
-        const grouped = groupLinks(links)
+        const grouped = groupSiteLinks(links)
         siteLinksCache.set("public", grouped)
 
         return {

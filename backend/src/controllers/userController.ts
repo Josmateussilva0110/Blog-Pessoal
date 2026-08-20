@@ -1,19 +1,15 @@
 import { Request, Response } from "express"
 import UserService from "../services/UserService"
 import { userErrorHttpStatusMap } from "../errors/userErrorHttpMapper"
-import { getAccessToken } from "../utils/getAccessToken"
-import { sendServiceError } from "../utils/sendServiceError"
+import { getAccessToken } from "../utils/auth/getAccessToken"
+import { getSessionUser } from "../utils/auth/getSessionUser"
+import { sendServiceError } from "../utils/http/sendServiceError"
 import {
   clearAuthCookies,
   getAccessTokenFromCookies,
   getRefreshTokenFromCookies,
   setAuthCookies,
-} from "../utils/authCookies"
-
-async function getSessionUser(accessToken: string) {
-  const profileResult = await UserService.getProfile(accessToken)
-  return profileResult.status ? profileResult.data : null
-}
+} from "../utils/auth/authCookies"
 
 class UserController {
   async login(request: Request, response: Response): Promise<Response> {
@@ -202,7 +198,8 @@ class UserController {
     }
 
     response.setHeader("Cache-Control", "public, max-age=300")
-    return response.redirect(302, result.data.publicUrl)
+    response.redirect(302, result.data.publicUrl)
+    return response
   }
 
 }

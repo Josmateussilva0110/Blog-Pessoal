@@ -1,6 +1,6 @@
 import type { CookieOptions, Request, Response } from "express"
-import { env } from "../config/env"
-import type { AuthTokens } from "../types/auth/auth.types"
+import { env } from "../../config/env"
+import type { AuthTokens } from "../../types/auth/auth.types"
 
 export const ACCESS_TOKEN_COOKIE = "blog_at"
 export const REFRESH_TOKEN_COOKIE = "blog_rt"

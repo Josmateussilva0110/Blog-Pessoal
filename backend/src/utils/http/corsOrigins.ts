@@ -1,4 +1,4 @@
-import { env } from "../config/env"
+import { env } from "../../config/env"
 
 const PRIVATE_NETWORK_HOST =
   /^(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})$/

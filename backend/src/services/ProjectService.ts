@@ -1,44 +1,315 @@
-import { randomUUID } from "node:crypto"
 import type { ProjectFormValues } from "@blog/shared"
 import { supabaseAdmin } from "../database/supabase/supabase"
-import { PROJECT_SELECT, PROJECT_LIST_SELECT, mapProjectRow, mapProjectListRow } from "../utils/projectMapper"
+import { PROJECT_SELECT, PROJECT_LIST_SELECT, mapProjectRow, mapProjectListRow } from "../utils/project/projectMapper"
+import type { UploadableFile } from "../types/projects/uploadableFile"
 import {
   PROJECT_ASSETS_BUCKET,
   PROJECT_IMAGES_BUCKET,
+  extractStoragePathFromUrl,
   removeProjectStorage,
   removeStoragePaths,
   uploadProjectImages,
-} from "../utils/projectStorage"
+} from "../utils/project/projectStorage"
+import { invalidateProjectsCache, projectsCountCache, projectsListCache } from "../utils/project/projectCache"
 import { ServiceResult } from "../types/serviceResults/ServiceResult"
 import { ProjectErrorCode } from "../types/code/projectCode"
 import type { Project } from "@blog/shared"
-import { resolveUserIdFromAccessToken } from "../utils/accessToken"
-import { normalizeProjectStatus } from "../utils/projectStatus"
-
-import { ShortCache } from "../utils/shortCache"
-
-const projectsListCache = new ShortCache<Project[]>(30_000)
-const projectsCountCache = new ShortCache<number>(30_000)
-
-function invalidateProjectsCache(): void {
-  projectsListCache.delete("public")
-  projectsCountCache.delete("public")
-}
-
-type UploadableFile = {
-  buffer: Buffer
-  mimetype: string
-  originalname: string
-}
-
-function extractStoragePathFromUrl(url: string, bucket: string): string | null {
-  const marker = `/storage/v1/object/public/${bucket}/`
-  const index = url.indexOf(marker)
-  if (index === -1) return null
-  return decodeURIComponent(url.slice(index + marker.length))
-}
+import { resolveUserIdFromAccessToken } from "../utils/auth/accessToken"
+import { normalizeProjectStatus } from "../utils/project/projectStatus"
 
 class ProjectService {
+  private async resolveAuthenticatedUserId(
+    accessToken: string
+  ): Promise<ServiceResult<string, ProjectErrorCode>> {
+    const userId = await resolveUserIdFromAccessToken(accessToken)
+
+    if (!userId) {
+      return {
+        status: false,
+        error: {
+          code: ProjectErrorCode.PROJECT_CREATE_FAILED,
+          message: "Sessão inválida.",
+        },
+      }
+    }
+
+    return { status: true, data: userId }
+  }
+
+  private async ensureSlugAvailable(
+    slug: string,
+    ignoreId?: string
+  ): Promise<ServiceResult<null, ProjectErrorCode>> {
+    if (await this.slugExists(slug, ignoreId)) {
+      return {
+        status: false,
+        error: {
+          code: ProjectErrorCode.PROJECT_SLUG_EXISTS,
+          message: "Já existe um projeto com este slug.",
+        },
+      }
+    }
+
+    return { status: true, data: null }
+  }
+
+  private async ensureSlugAvailableForUpdate(
+    currentSlug: string,
+    nextSlug: string,
+    projectId: string
+  ): Promise<ServiceResult<null, ProjectErrorCode>> {
+    if (currentSlug === nextSlug) {
+      return { status: true, data: null }
+    }
+
+    return this.ensureSlugAvailable(nextSlug, projectId)
+  }
+
+  private buildProjectFields(payload: ProjectFormValues, images: string[]) {
+    return {
+      slug: payload.slug,
+      title: payload.title,
+      description: payload.description ?? "",
+      content_markdown: payload.contentMarkdown ?? "",
+      status: normalizeProjectStatus(payload.status),
+      tech_stack: payload.techStack,
+      repo_url: payload.repoUrl ?? null,
+      cover_image_url: images[0] ?? null,
+      images,
+      markdown_files: [],
+      featured: payload.featured,
+    }
+  }
+
+  private buildProjectInsertPayload(userId: string, payload: ProjectFormValues) {
+    return {
+      ...this.buildProjectFields(payload, payload.images),
+      created_by: userId,
+    }
+  }
+
+  private buildProjectUpdatePayload(payload: ProjectFormValues) {
+    return {
+      ...this.buildProjectFields(payload, payload.images),
+      updated_at: new Date().toISOString(),
+    }
+  }
+
+  private async insertProjectRecord(
+    userId: string,
+    payload: ProjectFormValues
+  ): Promise<ServiceResult<Project, ProjectErrorCode>> {
+    const { data, error } = await supabaseAdmin
+      .from("projects")
+      .insert(this.buildProjectInsertPayload(userId, payload))
+      .select(PROJECT_SELECT)
+      .single()
+
+    if (error || !data) {
+      console.error("[ProjectService.insertProjectRecord]", error)
+      return {
+        status: false,
+        error: {
+          code: ProjectErrorCode.PROJECT_CREATE_FAILED,
+          message: "Não foi possível criar o projeto.",
+        },
+      }
+    }
+
+    return { status: true, data: mapProjectRow(data) }
+  }
+
+  private async updateProjectRecord(
+    id: string,
+    payload: ProjectFormValues
+  ): Promise<ServiceResult<Project, ProjectErrorCode>> {
+    const { data, error } = await supabaseAdmin
+      .from("projects")
+      .update(this.buildProjectUpdatePayload(payload))
+      .eq("id", id)
+      .select(PROJECT_SELECT)
+      .single()
+
+    if (error || !data) {
+      console.error("[ProjectService.updateProjectRecord]", error)
+      return {
+        status: false,
+        error: {
+          code: ProjectErrorCode.PROJECT_UPDATE_FAILED,
+          message: "Não foi possível atualizar o projeto.",
+        },
+      }
+    }
+
+    return { status: true, data: mapProjectRow(data) }
+  }
+
+  private collectRemovedImagePaths(existingUrls: string[], keptUrls: string[]): string[] {
+    return existingUrls
+      .filter((url) => !keptUrls.includes(url))
+      .map((url) => extractStoragePathFromUrl(url, PROJECT_IMAGES_BUCKET))
+      .filter((path): path is string => path !== null)
+  }
+
+  private collectRemovedMarkdownPaths(project: Project): string[] {
+    return project.markdownFiles.map((file) => file.path)
+  }
+
+  private async cleanupRemovedProjectAssets(
+    removedImagePaths: string[],
+    removedMarkdownPaths: string[]
+  ): Promise<void> {
+    await removeStoragePaths(PROJECT_IMAGES_BUCKET, removedImagePaths).catch((error) => {
+      console.error("[ProjectService.cleanupRemovedProjectAssets] image cleanup failed:", error)
+    })
+
+    if (removedMarkdownPaths.length > 0) {
+      await removeStoragePaths(PROJECT_ASSETS_BUCKET, removedMarkdownPaths).catch((error) => {
+        console.error("[ProjectService.cleanupRemovedProjectAssets] markdown cleanup failed:", error)
+      })
+    }
+  }
+
+  private async updateProjectImages(
+    projectId: string,
+    images: string[],
+    failure: {
+      failureCode: ProjectErrorCode
+      failureMessage: string
+    } = {
+      failureCode: ProjectErrorCode.PROJECT_CREATE_FAILED,
+      failureMessage: "Não foi possível criar o projeto.",
+    }
+  ): Promise<ServiceResult<Project, ProjectErrorCode>> {
+    const { data, error } = await supabaseAdmin
+      .from("projects")
+      .update({
+        cover_image_url: images[0] ?? null,
+        images,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", projectId)
+      .select(PROJECT_SELECT)
+      .single()
+
+    if (error || !data) {
+      console.error("[ProjectService.updateProjectImages]", error)
+      return {
+        status: false,
+        error: {
+          code: failure.failureCode,
+          message: failure.failureMessage,
+        },
+      }
+    }
+
+    return { status: true, data: mapProjectRow(data) }
+  }
+
+  private async attachUploadedImagesToProject(
+    project: Project,
+    initialImages: string[],
+    imageFiles: UploadableFile[]
+  ): Promise<ServiceResult<Project, ProjectErrorCode>> {
+    const uploadedImages = await this.safeUploadImages(project.id, imageFiles)
+
+    if (!uploadedImages.status) {
+      await this.cleanupCreatedProject(project.id)
+      return uploadedImages
+    }
+
+    const images = [...initialImages, ...uploadedImages.data]
+    const updated = await this.updateProjectImages(project.id, images)
+
+    if (!updated.status) {
+      await this.cleanupUploadedImageUrls(uploadedImages.data)
+      await this.cleanupCreatedProject(project.id)
+      return updated
+    }
+
+    invalidateProjectsCache()
+    return updated
+  }
+
+  private async attachUploadedImagesToExistingProject(
+    projectId: string,
+    existing: Project,
+    currentImages: string[],
+    imageFiles: UploadableFile[],
+    removedMarkdownPaths: string[]
+  ): Promise<ServiceResult<Project, ProjectErrorCode>> {
+    const uploadedImages = await this.safeUploadImages(projectId, imageFiles)
+    if (!uploadedImages.status) return uploadedImages
+
+    const images = [...currentImages, ...uploadedImages.data]
+    const removedImagePaths = this.collectRemovedImagePaths(existing.images, images)
+
+    const updated = await this.updateProjectImages(projectId, images, {
+      failureCode: ProjectErrorCode.PROJECT_UPDATE_FAILED,
+      failureMessage: "Não foi possível atualizar o projeto.",
+    })
+
+    if (!updated.status) {
+      await this.cleanupUploadedImageUrls(uploadedImages.data)
+      return updated
+    }
+
+    await this.cleanupRemovedProjectAssets(removedImagePaths, removedMarkdownPaths)
+    invalidateProjectsCache()
+    return updated
+  }
+
+  private async slugExists(slug: string, ignoreId?: string): Promise<boolean> {
+    let query = supabaseAdmin.from("projects").select("id").eq("slug", slug)
+
+    if (ignoreId) {
+      query = query.neq("id", ignoreId)
+    }
+
+    const { data } = await query.maybeSingle()
+    return Boolean(data?.id)
+  }
+
+  private async cleanupCreatedProject(projectId: string): Promise<void> {
+    const { error } = await supabaseAdmin.from("projects").delete().eq("id", projectId)
+
+    if (error) {
+      console.error("[ProjectService.cleanupCreatedProject]", error)
+    }
+  }
+
+  private async cleanupUploadedImageUrls(urls: string[]): Promise<void> {
+    const paths = urls
+      .map((url) => extractStoragePathFromUrl(url, PROJECT_IMAGES_BUCKET))
+      .filter((path): path is string => path !== null)
+
+    await removeStoragePaths(PROJECT_IMAGES_BUCKET, paths).catch((error) => {
+      console.error("[ProjectService.cleanupUploadedImageUrls]", error)
+    })
+  }
+
+  private async safeUploadImages(projectId: string, files: UploadableFile[]) {
+    try {
+      const urls = await uploadProjectImages(projectId, files)
+      return { status: true as const, data: urls }
+    } catch (error) {
+      console.error("[ProjectService.safeUploadImages]", error)
+      return {
+        status: false as const,
+        error: {
+          code:
+            error instanceof Error && error.message === "INVALID_IMAGE_TYPE"
+              ? ProjectErrorCode.PROJECT_ASSET_INVALID
+              : ProjectErrorCode.PROJECT_CREATE_FAILED,
+          message:
+            error instanceof Error && error.message === "INVALID_IMAGE_TYPE"
+              ? "Envie apenas imagens JPEG, PNG, WebP ou GIF."
+              : "Erro ao enviar imagens do projeto.",
+        },
+      }
+    }
+  }
+
   async list(): Promise<ServiceResult<Project[], ProjectErrorCode>> {
     try {
       const cached = projectsListCache.get("public")
@@ -265,110 +536,21 @@ class ProjectService {
     imageFiles: UploadableFile[]
   ): Promise<ServiceResult<Project, ProjectErrorCode>> {
     try {
-      const userId = await resolveUserIdFromAccessToken(accessToken)
-      if (!userId) {
-        return {
-          status: false,
-          error: {
-            code: ProjectErrorCode.PROJECT_CREATE_FAILED,
-            message: "Sessão inválida.",
-          },
-        }
-      }
+      const userResult = await this.resolveAuthenticatedUserId(accessToken)
+      if (!userResult.status) return userResult
 
-      const slugExists = await this.slugExists(payload.slug)
-      if (slugExists) {
-        return {
-          status: false,
-          error: {
-            code: ProjectErrorCode.PROJECT_SLUG_EXISTS,
-            message: "Já existe um projeto com este slug.",
-          },
-        }
-      }
+      const slugResult = await this.ensureSlugAvailable(payload.slug)
+      if (!slugResult.status) return slugResult
 
-      const projectId = randomUUID()
-      const now = new Date().toISOString()
-      const initialImages = payload.images
-
-      const { data, error } = await supabaseAdmin
-        .from("projects")
-        .insert({
-          id: projectId,
-          slug: payload.slug,
-          title: payload.title,
-          description: payload.description ?? "",
-          content_markdown: payload.contentMarkdown ?? "",
-          status: normalizeProjectStatus(payload.status),
-          tech_stack: payload.techStack,
-          repo_url: payload.repoUrl ?? null,
-          cover_image_url: initialImages[0] ?? null,
-          images: initialImages,
-          markdown_files: [],
-          featured: payload.featured,
-          created_by: userId,
-          created_at: now,
-          updated_at: now,
-        })
-        .select(PROJECT_SELECT)
-        .single()
-
-      if (error || !data) {
-        console.error("[ProjectService.create]", error)
-        return {
-          status: false,
-          error: {
-            code: ProjectErrorCode.PROJECT_CREATE_FAILED,
-            message: "Não foi possível criar o projeto.",
-          },
-        }
-      }
+      const created = await this.insertProjectRecord(userResult.data, payload)
+      if (!created.status) return created
 
       if (imageFiles.length === 0) {
         invalidateProjectsCache()
-        return {
-          status: true,
-          data: mapProjectRow(data),
-        }
+        return created
       }
 
-      const uploadedImages = await this.safeUploadImages(projectId, imageFiles)
-      if (!uploadedImages.status) {
-        await this.cleanupCreatedProject(projectId)
-        return uploadedImages
-      }
-
-      const images = [...initialImages, ...uploadedImages.data]
-
-      const { data: updatedData, error: updateError } = await supabaseAdmin
-        .from("projects")
-        .update({
-          cover_image_url: images[0] ?? null,
-          images,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", projectId)
-        .select(PROJECT_SELECT)
-        .single()
-
-      if (updateError || !updatedData) {
-        console.error("[ProjectService.create] image update failed:", updateError)
-        await this.cleanupUploadedImageUrls(uploadedImages.data)
-        await this.cleanupCreatedProject(projectId)
-        return {
-          status: false,
-          error: {
-            code: ProjectErrorCode.PROJECT_CREATE_FAILED,
-            message: "Não foi possível criar o projeto.",
-          },
-        }
-      }
-
-      invalidateProjectsCache()
-      return {
-        status: true,
-        data: mapProjectRow(updatedData),
-      }
+      return this.attachUploadedImagesToProject(created.data, payload.images, imageFiles)
     } catch (error) {
       console.error("[ProjectService.create] error:", error)
       return {
@@ -391,120 +573,34 @@ class ProjectService {
       const existing = await this.getById(id)
       if (!existing.status) return existing
 
-      if (existing.data.slug !== payload.slug) {
-        const slugExists = await this.slugExists(payload.slug, id)
-        if (slugExists) {
-          return {
-            status: false,
-            error: {
-              code: ProjectErrorCode.PROJECT_SLUG_EXISTS,
-              message: "Já existe um projeto com este slug.",
-            },
-          }
-        }
-      }
+      const slugResult = await this.ensureSlugAvailableForUpdate(
+        existing.data.slug,
+        payload.slug,
+        id
+      )
+      if (!slugResult.status) return slugResult
 
-      const removedMarkdownPaths = existing.data.markdownFiles.map((file) => file.path)
+      const updated = await this.updateProjectRecord(id, payload)
+      if (!updated.status) return updated
 
-      const { data, error } = await supabaseAdmin
-        .from("projects")
-        .update({
-          slug: payload.slug,
-          title: payload.title,
-          description: payload.description ?? "",
-          content_markdown: payload.contentMarkdown ?? "",
-          status: normalizeProjectStatus(payload.status),
-          tech_stack: payload.techStack,
-          repo_url: payload.repoUrl ?? null,
-          cover_image_url: payload.images[0] ?? null,
-          images: payload.images,
-          markdown_files: [],
-          featured: payload.featured,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id)
-        .select(PROJECT_SELECT)
-        .single()
-
-      if (error || !data) {
-        console.error("[ProjectService.update]", error)
-        return {
-          status: false,
-          error: {
-            code: ProjectErrorCode.PROJECT_UPDATE_FAILED,
-            message: "Não foi possível atualizar o projeto.",
-          },
-        }
-      }
+      const removedMarkdownPaths = this.collectRemovedMarkdownPaths(existing.data)
 
       if (imageFiles.length === 0) {
-        const removedImagePaths = existing.data.images
-          .filter((url) => !payload.images.includes(url))
-          .map((url) => extractStoragePathFromUrl(url, PROJECT_IMAGES_BUCKET))
-          .filter((path): path is string => path !== null)
-
-        await removeStoragePaths(PROJECT_IMAGES_BUCKET, removedImagePaths).catch((cleanupError) => {
-          console.error("[ProjectService.update] image cleanup failed:", cleanupError)
-        })
-        if (removedMarkdownPaths.length > 0) {
-          await removeStoragePaths(PROJECT_ASSETS_BUCKET, removedMarkdownPaths).catch((cleanupError) => {
-            console.error("[ProjectService.update] markdown cleanup failed:", cleanupError)
-          })
-        }
-
-        return {
-          status: true,
-          data: mapProjectRow(data),
-        }
+        const removedImagePaths = this.collectRemovedImagePaths(
+          existing.data.images,
+          payload.images
+        )
+        await this.cleanupRemovedProjectAssets(removedImagePaths, removedMarkdownPaths)
+        return updated
       }
 
-      const uploadedImages = await this.safeUploadImages(id, imageFiles)
-      if (!uploadedImages.status) return uploadedImages
-
-      const images = [...payload.images, ...uploadedImages.data]
-
-      const removedImagePaths = existing.data.images
-        .filter((url) => !images.includes(url))
-        .map((url) => extractStoragePathFromUrl(url, PROJECT_IMAGES_BUCKET))
-        .filter((path): path is string => path !== null)
-
-      const { data: updatedData, error: updateError } = await supabaseAdmin
-        .from("projects")
-        .update({
-          cover_image_url: images[0] ?? null,
-          images,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id)
-        .select(PROJECT_SELECT)
-        .single()
-
-      if (updateError || !updatedData) {
-        console.error("[ProjectService.update] image update failed:", updateError)
-        await this.cleanupUploadedImageUrls(uploadedImages.data)
-        return {
-          status: false,
-          error: {
-            code: ProjectErrorCode.PROJECT_UPDATE_FAILED,
-            message: "Não foi possível atualizar o projeto.",
-          },
-        }
-      }
-
-      await removeStoragePaths(PROJECT_IMAGES_BUCKET, removedImagePaths).catch((cleanupError) => {
-        console.error("[ProjectService.update] image cleanup failed:", cleanupError)
-      })
-      if (removedMarkdownPaths.length > 0) {
-        await removeStoragePaths(PROJECT_ASSETS_BUCKET, removedMarkdownPaths).catch((cleanupError) => {
-          console.error("[ProjectService.update] markdown cleanup failed:", cleanupError)
-        })
-      }
-
-      invalidateProjectsCache()
-      return {
-        status: true,
-        data: mapProjectRow(updatedData),
-      }
+      return this.attachUploadedImagesToExistingProject(
+        id,
+        existing.data,
+        payload.images,
+        imageFiles,
+        removedMarkdownPaths
+      )
     } catch (error) {
       console.error("[ProjectService.update] error:", error)
       return {
@@ -548,57 +644,6 @@ class ProjectService {
         error: {
           code: ProjectErrorCode.PROJECT_DELETE_FAILED,
           message: "Erro ao excluir projeto.",
-        },
-      }
-    }
-  }
-
-  private async slugExists(slug: string, ignoreId?: string): Promise<boolean> {
-    let query = supabaseAdmin.from("projects").select("id").eq("slug", slug)
-
-    if (ignoreId) {
-      query = query.neq("id", ignoreId)
-    }
-
-    const { data } = await query.maybeSingle()
-    return Boolean(data?.id)
-  }
-
-  private async cleanupCreatedProject(projectId: string): Promise<void> {
-    const { error } = await supabaseAdmin.from("projects").delete().eq("id", projectId)
-
-    if (error) {
-      console.error("[ProjectService.cleanupCreatedProject]", error)
-    }
-  }
-
-  private async cleanupUploadedImageUrls(urls: string[]): Promise<void> {
-    const paths = urls
-      .map((url) => extractStoragePathFromUrl(url, PROJECT_IMAGES_BUCKET))
-      .filter((path): path is string => path !== null)
-
-    await removeStoragePaths(PROJECT_IMAGES_BUCKET, paths).catch((error) => {
-      console.error("[ProjectService.cleanupUploadedImageUrls]", error)
-    })
-  }
-
-  private async safeUploadImages(projectId: string, files: UploadableFile[]) {
-    try {
-      const urls = await uploadProjectImages(projectId, files)
-      return { status: true as const, data: urls }
-    } catch (error) {
-      console.error("[ProjectService.safeUploadImages]", error)
-      return {
-        status: false as const,
-        error: {
-          code:
-            error instanceof Error && error.message === "INVALID_IMAGE_TYPE"
-              ? ProjectErrorCode.PROJECT_ASSET_INVALID
-              : ProjectErrorCode.PROJECT_CREATE_FAILED,
-          message:
-            error instanceof Error && error.message === "INVALID_IMAGE_TYPE"
-              ? "Envie apenas imagens JPEG, PNG, WebP ou GIF."
-              : "Erro ao enviar imagens do projeto.",
         },
       }
     }
