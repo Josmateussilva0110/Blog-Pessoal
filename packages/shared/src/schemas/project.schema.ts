@@ -31,25 +31,6 @@ export type ProjectStatus = z.infer<typeof projectStatusSchema>;
 export type MarkdownFile = z.infer<typeof markdownFileSchema>;
 export type Project = z.infer<typeof projectSchema>;
 
-const LEGACY_COMPLETED_STATUSES = new Set(["archived", "closed"]);
-const LEGACY_PLANNED_STATUSES = new Set(["active"]);
-
-export function normalizeProjectStatus(status: string): ProjectStatus {
-  if (LEGACY_COMPLETED_STATUSES.has(status)) {
-    return "completed";
-  }
-
-  if (LEGACY_PLANNED_STATUSES.has(status)) {
-    return "planned";
-  }
-
-  if (status === "planned" || status === "wip" || status === "completed") {
-    return status;
-  }
-
-  return "planned";
-}
-
 const optionalUrl = z
   .string()
   .url("URL inválida.")

@@ -2,22 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AdminPageHeader } from "@/components/layout/AdminPageHeader";
 import { ProjectForm } from "@/features/projects/components/ProjectForm";
-import { projectsService } from "@/service";
-import { env } from "@/config/env";
-import { getMockProjectById } from "@/features/projects/api/mock-data";
-
-async function fetchProjectById(id: string) {
-  if (env.useMock) {
-    return getMockProjectById(id) ?? null;
-  }
-
-  const result = await projectsService.getById(id);
-  if (!result.success) {
-    throw new Error(result.message);
-  }
-
-  return result.data;
-}
+import { fetchProjectById } from "@/features/projects/api/projects.api";
 
 export default function ProjectFormPage() {
   const { id } = useParams<{ id: string }>();
