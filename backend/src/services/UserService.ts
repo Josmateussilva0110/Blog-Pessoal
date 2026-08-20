@@ -6,7 +6,7 @@ import { AuthTokens } from "../types/auth/auth.types"
 import { UserProfile } from "../types/users/profile"
 import { ChangePasswordDTO } from "../schemas/changePasswordSchema"
 import { PasswordResetRequestDTO } from "../schemas/passwordResetRequestSchema"
-import { getUserIdFromAccessToken } from "../utils/accessToken"
+import { resolveUserIdFromAccessToken } from "../utils/accessToken"
 import { isRefreshTokenReuseOrRevoked, mapPasswordUpdateError } from "../utils/authErrors"
 import { buildAuthTokens } from "../utils/authSession"
 import { mapUserProfileRow } from "../utils/userProfile"
@@ -53,7 +53,7 @@ class UserService {
 
     async logout(accessToken: string): Promise<ServiceResult<null, UserErrorCode>> {
         try {
-            const userId = getUserIdFromAccessToken(accessToken)
+            const userId = await resolveUserIdFromAccessToken(accessToken)
 
             if (!userId) {
                 return {
@@ -122,7 +122,7 @@ class UserService {
 
     async getProfile(accessToken: string): Promise<ServiceResult<UserProfile, UserErrorCode>> {
         try {
-            const userId = getUserIdFromAccessToken(accessToken)
+            const userId = await resolveUserIdFromAccessToken(accessToken)
 
             if (!userId) {
                 return {
@@ -134,7 +134,7 @@ class UserService {
                 }
             }
 
-            const supabase = createSupabaseClientForUser(accessToken)
+            const supabase = await createSupabaseClientForUser(accessToken)
 
             const { data, error } = await supabase
                 .from("users")
@@ -175,7 +175,7 @@ class UserService {
         updates: { username: string }
     ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
         try {
-            const userId = getUserIdFromAccessToken(accessToken)
+            const userId = await resolveUserIdFromAccessToken(accessToken)
 
             if (!userId) {
                 return {
@@ -187,7 +187,7 @@ class UserService {
                 }
             }
 
-            const supabase = createSupabaseClientForUser(accessToken)
+            const supabase = await createSupabaseClientForUser(accessToken)
 
             const { data, error } = await supabase
                 .from("users")
@@ -229,7 +229,7 @@ class UserService {
         payload: ChangePasswordDTO
     ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
         try {
-            const userId = getUserIdFromAccessToken(accessToken)
+            const userId = await resolveUserIdFromAccessToken(accessToken)
 
             if (!userId) {
                 return {
@@ -241,7 +241,7 @@ class UserService {
                 }
             }
 
-            const supabase = createSupabaseClientForUser(accessToken)
+            const supabase = await createSupabaseClientForUser(accessToken)
 
             const { data: profileRow, error: profileError } = await supabase
                 .from("users")
@@ -404,7 +404,7 @@ class UserService {
         file: { buffer: Buffer; mimetype: string }
     ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
         try {
-            const userId = getUserIdFromAccessToken(accessToken)
+            const userId = await resolveUserIdFromAccessToken(accessToken)
 
             if (!userId) {
                 return {
@@ -427,7 +427,7 @@ class UserService {
             }
 
             const now = new Date().toISOString()
-            const supabase = createSupabaseClientForUser(accessToken)
+            const supabase = await createSupabaseClientForUser(accessToken)
 
             const { data: currentProfile, error: currentProfileError } = await supabase
                 .from("users")
@@ -505,7 +505,7 @@ class UserService {
         accessToken: string
     ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
         try {
-            const userId = getUserIdFromAccessToken(accessToken)
+            const userId = await resolveUserIdFromAccessToken(accessToken)
 
             if (!userId) {
                 return {
@@ -518,7 +518,7 @@ class UserService {
             }
 
             const now = new Date().toISOString()
-            const supabase = createSupabaseClientForUser(accessToken)
+            const supabase = await createSupabaseClientForUser(accessToken)
 
             const { data: currentProfile, error: currentProfileError } = await supabase
                 .from("users")

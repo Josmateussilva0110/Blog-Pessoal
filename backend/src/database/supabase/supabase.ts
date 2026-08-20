@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js"
 import { env } from "../../config/env"
 import {
-  getUserIdFromAccessToken,
   mintSupabaseAccessToken,
+  resolveUserIdFromAccessToken,
 } from "../../utils/accessToken"
 
 const clientOptions = {
@@ -31,13 +31,7 @@ export function createEphemeralAuthClient() {
     return createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, clientOptions)
 }
 
-/** Respeita RLS — valida o token do usuário e emite JWT próprio para o PostgREST. */
-export function createSupabaseClientForUser(accessToken: string) {
-    const userId = getUserIdFromAccessToken(accessToken)
-    if (!userId) {
-        throw new Error("Token de acesso inválido para consulta ao banco.")
-    }
-
+export function createSupabaseClientForUserId(userId: string) {
     const dbAccessToken = mintSupabaseAccessToken(userId)
 
     return createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
@@ -48,4 +42,14 @@ export function createSupabaseClientForUser(accessToken: string) {
             },
         },
     })
+}
+
+/** Respeita RLS — valida o token do usuário e emite JWT próprio para o PostgREST. */
+export async function createSupabaseClientForUser(accessToken: string) {
+    const userId = await resolveUserIdFromAccessToken(accessToken)
+    if (!userId) {
+        throw new Error("Token de acesso inválido para consulta ao banco.")
+    }
+
+    return createSupabaseClientForUserId(userId)
 }

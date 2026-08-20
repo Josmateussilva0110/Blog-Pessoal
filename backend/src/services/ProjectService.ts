@@ -12,7 +12,7 @@ import {
 import { ServiceResult } from "../types/serviceResults/ServiceResult"
 import { ProjectErrorCode } from "../types/code/projectCode"
 import type { Project } from "@blog/shared"
-import { getUserIdFromAccessToken } from "../utils/accessToken"
+import { resolveUserIdFromAccessToken } from "../utils/accessToken"
 import { normalizeProjectStatus } from "../utils/projectStatus"
 
 import { ShortCache } from "../utils/shortCache"
@@ -265,7 +265,7 @@ class ProjectService {
     imageFiles: UploadableFile[]
   ): Promise<ServiceResult<Project, ProjectErrorCode>> {
     try {
-      const userId = getUserIdFromAccessToken(accessToken)
+      const userId = await resolveUserIdFromAccessToken(accessToken)
       if (!userId) {
         return {
           status: false,

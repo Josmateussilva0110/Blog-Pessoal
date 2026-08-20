@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-
+import { supabaseAdmin } from "../database/supabase/supabase"
 import { env } from "../config/env"
 
 /** Tempo de vida do JWT emitido pelo backend para queries PostgREST (RLS). */
@@ -15,6 +15,27 @@ export function getUserIdFromAccessToken(accessToken: string): string | undefine
   } catch {
     return undefined
   }
+}
+
+/**
+ * Resolve o user id com JWT verificado localmente ou validação via Supabase Auth.
+ * Nunca confia em jwt.decode — tokens forjados são rejeitados.
+ */
+export async function resolveUserIdFromAccessToken(
+  accessToken: string,
+): Promise<string | undefined> {
+  const verifiedUserId = getUserIdFromAccessToken(accessToken)
+  if (verifiedUserId) {
+    return verifiedUserId
+  }
+
+  const { data, error } = await supabaseAdmin.auth.getUser(accessToken)
+
+  if (error || !data.user) {
+    return undefined
+  }
+
+  return data.user.id
 }
 
 /**
@@ -37,6 +58,6 @@ export function mintSupabaseAccessToken(userId: string): string {
       algorithm: "HS256",
       expiresIn: SUPABASE_DB_JWT_TTL_SECONDS,
       noTimestamp: true,
-    }
+    },
   )
 }
