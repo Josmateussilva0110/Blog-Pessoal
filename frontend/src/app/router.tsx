@@ -16,6 +16,7 @@ const ChangePasswordPage = lazy(
   () => import("@/routes/admin/change-password/ChangePasswordPage"),
 );
 const SettingsPage = lazy(() => import("@/routes/admin/settings/SettingsPage"));
+const LinksPage = lazy(() => import("@/routes/admin/links/LinksPage"));
 const DashboardPage = lazy(() => import("@/routes/admin/dashboard/DashboardPage"));
 const ProjectListPage = lazy(
   () => import("@/routes/admin/projects/ProjectListPage"),
@@ -105,6 +106,10 @@ export const router = createBrowserRouter([
               {
                 path: "settings",
                 element: withSuspense(SettingsPage),
+              },
+              {
+                path: "links",
+                element: withSuspense(LinksPage),
               },
             ],
           },

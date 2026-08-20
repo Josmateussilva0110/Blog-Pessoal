@@ -83,6 +83,11 @@ export default function DashboardPage() {
                 list_projects()
               </Button>
             </Link>
+            <Link to="/admin/links">
+              <Button variant="outline" size="sm" className="font-mono">
+                edit_links()
+              </Button>
+            </Link>
             <Link to="/admin/settings">
               <Button variant="ghost" size="sm" className="font-mono">
                 settings()

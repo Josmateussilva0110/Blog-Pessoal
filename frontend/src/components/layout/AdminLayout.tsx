@@ -5,6 +5,7 @@ import {
   ExternalLink,
   FolderKanban,
   LayoutDashboard,
+  Link2,
   LogOut,
   Menu,
   Settings,
@@ -22,6 +23,7 @@ const SIDEBAR_WIDTH_COLLAPSED = "4.75rem";
 const adminNav = [
   { to: "/admin", label: "dashboard", end: true, icon: LayoutDashboard },
   { to: "/admin/projects", label: "projects", end: false, icon: FolderKanban },
+  { to: "/admin/links", label: "links", end: false, icon: Link2 },
   { to: "/admin/settings", label: "settings", end: false, icon: Settings },
 ];
 

@@ -1,4 +1,5 @@
-import { SKILLS } from "@/config/skills";
+import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
+import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 import { Image } from "@/components/ui/Image";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
@@ -52,6 +53,9 @@ function SkillCard({
 }
 
 export function SkillsIconSection() {
+  const { data: siteLinks } = useSiteLinks();
+  const skills = siteLinks?.skill ?? DEFAULT_SITE_LINKS.skill;
+
   return (
     <section id="skills" className="py-16 md:py-20 scroll-mt-28">
       <SectionHeader
@@ -65,15 +69,15 @@ export function SkillsIconSection() {
           <span className="text-terminal">$ </span>
           <span className="text-accent">ls</span>
           <span className="text-text-muted"> ./tools</span>
-          <span className="text-text-subtle"> · {SKILLS.length} packages</span>
+          <span className="text-text-subtle"> · {skills.length} packages</span>
         </p>
 
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4">
-          {SKILLS.map((skill) => (
+          {skills.map((skill) => (
             <SkillCard
-              key={`${skill.icon}-${skill.name}`}
-              name={skill.name}
-              icon={skill.icon}
+              key={`${skill.icon}-${skill.label}`}
+              name={skill.label}
+              icon={skill.icon ?? skill.label.toLowerCase()}
               href={skill.href}
             />
           ))}

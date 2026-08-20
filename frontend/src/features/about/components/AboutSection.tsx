@@ -1,6 +1,7 @@
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { TerminalPanel, TerminalWindow } from "@/components/ui/TerminalWindow";
-import { SITE } from "@/config/constants";
+import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
+import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 import { Rocket, Settings, Target, type LucideIcon } from "lucide-react";
 
 const HIGHLIGHTS: Array<{
@@ -26,6 +27,9 @@ const HIGHLIGHTS: Array<{
 ];
 
 export function AboutSection() {
+  const { data: siteLinks } = useSiteLinks();
+  const socialLinks = siteLinks?.social ?? DEFAULT_SITE_LINKS.social;
+
   return (
     <section id="sobre" className="py-16 md:py-20 scroll-mt-28">
       <SectionHeader
@@ -66,22 +70,17 @@ export function AboutSection() {
         </div>
 
         <div className="flex flex-wrap gap-3 pt-2 border-t border-border-subtle">
-          <a
-            href={SITE.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 font-mono text-sm text-text-muted border border-border-subtle px-4 py-2.5 hover:text-accent hover:border-accent/30 transition-colors"
-          >
-            github
-          </a>
-          <a
-            href={SITE.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 font-mono text-sm text-text-muted border border-border-subtle px-4 py-2.5 hover:text-accent hover:border-accent/30 transition-colors"
-          >
-            linkedin
-          </a>
+          {socialLinks.map((link) => (
+            <a
+              key={`${link.label}-${link.href}`}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 font-mono text-sm text-text-muted border border-border-subtle px-4 py-2.5 hover:text-accent hover:border-accent/30 transition-colors"
+            >
+              {link.label}
+            </a>
+          ))}
         </div>
       </TerminalWindow>
     </section>

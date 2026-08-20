@@ -1,10 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
-import { NAV_LINKS, SITE } from "@/config/constants";
+import { SITE } from "@/config/constants";
+import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
+import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 import { TypingText } from "@/components/ui/TypingText";
 import { cn } from "@/lib/format";
 
 export function Header() {
   const { pathname } = useLocation();
+  const { data: siteLinks } = useSiteLinks();
+  const navLinks = siteLinks?.nav ?? DEFAULT_SITE_LINKS.nav;
 
   return (
     <header className="sticky top-0 z-50 px-4 pt-5 pb-2">
@@ -17,12 +21,13 @@ export function Header() {
         </Link>
 
         <nav className="hidden sm:flex items-center gap-6">
-          {NAV_LINKS.map((link) => {
+          {navLinks.map((link) => {
+            const href = link.href ?? "/";
             const isActive =
-              !("external" in link) &&
-              (link.href === "/"
+              !link.external &&
+              (href === "/"
                 ? pathname === "/"
-                : link.href.startsWith("/#") && pathname === "/");
+                : href.startsWith("/#") && pathname === "/");
 
             const className = cn(
               "font-mono text-sm transition-colors",
@@ -31,11 +36,11 @@ export function Header() {
                 : "text-text-muted hover:text-text",
             );
 
-            if ("external" in link && link.external) {
+            if (link.external) {
               return (
                 <a
-                  key={link.href}
-                  href={link.href}
+                  key={`${link.label}-${href}`}
+                  href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={className}
@@ -47,7 +52,7 @@ export function Header() {
             }
 
             return (
-              <a key={link.href} href={link.href} className={className}>
+              <a key={`${link.label}-${href}`} href={href} className={className}>
                 {"// "}
                 {link.label}
               </a>
