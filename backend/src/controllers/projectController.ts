@@ -4,6 +4,7 @@ import ProjectService from "../services/ProjectService"
 import { projectErrorHttpStatusMap } from "../errors/projectErrorHttpMapper"
 import { sendServiceError } from "../utils/sendServiceError"
 import { getUploadedImages, parseProjectPayload } from "../utils/projectRequest"
+import { setPublicCacheHeaders } from "../utils/httpCache"
 
 class ProjectController {
   async list(_request: Request, response: Response): Promise<Response> {
@@ -13,6 +14,7 @@ class ProjectController {
       return sendServiceError(response, result.error, projectErrorHttpStatusMap)
     }
 
+    setPublicCacheHeaders(response)
     return response.status(200).json({ success: true, data: result.data })
   }
 
@@ -23,7 +25,19 @@ class ProjectController {
       return sendServiceError(response, result.error, projectErrorHttpStatusMap)
     }
 
+    setPublicCacheHeaders(response)
     return response.status(200).json({ success: true, data: result.data })
+  }
+
+  async count(_request: Request, response: Response): Promise<Response> {
+    const result = await ProjectService.count()
+
+    if (!result.status) {
+      return sendServiceError(response, result.error, projectErrorHttpStatusMap)
+    }
+
+    setPublicCacheHeaders(response)
+    return response.status(200).json({ success: true, data: { count: result.data } })
   }
 
   async listAll(_request: Request, response: Response): Promise<Response> {

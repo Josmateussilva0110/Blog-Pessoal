@@ -1,5 +1,6 @@
 import { ProfileImageForm } from "@/features/profile/components/ProfileImageForm";
 import { UpdatePasswordForm } from "@/features/auth/components/UpdatePasswordForm";
+import { HeroStatsForm } from "@/features/site-settings/components/HeroStatsForm";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { AdminPageHeader } from "@/components/layout/AdminPageHeader";
 
@@ -11,8 +12,14 @@ export default function SettingsPage() {
       <AdminPageHeader
         eyebrow="Conta"
         title="Configurações"
-        description="Gerencie a foto do portfólio e a segurança da sua conta."
+        description="Gerencie a foto do portfólio, estatísticas da home e a segurança da sua conta."
       />
+
+      <section className="admin-card p-5 sm:p-6 mb-4 sm:mb-6">
+        <p className="code-comment mb-3">// hero stats</p>
+        <h2 className="text-sm font-semibold text-text mb-4">Estatísticas da home</h2>
+        <HeroStatsForm />
+      </section>
 
       <section className="admin-card p-5 sm:p-6 mb-4 sm:mb-6">
         <p className="code-comment mb-3">// profile image</p>

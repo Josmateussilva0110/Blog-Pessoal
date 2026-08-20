@@ -13,8 +13,7 @@ export function getUserIdFromAccessToken(accessToken: string): string | undefine
 
     return payload.sub
   } catch {
-    const payload = jwt.decode(accessToken) as { sub?: string } | null
-    return payload?.sub
+    return undefined
   }
 }
 

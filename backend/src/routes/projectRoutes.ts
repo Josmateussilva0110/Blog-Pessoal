@@ -13,6 +13,7 @@ const router = Router()
 
 router.get("/", ProjectController.list)
 router.get("/featured", ProjectController.listFeatured)
+router.get("/count", ProjectController.count)
 router.get("/admin", authMiddleware, ProjectController.listAll)
 router.get(
   "/id/:id",

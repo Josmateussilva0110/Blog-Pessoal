@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto"
 import type { ProjectFormValues } from "@blog/shared"
 import { supabaseAdmin } from "../database/supabase/supabase"
-import { PROJECT_SELECT, mapProjectRow } from "../utils/projectMapper"
+import { PROJECT_SELECT, PROJECT_LIST_SELECT, mapProjectRow, mapProjectListRow } from "../utils/projectMapper"
 import {
   PROJECT_ASSETS_BUCKET,
   PROJECT_IMAGES_BUCKET,
@@ -14,6 +14,16 @@ import { ProjectErrorCode } from "../types/code/projectCode"
 import type { Project } from "@blog/shared"
 import { getUserIdFromAccessToken } from "../utils/accessToken"
 import { normalizeProjectStatus } from "../utils/projectStatus"
+
+import { ShortCache } from "../utils/shortCache"
+
+const projectsListCache = new ShortCache<Project[]>(30_000)
+const projectsCountCache = new ShortCache<number>(30_000)
+
+function invalidateProjectsCache(): void {
+  projectsListCache.delete("public")
+  projectsCountCache.delete("public")
+}
 
 type UploadableFile = {
   buffer: Buffer
@@ -31,9 +41,14 @@ function extractStoragePathFromUrl(url: string, bucket: string): string | null {
 class ProjectService {
   async list(): Promise<ServiceResult<Project[], ProjectErrorCode>> {
     try {
+      const cached = projectsListCache.get("public")
+      if (cached) {
+        return { status: true, data: cached }
+      }
+
       const { data, error } = await supabaseAdmin
         .from("projects")
-        .select(PROJECT_SELECT)
+        .select(PROJECT_LIST_SELECT)
         .order("updated_at", { ascending: false })
 
       if (error) {
@@ -47,9 +62,12 @@ class ProjectService {
         }
       }
 
+      const projects = (data ?? []).map(mapProjectListRow)
+      projectsListCache.set("public", projects)
+
       return {
         status: true,
-        data: (data ?? []).map(mapProjectRow),
+        data: projects,
       }
     } catch (error) {
       console.error("[ProjectService.list] error:", error)
@@ -101,7 +119,7 @@ class ProjectService {
     try {
       const { data, error } = await supabaseAdmin
         .from("projects")
-        .select(PROJECT_SELECT)
+        .select(PROJECT_LIST_SELECT)
         .eq("featured", true)
         .order("updated_at", { ascending: false })
 
@@ -118,7 +136,7 @@ class ProjectService {
 
       return {
         status: true,
-        data: (data ?? []).map(mapProjectRow),
+        data: (data ?? []).map(mapProjectListRow),
       }
     } catch (error) {
       console.error("[ProjectService.listFeatured] error:", error)
@@ -127,6 +145,47 @@ class ProjectService {
         error: {
           code: ProjectErrorCode.PROJECT_FETCH_FAILED,
           message: "Erro ao listar projetos em destaque.",
+        },
+      }
+    }
+  }
+
+  async count(): Promise<ServiceResult<number, ProjectErrorCode>> {
+    try {
+      const cached = projectsCountCache.get("public")
+      if (cached !== undefined) {
+        return { status: true, data: cached }
+      }
+
+      const { count, error } = await supabaseAdmin
+        .from("projects")
+        .select("id", { count: "exact", head: true })
+
+      if (error) {
+        console.error("[ProjectService.count]", error)
+        return {
+          status: false,
+          error: {
+            code: ProjectErrorCode.PROJECT_FETCH_FAILED,
+            message: "Erro ao contar projetos.",
+          },
+        }
+      }
+
+      const total = count ?? 0
+      projectsCountCache.set("public", total)
+
+      return {
+        status: true,
+        data: total,
+      }
+    } catch (error) {
+      console.error("[ProjectService.count] error:", error)
+      return {
+        status: false,
+        error: {
+          code: ProjectErrorCode.PROJECT_FETCH_FAILED,
+          message: "Erro ao contar projetos.",
         },
       }
     }
@@ -266,6 +325,7 @@ class ProjectService {
       }
 
       if (imageFiles.length === 0) {
+        invalidateProjectsCache()
         return {
           status: true,
           data: mapProjectRow(data),
@@ -304,6 +364,7 @@ class ProjectService {
         }
       }
 
+      invalidateProjectsCache()
       return {
         status: true,
         data: mapProjectRow(updatedData),
@@ -439,6 +500,7 @@ class ProjectService {
         })
       }
 
+      invalidateProjectsCache()
       return {
         status: true,
         data: mapProjectRow(updatedData),
@@ -477,6 +539,7 @@ class ProjectService {
         console.error("[ProjectService.remove] storage cleanup failed:", cleanupError)
       })
 
+      invalidateProjectsCache()
       return { status: true, data: null }
     } catch (error) {
       console.error("[ProjectService.remove] error:", error)

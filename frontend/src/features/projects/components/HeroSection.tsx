@@ -3,14 +3,17 @@ import { Image, DEFAULT_IMAGE_FALLBACK } from "@/components/ui/Image";
 import { TerminalWindow, TerminalWindowBar } from "@/components/ui/TerminalWindow";
 import { SITE } from "@/config/constants";
 import { usePublicProfileImage } from "@/features/profile/hooks/usePublicProfileImage";
+import { useHeroStats } from "@/features/site-settings/hooks/useHeroStats";
 
 interface HeroSectionProps {
   projectCount?: number;
+  isLoading?: boolean;
 }
 
-export function HeroSection({ projectCount = 0 }: HeroSectionProps) {
+export function HeroSection({ projectCount = 0, isLoading = false }: HeroSectionProps) {
   const { data: profileImage } = usePublicProfileImage();
-  const count = projectCount > 0 ? `${projectCount}+` : "—";
+  const { data: heroStats } = useHeroStats();
+  const countLabel = isLoading ? "—" : String(projectCount);
 
   return (
     <section className="py-16 md:py-24 lg:py-28">
@@ -58,14 +61,14 @@ export function HeroSection({ projectCount = 0 }: HeroSectionProps) {
               <p className="code-comment mb-4">// stats</p>
               <div className="grid grid-cols-3 gap-8 max-w-md">
                 <div>
-                  <p className="text-2xl md:text-3xl font-bold text-text">{count}</p>
+                  <p className="text-2xl md:text-3xl font-bold text-text">{countLabel}</p>
                   <p className="font-mono text-[10px] uppercase tracking-widest text-text-subtle mt-1">
                     projetos
                   </p>
                 </div>
                 <div>
                   <p className="text-2xl md:text-3xl font-bold text-text">
-                    {SITE.stats.yearsCoding}+
+                    {heroStats?.yearsCoding ?? 4}+
                   </p>
                   <p className="font-mono text-[10px] uppercase tracking-widest text-text-subtle mt-1">
                     anos codando

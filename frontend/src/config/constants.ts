@@ -4,13 +4,8 @@ export const SITE = {
   tagline: "Código que cria coisas.",
   description:
     "Um espaço para documentar cada projeto — da ideia ao deploy. Apps, sites e experimentos com código real.",
-  github: "https://github.com",
-  linkedin: "https://linkedin.com",
   profileImageAlt: "Foto de perfil",
   role: "full-stack",
-  stats: {
-    yearsCoding: 3,
-  },
 } as const;
 
 export const NAV_LINKS = [

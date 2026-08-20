@@ -4,6 +4,7 @@ import {
   PROFILE_IMAGE_MAX_BYTES,
   PROFILE_IMAGE_MIME_TYPES,
 } from "../constants/profileImage.constants"
+import { validateUploadedImage } from "../utils/fileSignature"
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -25,6 +26,12 @@ export function uploadProfileImage(
 ) {
   upload.single("image")(request, response, (error: unknown) => {
     if (!error) {
+      const validationError = validateUploadedImage(request.file)
+      if (validationError) {
+        response.status(422).json({ success: false, message: validationError })
+        return
+      }
+
       next()
       return
     }

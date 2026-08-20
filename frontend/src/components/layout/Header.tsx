@@ -4,6 +4,23 @@ import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
 import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 import { TypingText } from "@/components/ui/TypingText";
 import { cn } from "@/lib/format";
+import { prefersReducedMotion, scrollToPageTop } from "@/lib/viewTransition";
+
+function handleHomeNavClick(
+  event: React.MouseEvent<HTMLAnchorElement>,
+  href: string,
+  pathname: string,
+) {
+  if (href !== "/" || pathname !== "/") return;
+
+  event.preventDefault();
+
+  if (window.location.hash) {
+    window.history.replaceState(null, "", "/");
+  }
+
+  scrollToPageTop(prefersReducedMotion() ? "instant" : "smooth");
+}
 
 export function Header() {
   const { pathname } = useLocation();
@@ -52,7 +69,12 @@ export function Header() {
             }
 
             return (
-              <a key={`${link.label}-${href}`} href={href} className={className}>
+              <a
+                key={`${link.label}-${href}`}
+                href={href}
+                className={className}
+                onClick={(event) => handleHomeNavClick(event, href, pathname)}
+              >
                 {"// "}
                 {link.label}
               </a>

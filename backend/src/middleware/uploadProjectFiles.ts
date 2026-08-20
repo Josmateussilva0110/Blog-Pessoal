@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express"
 import multer from "multer"
+import { validateUploadedImage } from "../utils/fileSignature"
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -20,6 +21,17 @@ export function handleProjectUpload(
 ) {
   uploadProjectFiles(request, response, (error: unknown) => {
     if (!error) {
+      const files = request.files as { images?: Express.Multer.File[] } | undefined
+      const images = files?.images ?? []
+
+      for (const file of images) {
+        const validationError = validateUploadedImage(file)
+        if (validationError) {
+          response.status(422).json({ success: false, message: validationError })
+          return
+        }
+      }
+
       next()
       return
     }

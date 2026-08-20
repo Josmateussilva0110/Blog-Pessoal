@@ -4,8 +4,11 @@ import { supabaseAdmin } from "../database/supabase/supabase"
 import { SITE_LINK_SELECT, mapSiteLinkRow } from "../utils/siteLinkMapper"
 import { ServiceResult } from "../types/serviceResults/ServiceResult"
 import { SiteLinkErrorCode } from "../types/code/siteLinkCode"
+import { ShortCache } from "../utils/shortCache"
 
 type SiteLinkRow = Parameters<typeof mapSiteLinkRow>[0]
+
+const siteLinksCache = new ShortCache<SiteLinksGrouped>(60_000)
 
 function groupLinks(links: SiteLink[]): SiteLinksGrouped {
   return {
@@ -35,6 +38,11 @@ function toInsertRow(
 class SiteLinkService {
   async list(): Promise<ServiceResult<SiteLinksGrouped, SiteLinkErrorCode>> {
     try {
+      const cached = siteLinksCache.get("public")
+      if (cached) {
+        return { status: true, data: cached }
+      }
+
       const { data, error } = await supabaseAdmin
         .from("site_links")
         .select(SITE_LINK_SELECT)
@@ -52,10 +60,12 @@ class SiteLinkService {
       }
 
       const links = (data as SiteLinkRow[] | null)?.map(mapSiteLinkRow) ?? []
+      const grouped = groupLinks(links)
+      siteLinksCache.set("public", grouped)
 
       return {
         status: true,
-        data: groupLinks(links),
+        data: grouped,
       }
     } catch (error) {
       console.error("[SiteLinkService.list] error:", error)
@@ -114,13 +124,16 @@ class SiteLinkService {
         }
 
         const links = (data as SiteLinkRow[] | null)?.map(mapSiteLinkRow) ?? []
+        const grouped = groupLinks(links)
+        siteLinksCache.set("public", grouped)
 
         return {
           status: true,
-          data: groupLinks(links),
+          data: grouped,
         }
       }
 
+      siteLinksCache.delete("public")
       return {
         status: true,
         data: { nav: [], social: [], skill: [] },

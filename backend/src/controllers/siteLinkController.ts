@@ -3,6 +3,7 @@ import SiteLinkService from "../services/SiteLinkService"
 import { siteLinkErrorHttpStatusMap } from "../errors/siteLinkErrorHttpMapper"
 import { sendServiceError } from "../utils/sendServiceError"
 import type { UpdateSiteLinksInput } from "@blog/shared"
+import { setPublicCacheHeaders } from "../utils/httpCache"
 
 class SiteLinkController {
   async list(_request: Request, response: Response): Promise<Response> {
@@ -12,6 +13,7 @@ class SiteLinkController {
       return sendServiceError(response, result.error, siteLinkErrorHttpStatusMap)
     }
 
+    setPublicCacheHeaders(response, 300)
     return response.status(200).json({ success: true, data: result.data })
   }
 

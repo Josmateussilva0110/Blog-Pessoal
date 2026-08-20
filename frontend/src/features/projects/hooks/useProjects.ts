@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Project } from "@blog/shared";
 import {
   fetchAdminProjects,
   fetchFeaturedProjects,
@@ -35,9 +36,15 @@ export function useFeaturedProjects() {
 }
 
 export function useProject(slug: string) {
+  const queryClient = useQueryClient();
+
   return useQuery({
     queryKey: projectKeys.detail(slug),
     queryFn: () => fetchProjectBySlug(slug),
     enabled: Boolean(slug),
+    placeholderData: () => {
+      const projects = queryClient.getQueryData<Project[]>(projectKeys.all);
+      return projects?.find((project) => project.slug === slug);
+    },
   });
 }

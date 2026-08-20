@@ -5,9 +5,9 @@ const swaggerOptions: Options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Financeiro API",
+      title: "Blog Pessoal API",
       version: "1.0.0",
-      description: "Documentação da API do app financeiro",
+      description: "Documentação da API do portfólio/blog pessoal",
     },
     servers: [{ url: `http://localhost:${env.PORT}` }],
     components: {

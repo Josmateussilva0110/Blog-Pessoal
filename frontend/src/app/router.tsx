@@ -9,7 +9,12 @@ import { GuestRoute } from "@/features/auth/components/GuestRoute";
 import { RequirePasswordUpdated } from "@/features/auth/components/RequirePasswordUpdated";
 import { RequireForcedPasswordChange } from "@/features/auth/components/RequireForcedPasswordChange";
 import { HomePage } from "@/routes/public/home/HomePage";
-import { ProjectDetailPage } from "@/routes/public/project/ProjectDetailPage";
+
+const ProjectDetailPage = lazy(() =>
+  import("@/routes/public/project/ProjectDetailPage").then((module) => ({
+    default: module.ProjectDetailPage,
+  })),
+);
 
 const LoginPage = lazy(() => import("@/routes/admin/login/LoginPage"));
 const ChangePasswordPage = lazy(
@@ -36,9 +41,22 @@ function AdminFallback() {
   );
 }
 
-function withSuspense(Component: ComponentType) {
+function PublicFallback() {
   return (
-    <Suspense fallback={<AdminFallback />}>
+    <div className="flex min-h-[50vh] items-center justify-center">
+      <span className="font-mono text-sm text-text-subtle animate-pulse">
+        <span className="text-terminal">$ </span>
+        loading...
+      </span>
+    </div>
+  );
+}
+
+function withSuspense(Component: ComponentType, fallback: "admin" | "public" = "admin") {
+  const Fallback = fallback === "public" ? PublicFallback : AdminFallback;
+
+  return (
+    <Suspense fallback={<Fallback />}>
       <Component />
     </Suspense>
   );
@@ -58,7 +76,7 @@ export const router = createBrowserRouter([
     element: <PublicLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: "projects/:slug", element: <ProjectDetailPage /> },
+      { path: "projects/:slug", element: withSuspense(ProjectDetailPage, "public") },
     ],
   },
   {
