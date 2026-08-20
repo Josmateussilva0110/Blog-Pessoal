@@ -76,7 +76,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </span>
         </div>
 
-        <div className="p-5 flex flex-col flex-1 gap-4">
+        <div className="p-4 sm:p-5 flex flex-col flex-1 gap-3 sm:gap-4">
           <p className="font-mono text-xs">
             <span className="text-terminal">$ </span>
             <span className="text-accent">git log</span>
@@ -108,7 +108,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             )}
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-border-subtle">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pt-2 border-t border-border-subtle">
             <span
               className={`font-mono text-[10px] uppercase tracking-wider ${statusInfo.className}`}
             >

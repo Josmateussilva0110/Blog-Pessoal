@@ -12,7 +12,7 @@ export function PublicLayout() {
       <div className="min-h-dvh flex flex-col relative">
         <BackgroundOrbs />
         <Header />
-        <main className="flex-1 mx-auto w-full max-w-6xl px-6 ios-nav-main">
+        <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 ios-nav-main">
           <IosNavPage>
             <Outlet />
           </IosNavPage>

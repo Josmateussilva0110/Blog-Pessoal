@@ -7,25 +7,22 @@ import {
   Tooltip,
 } from "recharts";
 import type { Project } from "@blog/shared";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { CHART_GRID, getRadarChartData } from "../../lib/chartData";
 import { ChartTooltip } from "./ChartTooltip";
 
-const RADAR_SIZE = 300;
-
 export function TechRadarChart({ projects }: { projects: Project[] }) {
+  const isNarrow = useMediaQuery("(max-width: 639px)");
   const data = getRadarChartData(projects);
 
   return (
-    <div
-      className="mx-auto"
-      style={{ width: RADAR_SIZE, height: RADAR_SIZE }}
-    >
+    <div className="mx-auto w-full max-w-[260px] sm:max-w-[300px] aspect-square">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart data={data} cx="50%" cy="50%" outerRadius="68%">
+        <RadarChart data={data} cx="50%" cy="50%" outerRadius={isNarrow ? "62%" : "68%"}>
           <PolarGrid stroke={CHART_GRID} />
           <PolarAngleAxis
             dataKey="tech"
-            tick={{ fill: "#94a3b8", fontSize: 10 }}
+            tick={{ fill: "#94a3b8", fontSize: isNarrow ? 9 : 10 }}
           />
           <Radar
             name="Projetos"

@@ -44,7 +44,7 @@ export function ProjectImageGallery({ images, projectTitle }: ProjectImageGaller
           <img
             src={activeImage}
             alt={`${projectTitle} — screenshot ${activeIndex + 1}`}
-            className="w-full max-h-[420px] object-contain bg-[#06060c]"
+            className="w-full max-h-[240px] sm:max-h-[320px] md:max-h-[420px] object-contain bg-[#06060c]"
           />
           <div
             className="pointer-events-none absolute inset-0 bg-[linear-gradient(transparent_50%,rgb(34_211_238/0.025)_50%)] bg-[length:100%_3px]"

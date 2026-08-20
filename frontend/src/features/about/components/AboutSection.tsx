@@ -31,7 +31,7 @@ export function AboutSection() {
   const socialLinks = siteLinks?.social ?? DEFAULT_SITE_LINKS.social;
 
   return (
-    <section id="sobre" className="py-16 md:py-20 scroll-mt-28">
+    <section id="sobre" className="py-12 sm:py-16 md:py-20 scroll-mt-24 sm:scroll-mt-28">
       <SectionHeader
         tag="Apresentação"
         title="Sobre mim"
@@ -52,7 +52,7 @@ export function AboutSection() {
           reais.
         </p>
 
-        <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
           {HIGHLIGHTS.map(({ icon: Icon, label, text }) => (
             <TerminalPanel key={label} title={`// ${label.toLowerCase()}`}>
               <div className="flex items-center gap-2.5 mb-2">
@@ -69,14 +69,14 @@ export function AboutSection() {
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-3 pt-2 border-t border-border-subtle">
+        <div className="flex flex-col min-[400px]:flex-row flex-wrap gap-2 sm:gap-3 pt-2 border-t border-border-subtle">
           {socialLinks.map((link) => (
             <a
               key={`${link.label}-${link.href}`}
               href={link.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 font-mono text-sm text-text-muted border border-border-subtle px-4 py-2.5 hover:text-accent hover:border-accent/30 transition-colors"
+              className="inline-flex items-center justify-center gap-2 font-mono text-sm text-text-muted border border-border-subtle px-4 py-2.5 hover:text-accent hover:border-accent/30 transition-colors"
             >
               {link.label}
             </a>

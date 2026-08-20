@@ -8,7 +8,7 @@ export function Footer() {
   const socialLinks = siteLinks?.social ?? DEFAULT_SITE_LINKS.social;
 
   return (
-    <footer className="px-6 pb-8 mt-20 border-t border-border-subtle">
+    <footer className="px-4 sm:px-6 pb-8 mt-16 sm:mt-20 border-t border-border-subtle">
       <div className="mx-auto max-w-6xl py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
         <p className="font-mono text-xs text-text-subtle">
           © {year} {SITE.name}

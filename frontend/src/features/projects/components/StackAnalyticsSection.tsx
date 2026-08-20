@@ -24,7 +24,7 @@ function ChartCard({
   return (
     <div className={cn("terminal-card overflow-hidden", className)}>
       <TerminalWindowBar path={path} />
-      <div className="p-5 md:p-7">
+      <div className="p-4 sm:p-5 md:p-7">
         <p className="code-comment mb-4">{title}</p>
         {children}
       </div>
@@ -38,7 +38,7 @@ export function StackAnalyticsSection({
 }: StackAnalyticsSectionProps) {
   if (isLoading) {
     return (
-      <section id="stack" className="py-16 md:py-20 scroll-mt-28">
+      <section id="stack" className="py-12 sm:py-16 md:py-20 scroll-mt-24 sm:scroll-mt-28">
         <SectionHeader
           tag="Analytics"
           title="Stack & Cobertura"
@@ -55,7 +55,7 @@ export function StackAnalyticsSection({
   if (!projects || projects.length === 0) return null;
 
   return (
-    <section id="stack" className="py-16 md:py-20 scroll-mt-28">
+    <section id="stack" className="py-12 sm:py-16 md:py-20 scroll-mt-24 sm:scroll-mt-28">
       <SectionHeader
         tag="Analytics"
         title="Stack & Cobertura"

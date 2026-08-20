@@ -10,18 +10,26 @@ import {
   YAxis,
 } from "recharts";
 import type { Project } from "@blog/shared";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { CHART_AXIS, CHART_GRID, getTechChartData } from "../../lib/chartData";
 import { ChartTooltip } from "./ChartTooltip";
 
 export function TechUsageBarChart({ projects }: { projects: Project[] }) {
+  const isNarrow = useMediaQuery("(max-width: 639px)");
   const data = getTechChartData(projects);
+  const rowHeight = isNarrow ? 48 : 44;
 
   return (
-    <ResponsiveContainer width="100%" height={Math.max(data.length * 44, 220)}>
+    <ResponsiveContainer width="100%" height={Math.max(data.length * rowHeight, 220)}>
       <BarChart
         data={data}
         layout="vertical"
-        margin={{ top: 4, right: 48, left: 4, bottom: 4 }}
+        margin={{
+          top: 4,
+          right: isNarrow ? 32 : 48,
+          left: 0,
+          bottom: 4,
+        }}
       >
         <CartesianGrid
           strokeDasharray="4 4"
@@ -32,8 +40,8 @@ export function TechUsageBarChart({ projects }: { projects: Project[] }) {
         <YAxis
           type="category"
           dataKey="name"
-          width={108}
-          tick={CHART_AXIS}
+          width={isNarrow ? 72 : 108}
+          tick={{ ...CHART_AXIS, fontSize: isNarrow ? 10 : CHART_AXIS.fontSize }}
           axisLine={false}
           tickLine={false}
         />
@@ -41,7 +49,7 @@ export function TechUsageBarChart({ projects }: { projects: Project[] }) {
           cursor={{ fill: "rgb(59 130 246 / 0.06)" }}
           content={<ChartTooltip valueLabel="projetos" />}
         />
-        <Bar dataKey="count" radius={[0, 8, 8, 0]} maxBarSize={22}>
+        <Bar dataKey="count" radius={[0, 8, 8, 0]} maxBarSize={isNarrow ? 18 : 22}>
           {data.map((entry) => (
             <Cell key={entry.name} fill={entry.fill} />
           ))}
@@ -50,7 +58,7 @@ export function TechUsageBarChart({ projects }: { projects: Project[] }) {
             position="insideRight"
             formatter={(value) => `${value}%`}
             fill="#f8fafc"
-            fontSize={11}
+            fontSize={isNarrow ? 10 : 11}
             fontWeight={600}
           />
         </Bar>

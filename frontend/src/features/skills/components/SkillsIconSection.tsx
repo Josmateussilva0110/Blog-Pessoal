@@ -29,7 +29,7 @@ function SkillCard({
   );
 
   const className =
-    "group terminal-card-muted p-3 flex flex-col items-center justify-center gap-2 min-h-[96px] transition-all duration-300 hover:bg-accent-soft hover:border-accent/20 hover:-translate-y-0.5";
+    "group terminal-card-muted p-2.5 sm:p-3 flex flex-col items-center justify-center gap-1.5 sm:gap-2 min-h-[84px] sm:min-h-[96px] transition-all duration-300 hover:bg-accent-soft hover:border-accent/20 hover:-translate-y-0.5";
 
   if (href) {
     return (
@@ -57,14 +57,14 @@ export function SkillsIconSection() {
   const skills = siteLinks?.skill ?? DEFAULT_SITE_LINKS.skill;
 
   return (
-    <section id="skills" className="py-16 md:py-20 scroll-mt-28">
+    <section id="skills" className="py-12 sm:py-16 md:py-20 scroll-mt-24 sm:scroll-mt-28">
       <SectionHeader
         tag="Tecnologias"
         title="Linguagens & ferramentas"
         subtitle="Stack que utilizo no dia a dia."
       />
 
-      <TerminalWindow path="~/skills" bodyClassName="p-6 md:p-8">
+      <TerminalWindow path="~/skills" bodyClassName="p-4 sm:p-6 md:p-8">
         <p className="font-mono text-xs text-text-subtle mb-6">
           <span className="text-terminal">$ </span>
           <span className="text-accent">ls</span>
@@ -72,7 +72,7 @@ export function SkillsIconSection() {
           <span className="text-text-subtle"> · {skills.length} packages</span>
         </p>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3 md:gap-4">
           {skills.map((skill) => (
             <SkillCard
               key={`${skill.icon}-${skill.label}`}

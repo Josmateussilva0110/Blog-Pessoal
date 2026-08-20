@@ -150,30 +150,30 @@ export function ProjectDetailPage() {
       <div className="terminal-card overflow-hidden mt-6">
         <TerminalWindowBar path={`~/${project.slug}`} />
 
-        <div className="p-6 md:p-8 lg:p-10">
-          <header className="mb-8 pb-8 border-b border-border-subtle">
-            <div className="flex flex-wrap items-center gap-3 mb-4">
+        <div className="p-4 sm:p-6 md:p-8 lg:p-10">
+          <header className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-border-subtle">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <StatusBadge status={project.status} />
               <span className="font-mono text-[10px] text-text-subtle uppercase tracking-wider">
                 readme.md
               </span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-text tracking-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-text tracking-tight">
               {project.title}
             </h1>
             {project.description && (
-              <p className="mt-4 text-base leading-relaxed text-text-muted max-w-3xl">
+              <p className="mt-3 sm:mt-4 text-sm sm:text-base leading-relaxed text-text-muted max-w-3xl">
                 {project.description}
               </p>
             )}
           </header>
 
-          <div className="space-y-10">
+          <div className="space-y-8 sm:space-y-10">
             <div
               className={
                 project.images.length > 0
-                  ? "grid lg:grid-cols-[minmax(0,1fr)_240px] gap-8 lg:gap-10 items-start"
-                  : "grid lg:grid-cols-[240px] lg:justify-end gap-8 lg:gap-10 items-start"
+                  ? "grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_240px] lg:gap-10 items-start"
+                  : "grid lg:grid-cols-[240px] lg:justify-end gap-6 sm:gap-8 lg:gap-10 items-start"
               }
             >
               {project.images.length > 0 && (
@@ -187,7 +187,7 @@ export function ProjectDetailPage() {
 
             <section>
               <p className="code-comment mb-4">// documentação</p>
-              <TerminalWindow path={`~/${project.slug}/readme.md`} bodyClassName="p-5 md:p-6">
+              <TerminalWindow path={`~/${project.slug}/readme.md`} bodyClassName="p-4 sm:p-5 md:p-6">
                 <MarkdownContent
                   content={project.contentMarkdown || project.description}
                 />

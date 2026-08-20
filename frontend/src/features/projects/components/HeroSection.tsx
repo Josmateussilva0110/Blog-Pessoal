@@ -16,10 +16,10 @@ export function HeroSection({ projectCount = 0, isLoading = false }: HeroSection
   const countLabel = isLoading ? "—" : String(projectCount);
 
   return (
-    <section className="py-16 md:py-24 lg:py-28">
-      <div className="grid gap-12 md:grid-cols-[1fr_auto] md:gap-14 lg:gap-20 items-start">
+    <section className="py-12 sm:py-16 md:py-24 lg:py-28">
+      <div className="grid gap-8 sm:gap-12 md:grid-cols-[1fr_auto] md:gap-14 lg:gap-20 items-start">
         <div className="order-2 md:order-1 max-w-3xl">
-          <TerminalWindow path="~/index.md" bodyClassName="p-6 md:p-8 lg:p-10">
+          <TerminalWindow path="~/index.md" bodyClassName="p-4 sm:p-6 md:p-8 lg:p-10">
             <div className="inline-flex items-center gap-2 border border-terminal/30 rounded px-3 py-1 mb-6">
               <span className="h-1.5 w-1.5 rounded-full bg-terminal animate-pulse" />
               <span className="font-mono text-[10px] uppercase tracking-widest text-terminal">
@@ -34,49 +34,49 @@ export function HeroSection({ projectCount = 0, isLoading = false }: HeroSection
               </span>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-6 tracking-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-5 sm:mb-6 tracking-tight">
               Código que <span className="text-accent">cria</span> coisas.
             </h1>
 
-            <p className="text-base md:text-lg text-text-muted leading-relaxed max-w-xl mb-10">
+            <p className="text-sm sm:text-base md:text-lg text-text-muted leading-relaxed max-w-xl mb-8 sm:mb-10">
               {SITE.description}
             </p>
 
-            <div className="flex flex-wrap gap-3 mb-10">
+            <div className="flex flex-col min-[400px]:flex-row flex-wrap gap-3 mb-8 sm:mb-10">
               <Link
                 to="/#projetos"
-                className="inline-flex items-center font-mono text-sm font-medium bg-accent text-surface px-6 py-3 btn-terminal hover:bg-accent-muted transition-colors"
+                className="inline-flex items-center justify-center font-mono text-sm font-medium bg-accent text-surface px-6 py-3 btn-terminal hover:bg-accent-muted transition-colors"
               >
                 ver_projetos()
               </Link>
               <a
                 href="/#sobre"
-                className="inline-flex items-center font-mono text-sm text-text-muted border border-border-subtle px-5 py-3 hover:text-text hover:border-border transition-colors"
+                className="inline-flex items-center justify-center font-mono text-sm text-text-muted border border-border-subtle px-5 py-3 hover:text-text hover:border-border transition-colors"
               >
                 about --me
               </a>
             </div>
 
-            <div className="border-t border-border-subtle pt-8">
-              <p className="code-comment mb-4">// stats</p>
-              <div className="grid grid-cols-3 gap-8 max-w-md">
-                <div>
-                  <p className="text-2xl md:text-3xl font-bold text-text">{countLabel}</p>
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-text-subtle mt-1">
+            <div className="border-t border-border-subtle pt-6 sm:pt-8">
+              <p className="code-comment mb-3 sm:mb-4">// stats</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-6 md:gap-8 max-w-md">
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-text">{countLabel}</p>
+                  <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wide sm:tracking-widest text-text-subtle mt-1 leading-tight">
                     projetos
                   </p>
                 </div>
-                <div>
-                  <p className="text-2xl md:text-3xl font-bold text-text">
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-text">
                     {heroStats?.yearsCoding}
                   </p>
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-text-subtle mt-1">
+                  <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wide sm:tracking-widest text-text-subtle mt-1 leading-tight">
                     anos codando
                   </p>
                 </div>
-                <div>
-                  <p className="text-2xl md:text-3xl font-bold text-accent">∞</p>
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-text-subtle mt-1">
+                <div className="min-w-0">
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-accent">∞</p>
+                  <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wide sm:tracking-widest text-text-subtle mt-1 leading-tight">
                     café
                   </p>
                 </div>
@@ -86,7 +86,7 @@ export function HeroSection({ projectCount = 0, isLoading = false }: HeroSection
         </div>
 
         <div className="order-1 md:order-2 flex justify-center md:justify-end md:pt-6">
-          <div className="terminal-card w-full max-w-[280px] sm:max-w-[300px] overflow-hidden">
+          <div className="terminal-card w-full max-w-[220px] min-[400px]:max-w-[260px] sm:max-w-[300px] overflow-hidden">
             <TerminalWindowBar path="~/avatar.jpg" />
 
             <div className="p-3">
