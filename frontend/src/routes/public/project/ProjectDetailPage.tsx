@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/features/projects/components/StatusBadge";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
 import { TerminalWindow, TerminalWindowBar } from "@/components/ui/TerminalWindow";
+import { SITE } from "@/config/constants";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { formatDate } from "@/lib/format";
 import { projectTransitionName, scrollToPageTop } from "@/lib/viewTransition";
 
@@ -85,6 +87,8 @@ export function ProjectDetailPage() {
   const { data: project, isLoading } = useProject(slug);
   const { isAuthenticated } = useAuth();
   const { closeProject } = useProjectTransition();
+
+  useDocumentTitle(project ? `${project.title} — ${SITE.name}` : null);
 
   useEffect(() => {
     scrollToPageTop("instant");

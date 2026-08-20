@@ -25,7 +25,8 @@ export function usePublicProfileImage() {
     staleTime: 1000 * 60 * 5,
     select: (meta) => ({
       meta,
-      url: meta.image_url ?? DEFAULT_IMAGE_FALLBACK,
+      url: meta.thumbnail_url ?? meta.image_url ?? DEFAULT_IMAGE_FALLBACK,
+      fullUrl: meta.image_url ?? DEFAULT_IMAGE_FALLBACK,
       hasImage: meta.image_url !== null,
     }),
   });

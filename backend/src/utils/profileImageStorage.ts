@@ -3,33 +3,30 @@ import {
   PROFILE_IMAGE_MIME_TYPES,
   type ProfileImageMimeType,
 } from "../constants/profileImage.constants"
+import {
+  expandStoragePathsWithThumbnails,
+  processProfileImage,
+  toThumbnailStoragePath,
+} from "./imageProcessing"
 
 export const PROFILE_IMAGES_BUCKET = "profile-images"
 
-function getExtension(mime: string): string {
-  switch (mime) {
-    case "image/png":
-      return "png"
-    case "image/webp":
-      return "webp"
-    default:
-      return "jpg"
-  }
-}
+const PROFILE_MAIN_PATH = (userId: string) => `${userId}/avatar.webp`
+const PROFILE_THUMB_PATH = (userId: string) => `${userId}/avatar.thumb.webp`
 
-export function buildProfileImagePath(userId: string, mime: string): string {
-  return `${userId}/avatar.${getExtension(mime)}`
+export function buildProfileImagePath(userId: string): string {
+  return PROFILE_MAIN_PATH(userId)
 }
 
 export function isAllowedProfileImageMime(
-  mime: string
+  mime: string,
 ): mime is ProfileImageMimeType {
   return PROFILE_IMAGE_MIME_TYPES.includes(mime as ProfileImageMimeType)
 }
 
 export function getProfileImagePublicUrl(
   storagePath: string,
-  updatedAt?: string | null
+  updatedAt?: string | null,
 ): string {
   const { data } = supabaseAdmin.storage
     .from(PROFILE_IMAGES_BUCKET)
@@ -44,33 +41,53 @@ export function getProfileImagePublicUrl(
   return url.toString()
 }
 
-export async function uploadProfileImageToStorage(
-  userId: string,
-  buffer: Buffer,
-  mime: string
-): Promise<string> {
-  const storagePath = buildProfileImagePath(userId, mime)
+export function getProfileThumbnailPublicUrl(
+  storagePath: string,
+  updatedAt?: string | null,
+): string {
+  return getProfileImagePublicUrl(toThumbnailStoragePath(storagePath), updatedAt)
+}
 
+async function uploadBuffer(
+  path: string,
+  buffer: Buffer,
+  contentType: string,
+): Promise<void> {
   const { error } = await supabaseAdmin.storage
     .from(PROFILE_IMAGES_BUCKET)
-    .upload(storagePath, buffer, {
-      contentType: mime,
+    .upload(path, buffer, {
+      contentType,
       upsert: true,
     })
 
   if (error) {
     throw error
   }
+}
 
-  return storagePath
+export async function uploadProfileImageToStorage(
+  userId: string,
+  buffer: Buffer,
+): Promise<string> {
+  const processed = await processProfileImage(buffer)
+  const mainPath = PROFILE_MAIN_PATH(userId)
+  const thumbPath = PROFILE_THUMB_PATH(userId)
+
+  await Promise.all([
+    uploadBuffer(mainPath, processed.main, processed.contentType),
+    uploadBuffer(thumbPath, processed.thumb, processed.contentType),
+  ])
+
+  return mainPath
 }
 
 export async function deleteProfileImageFromStorage(
-  storagePath: string
+  storagePath: string,
 ): Promise<void> {
+  const paths = expandStoragePathsWithThumbnails([storagePath])
   const { error } = await supabaseAdmin.storage
     .from(PROFILE_IMAGES_BUCKET)
-    .remove([storagePath])
+    .remove(paths)
 
   if (error) {
     throw error

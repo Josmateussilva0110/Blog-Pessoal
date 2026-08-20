@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { DocumentMeta } from "@/components/layout/DocumentMeta";
 import { ToastScope } from "@/components/ui/toast";
 import { AuthScope } from "@/features/auth/components/AuthScope";
 import { PublicLayout } from "@/components/layout/PublicLayout";
@@ -66,6 +67,7 @@ export const router = createBrowserRouter([
   {
     element: (
       <>
+        <DocumentMeta />
         <AuthScope />
         <ToastScope />
         <Outlet />

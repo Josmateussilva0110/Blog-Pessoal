@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getThumbnailUrl } from "@/lib/imageUrl";
 import { cn } from "@/lib/format";
 
 interface ProjectImageGalleryProps {
@@ -80,10 +81,15 @@ export function ProjectImageGallery({ images, projectTitle }: ProjectImageGaller
               </div>
               <div className="relative aspect-video bg-surface">
                 <img
-                  src={image}
+                  src={getThumbnailUrl(image)}
                   alt={`Miniatura ${index + 1} de ${projectTitle}`}
                   className="h-full w-full object-cover"
                   loading="lazy"
+                  onError={(event) => {
+                    if (event.currentTarget.src !== image) {
+                      event.currentTarget.src = image;
+                    }
+                  }}
                 />
                 <div
                   className="pointer-events-none absolute inset-0 bg-[linear-gradient(transparent_50%,rgb(34_211_238/0.03)_50%)] bg-[length:100%_2px]"

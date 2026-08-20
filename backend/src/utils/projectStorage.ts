@@ -1,5 +1,9 @@
 import { randomUUID } from "node:crypto"
 import { supabaseAdmin } from "../database/supabase/supabase"
+import {
+  expandStoragePathsWithThumbnails,
+  processProjectImage,
+} from "./imageProcessing"
 
 export const PROJECT_IMAGES_BUCKET = "project-images"
 export const PROJECT_ASSETS_BUCKET = "project-assets"
@@ -21,60 +25,60 @@ function normalizeImageMime(mime: string): string {
   return mime
 }
 
-function getImageExtension(mime: string): string {
-  switch (mime) {
-    case "image/png":
-      return "png"
-    case "image/webp":
-      return "webp"
-    case "image/gif":
-      return "gif"
-    default:
-      return "jpg"
-  }
-}
-
 export function getStoragePublicUrl(bucket: string, path: string): string {
   const { data } = supabaseAdmin.storage.from(bucket).getPublicUrl(path)
   return data.publicUrl
 }
 
-export async function uploadProjectImages(
+async function uploadBuffer(
+  bucket: string,
+  path: string,
+  buffer: Buffer,
+  contentType: string,
+): Promise<void> {
+  const { error } = await supabaseAdmin.storage.from(bucket).upload(path, buffer, {
+    contentType,
+    upsert: false,
+  })
+
+  if (error) {
+    throw error
+  }
+}
+
+async function uploadProjectImagePair(
   projectId: string,
-  files: Array<{ buffer: Buffer; mimetype: string; originalname: string }>
-): Promise<string[]> {
-  const urls: string[] = []
+  file: { buffer: Buffer; mimetype: string },
+): Promise<string> {
+  const mime = normalizeImageMime(file.mimetype)
 
-  for (const file of files) {
-    const mime = normalizeImageMime(file.mimetype)
-
-    if (!IMAGE_MIMES.has(mime)) {
-      throw new Error("INVALID_IMAGE_TYPE")
-    }
-
-    const extension = getImageExtension(mime)
-    const storagePath = `${projectId}/images/${randomUUID()}.${extension}`
-
-    const { error } = await supabaseAdmin.storage
-      .from(PROJECT_IMAGES_BUCKET)
-      .upload(storagePath, file.buffer, {
-        contentType: mime,
-        upsert: false,
-      })
-
-    if (error) {
-      throw error
-    }
-
-    urls.push(getStoragePublicUrl(PROJECT_IMAGES_BUCKET, storagePath))
+  if (!IMAGE_MIMES.has(mime)) {
+    throw new Error("INVALID_IMAGE_TYPE")
   }
 
-  return urls
+  const processed = await processProjectImage(file.buffer)
+  const imageId = randomUUID()
+  const mainPath = `${projectId}/images/${imageId}.webp`
+  const thumbPath = `${projectId}/images/${imageId}.thumb.webp`
+
+  await Promise.all([
+    uploadBuffer(PROJECT_IMAGES_BUCKET, mainPath, processed.main, processed.contentType),
+    uploadBuffer(PROJECT_IMAGES_BUCKET, thumbPath, processed.thumb, processed.contentType),
+  ])
+
+  return getStoragePublicUrl(PROJECT_IMAGES_BUCKET, mainPath)
+}
+
+export async function uploadProjectImages(
+  projectId: string,
+  files: Array<{ buffer: Buffer; mimetype: string; originalname: string }>,
+): Promise<string[]> {
+  return Promise.all(files.map((file) => uploadProjectImagePair(projectId, file)))
 }
 
 export async function listStoragePaths(
   bucket: string,
-  prefix: string
+  prefix: string,
 ): Promise<string[]> {
   const folder = prefix.replace(/\/+$/, "")
   const paths: string[] = []
@@ -109,11 +113,12 @@ export async function listStoragePaths(
 
 export async function removeStoragePaths(
   bucket: string,
-  paths: string[]
+  paths: string[],
 ): Promise<void> {
   if (paths.length === 0) return
 
-  const { error } = await supabaseAdmin.storage.from(bucket).remove(paths)
+  const expandedPaths = expandStoragePathsWithThumbnails(paths)
+  const { error } = await supabaseAdmin.storage.from(bucket).remove(expandedPaths)
 
   if (error) {
     throw error
@@ -123,12 +128,14 @@ export async function removeStoragePaths(
 export async function removeProjectStorage(projectId: string): Promise<void> {
   const buckets = [PROJECT_IMAGES_BUCKET, PROJECT_ASSETS_BUCKET]
 
-  for (const bucket of buckets) {
-    try {
-      const paths = await listStoragePaths(bucket, projectId)
-      await removeStoragePaths(bucket, paths)
-    } catch (error) {
-      console.error(`[removeProjectStorage] failed for ${bucket}:`, error)
-    }
-  }
+  await Promise.all(
+    buckets.map(async (bucket) => {
+      try {
+        const paths = await listStoragePaths(bucket, projectId)
+        await removeStoragePaths(bucket, paths)
+      } catch (error) {
+        console.error(`[removeProjectStorage] failed for ${bucket}:`, error)
+      }
+    }),
+  )
 }

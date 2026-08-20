@@ -68,7 +68,7 @@ export function HeroSection({ projectCount = 0, isLoading = false }: HeroSection
                 </div>
                 <div>
                   <p className="text-2xl md:text-3xl font-bold text-text">
-                    {heroStats?.yearsCoding ?? 4}+
+                    {heroStats?.yearsCoding}
                   </p>
                   <p className="font-mono text-[10px] uppercase tracking-widest text-text-subtle mt-1">
                     anos codando
@@ -93,6 +93,7 @@ export function HeroSection({ projectCount = 0, isLoading = false }: HeroSection
               <div className="relative overflow-hidden rounded-md border border-accent/15 bg-surface">
                 <Image
                   src={profileImage?.url ?? DEFAULT_IMAGE_FALLBACK}
+                  fallback={profileImage?.fullUrl ?? DEFAULT_IMAGE_FALLBACK}
                   alt={SITE.profileImageAlt}
                   width={280}
                   height={280}

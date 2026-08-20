@@ -11,11 +11,7 @@ import { isRefreshTokenReuseOrRevoked, mapPasswordUpdateError } from "../utils/a
 import { buildAuthTokens } from "../utils/authSession"
 import { mapUserProfileRow } from "../utils/userProfile"
 import { revokeAccessToken, revokeUserSessions } from "../utils/tokenRevocation"
-import {
-  deleteProfileImageFromStorage,
-  getProfileImagePublicUrl,
-  uploadProfileImageToStorage,
-} from "../utils/profileImageStorage"
+import { getProfileImagePublicUrl, getProfileThumbnailPublicUrl } from "../utils/profileImageStorage"
 
 class UserService {
     async login(email: string, password: string): Promise<ServiceResult<AuthTokens, UserErrorCode>> {
@@ -441,8 +437,7 @@ class UserService {
 
             const storagePath = await uploadProfileImageToStorage(
                 userId,
-                file.buffer,
-                file.mimetype
+                file.buffer
             )
 
             const { data, error } = await supabase
@@ -580,7 +575,14 @@ class UserService {
     }
 
     async getPublicProfileImageMeta(): Promise<
-        ServiceResult<{ updated_at: string | null; image_url: string | null }, UserErrorCode>
+        ServiceResult<
+            {
+                updated_at: string | null
+                image_url: string | null
+                thumbnail_url: string | null
+            },
+            UserErrorCode
+        >
     > {
         try {
             const { data, error } = await supabaseAdmin
@@ -608,6 +610,7 @@ class UserService {
                     data: {
                         updated_at: null,
                         image_url: null,
+                        thumbnail_url: null,
                     },
                 }
             }
@@ -617,6 +620,10 @@ class UserService {
                 data: {
                     updated_at: data.profile_image_updated_at,
                     image_url: getProfileImagePublicUrl(
+                        data.profile_image_url,
+                        data.profile_image_updated_at
+                    ),
+                    thumbnail_url: getProfileThumbnailPublicUrl(
                         data.profile_image_url,
                         data.profile_image_updated_at
                     ),
