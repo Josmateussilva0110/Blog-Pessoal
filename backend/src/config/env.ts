@@ -24,6 +24,8 @@ const envSchema = z.object({
         .string()
         .default("http://localhost:5173,http://localhost:8081")
         .transform((val) => val.split(",").map((s) => s.trim()).filter(Boolean)),
+    /** Use "none" quando o frontend estiver em outro domínio (ex.: Vercel + API no Belmo). */
+    AUTH_COOKIE_SAME_SITE: z.enum(["lax", "none", "strict"]).default("lax"),
     TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(1),
     REFRESH_COOKIE_MAX_AGE_DAYS: z.coerce.number().int().min(1).max(90).default(30),
     RENDER_EXTERNAL_URL: z.string().url().optional(),

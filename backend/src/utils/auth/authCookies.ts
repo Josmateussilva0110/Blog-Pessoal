@@ -8,11 +8,19 @@ export const REFRESH_TOKEN_COOKIE = "blog_rt"
 const COOKIE_PATH = "/api"
 const REFRESH_MAX_AGE_MS = env.REFRESH_COOKIE_MAX_AGE_DAYS * 24 * 60 * 60 * 1000
 
+function cookieSameSite(): CookieOptions["sameSite"] {
+  return env.AUTH_COOKIE_SAME_SITE
+}
+
+function cookieSecure(): boolean {
+  return env.NODE_ENV === "production" || env.AUTH_COOKIE_SAME_SITE === "none"
+}
+
 function baseCookieOptions(maxAgeMs: number): CookieOptions {
   return {
     httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: cookieSecure(),
+    sameSite: cookieSameSite(),
     path: COOKIE_PATH,
     maxAge: Math.max(0, Math.floor(maxAgeMs / 1000)),
   }
@@ -37,8 +45,8 @@ export function setAuthCookies(response: Response, tokens: AuthTokens): void {
 export function clearAuthCookies(response: Response): void {
   const clearOptions: CookieOptions = {
     httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: cookieSecure(),
+    sameSite: cookieSameSite(),
     path: COOKIE_PATH,
   }
 
