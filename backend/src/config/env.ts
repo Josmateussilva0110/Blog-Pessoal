@@ -24,6 +24,11 @@ const envSchema = z.object({
         .string()
         .default("http://localhost:5173,http://localhost:8081")
         .transform((val) => val.split(",").map((s) => s.trim()).filter(Boolean)),
+    /** Sufixos HTTPS extras (ex.: .vercel.app para previews da Vercel). */
+    ALLOWED_ORIGIN_SUFFIXES: z
+        .string()
+        .default("")
+        .transform((val) => val.split(",").map((s) => s.trim()).filter(Boolean)),
     /** Use "none" quando o frontend estiver em outro domínio (ex.: Vercel + API no Belmo). */
     AUTH_COOKIE_SAME_SITE: z.enum(["lax", "none", "strict"]).default("lax"),
     TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(1),

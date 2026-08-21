@@ -34,7 +34,8 @@ app.use(cors({
             return callback(null, true)
         }
 
-        callback(new Error(`CORS: origin não permitida (${origin ?? "sem origin"})`))
+        console.warn(`CORS: origin não permitida (${origin ?? "sem origin"})`)
+        callback(null, false)
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],

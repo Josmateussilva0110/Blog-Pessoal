@@ -15,12 +15,41 @@ function isPrivateNetworkOrigin(origin: string): boolean {
   }
 }
 
+function matchesAllowedOriginSuffix(origin: string): boolean {
+  if (env.ALLOWED_ORIGIN_SUFFIXES.length === 0) {
+    return false
+  }
+
+  try {
+    const { protocol, hostname } = new URL(origin)
+
+    if (protocol !== "https:") {
+      return false
+    }
+
+    return env.ALLOWED_ORIGIN_SUFFIXES.some((suffix) => {
+      if (!suffix.startsWith(".")) {
+        return false
+      }
+
+      const bare = suffix.slice(1)
+      return hostname === bare || hostname.endsWith(suffix)
+    })
+  } catch {
+    return false
+  }
+}
+
 export function isAllowedCorsOrigin(origin: string | undefined): boolean {
   if (!origin) {
     return true
   }
 
   if (env.ALLOWED_ORIGINS.includes(origin)) {
+    return true
+  }
+
+  if (matchesAllowedOriginSuffix(origin)) {
     return true
   }
 
