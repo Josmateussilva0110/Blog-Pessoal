@@ -248,7 +248,10 @@ export function ProjectForm({ project }: ProjectFormProps) {
           )}
         />
         <p className="text-xs text-text-muted">
-          Use a barra de ferramentas para formatar o texto. Para diagramas, clique no ícone de fluxo ou cole um bloco <code className="font-mono text-accent">```mermaid</code>.
+          Use a barra de ferramentas para formatar o texto. Para código, clique no ícone{" "}
+          <code className="font-mono text-accent">&lt;/&gt;</code> ou cole um bloco{" "}
+          <code className="font-mono text-accent">```python</code>. Para diagramas, use o ícone de fluxo ou{" "}
+          <code className="font-mono text-accent">```mermaid</code>.
         </p>
       </div>
 

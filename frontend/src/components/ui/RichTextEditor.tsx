@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, type ReactNode } from "react";
 import { cn } from "@/lib/format";
+import { RichTextMarkdownPaste } from "@/components/ui/richTextMarkdownPaste";
 
 type ToolbarButtonProps = {
   label: string;
@@ -78,6 +79,11 @@ export function RichTextEditor({
         heading: { levels: [2, 3] },
         link: false,
         underline: false,
+        codeBlock: {
+          HTMLAttributes: {
+            class: "tiptap-code-block",
+          },
+        },
       }),
       Underline,
       Link.configure({
@@ -88,6 +94,7 @@ export function RichTextEditor({
       }),
       Placeholder.configure({ placeholder }),
       Markdown,
+      RichTextMarkdownPaste,
     ],
     [placeholder],
   );
@@ -134,45 +141,46 @@ export function RichTextEditor({
     editor.chain().focus().extendMarkRange("link").setLink({ href: url.trim() }).run();
   }
 
-  function insertMermaidDiagram() {
-    if (!editor) return;
-
-    editor.commands.insertContent(
-      `\`\`\`mermaid
-sequenceDiagram
-    participant C as Frontend
-    participant API as Backend
-    participant DB as PostgreSQL
-
-    C->>API: POST /register ou /login
-    API->>API: Rate limit (10 req / 15 min)
-    API->>DB: Validar credenciais / criar usuário
-    API->>API: regenerateSession() (anti-fixação)
-    API->>API: session.user = { id, username }
-    API->>API: saveRotatedCsrfToken()
-    API-->>C: { id, username, csrfToken } + Set-Cookie
-
-    Note over C,API: Requisições seguintes
-    C->>API: Cookie connect.sid (httpOnly, sameSite=strict, 5 dias)
-    C->>API: X-CSRF-Token em POST/PUT/DELETE
-\`\`\`
-
-`,
-      { contentType: "markdown" },
-    );
-  }
-
   function insertCodeBlock() {
     if (!editor) return;
 
-    editor.commands.insertContent(
-      `\`\`\`python
-print("teste")
-\`\`\`
+    const languageInput = window.prompt("Linguagem do código (ex: python, javascript)", "python");
+    if (languageInput === null) return;
 
-`,
-      { contentType: "markdown" },
-    );
+    const language = languageInput.trim() || null;
+
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "codeBlock",
+        attrs: { language },
+        content: [{ type: "text", text: "print('teste')" }],
+      })
+      .run();
+  }
+
+  function insertMermaidDiagram() {
+    if (!editor) return;
+
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "codeBlock",
+        attrs: { language: "mermaid" },
+        content: [
+          {
+            type: "text",
+            text: `sequenceDiagram
+    participant C as Frontend
+    participant API as Backend
+    C->>API: POST /login
+    API-->>C: 200 OK`,
+          },
+        ],
+      })
+      .run();
   }
 
   return (
