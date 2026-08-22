@@ -85,13 +85,14 @@ class ProjectService {
     return {
       ...this.buildProjectFields(payload, payload.images),
       created_by: userId,
+      ...(payload.updatedAt ? { updated_at: payload.updatedAt } : {}),
     }
   }
 
   private buildProjectUpdatePayload(payload: ProjectFormValues) {
     return {
       ...this.buildProjectFields(payload, payload.images),
-      updated_at: new Date().toISOString(),
+      updated_at: payload.updatedAt ?? new Date().toISOString(),
     }
   }
 

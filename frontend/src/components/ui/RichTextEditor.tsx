@@ -6,6 +6,7 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
   Bold,
+  Code,
   Heading2,
   Heading3,
   Italic,
@@ -154,6 +155,19 @@ sequenceDiagram
     );
   }
 
+  function insertCodeBlock() {
+    if (!editor) return;
+
+    editor.commands.insertContent(
+      `\`\`\`python
+print("teste")
+\`\`\`
+
+`,
+      { contentType: "markdown" },
+    );
+  }
+
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       <div
@@ -250,6 +264,10 @@ sequenceDiagram
 
             <ToolbarButton label="Diagrama Mermaid" onClick={insertMermaidDiagram}>
               <Workflow className="size-4" aria-hidden />
+            </ToolbarButton>
+
+            <ToolbarButton label="Bloco de código" onClick={insertCodeBlock}>
+              <Code className="size-4" aria-hidden />
             </ToolbarButton>
 
             <span className="mx-1 h-6 w-px bg-border-subtle" aria-hidden />

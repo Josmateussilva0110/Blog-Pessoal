@@ -14,6 +14,7 @@ import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { useToast } from "@/components/ui/toast";
 import { normalizeProjectStatus, toFormProjectStatus } from "@/lib/projectStatus";
 import { slugify, splitCommaList } from "@/lib/slugify";
+import { dateInputToIso, toDateInputValue } from "@/lib/format";
 import { projectKeys } from "@/features/projects/hooks/useProjects";
 import { ProjectPreviewModal } from "@/features/projects/components/ProjectPreviewModal";
 import { submitProjectForm } from "@/service/projectForm.service";
@@ -60,6 +61,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
       repoUrl: project?.repoUrl ?? "",
       featured: project?.featured ?? false,
       images: project?.images ?? [],
+      updatedAt: project?.updatedAt ?? new Date().toISOString(),
     },
   });
 
@@ -89,6 +91,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
       repoUrl: project.repoUrl ?? "",
       featured: project.featured,
       images: project.images,
+      updatedAt: project.updatedAt,
     });
 
     setImages(
@@ -250,15 +253,28 @@ export function ProjectForm({ project }: ProjectFormProps) {
           <option value="completed">Concluído</option>
         </Select>
 
-        <label className="flex items-center gap-3 text-sm text-text-muted mt-7">
-          <input
-            type="checkbox"
-            className="size-4 rounded border-white/20 bg-transparent"
-            {...register("featured")}
-          />
-          Destacar na home
-        </label>
+        <Controller
+          name="updatedAt"
+          control={control}
+          render={({ field }) => (
+            <Input
+              label="Última atualização"
+              type="date"
+              value={toDateInputValue(field.value)}
+              onChange={(event) => field.onChange(dateInputToIso(event.target.value))}
+            />
+          )}
+        />
       </div>
+
+      <label className="flex items-center gap-3 text-sm text-text-muted">
+        <input
+          type="checkbox"
+          className="size-4 rounded border-white/20 bg-transparent"
+          {...register("featured")}
+        />
+        Destacar na home
+      </label>
 
       <Input
         label="Stack"

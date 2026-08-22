@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format";
 import { useRef, type MouseEvent } from "react";
 import { Link } from "react-router-dom";
 import type { Project, ProjectStatus } from "@blog/shared";
@@ -81,6 +82,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             <span className="text-terminal">$ </span>
             <span className="text-accent">git log</span>
             <span className="text-text-muted"> --oneline -1</span>
+            <span className="text-text-subtle"> · {formatDate(project.updatedAt)}</span>
           </p>
 
           <div className="flex-1">
