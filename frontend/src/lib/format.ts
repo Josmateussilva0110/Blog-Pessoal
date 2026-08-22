@@ -10,6 +10,13 @@ export function formatDate(date: string, locale = "pt-BR") {
   }).format(new Date(date));
 }
 
+/** Normaliza qualquer timestamp da API para ISO UTC (compatível com input date). */
+export function normalizeIsoDateTime(value?: string): string {
+  if (!value) return new Date().toISOString();
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+}
+
 /** Converte ISO para valor de `<input type="date">` (YYYY-MM-DD). */
 export function toDateInputValue(isoDate?: string): string {
   const date = isoDate ? new Date(isoDate) : new Date();

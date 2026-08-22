@@ -20,7 +20,7 @@ import {
   Undo2,
   Workflow,
 } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { cn } from "@/lib/format";
 
 type ToolbarButtonProps = {
@@ -72,10 +72,12 @@ export function RichTextEditor({
   error,
   className,
 }: RichTextEditorProps) {
-  const editor = useEditor({
-    extensions: [
+  const extensions = useMemo(
+    () => [
       StarterKit.configure({
         heading: { levels: [2, 3] },
+        link: false,
+        underline: false,
       }),
       Underline,
       Link.configure({
@@ -87,6 +89,11 @@ export function RichTextEditor({
       Placeholder.configure({ placeholder }),
       Markdown,
     ],
+    [placeholder],
+  );
+
+  const editor = useEditor({
+    extensions,
     content: value,
     contentType: "markdown",
     onUpdate: ({ editor: currentEditor }) => {

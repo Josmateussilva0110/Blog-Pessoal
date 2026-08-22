@@ -4,7 +4,7 @@ import type { ProjectFormValues as ApiProjectFormValues } from "@blog/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -14,7 +14,7 @@ import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { useToast } from "@/components/ui/toast";
 import { normalizeProjectStatus, toFormProjectStatus } from "@/lib/projectStatus";
 import { slugify, splitCommaList } from "@/lib/slugify";
-import { dateInputToIso, toDateInputValue } from "@/lib/format";
+import { dateInputToIso, normalizeIsoDateTime, toDateInputValue } from "@/lib/format";
 import { projectKeys } from "@/features/projects/hooks/useProjects";
 import { ProjectPreviewModal } from "@/features/projects/components/ProjectPreviewModal";
 import { submitProjectForm } from "@/service/projectForm.service";
@@ -61,9 +61,14 @@ export function ProjectForm({ project }: ProjectFormProps) {
       repoUrl: project?.repoUrl ?? "",
       featured: project?.featured ?? false,
       images: project?.images ?? [],
-      updatedAt: project?.updatedAt ?? new Date().toISOString(),
+      updatedAt: normalizeIsoDateTime(project?.updatedAt),
     },
   });
+
+  const onInvalid = (formErrors: FieldErrors<ProjectFormValues>) => {
+    const firstField = Object.values(formErrors).find((error) => error?.message);
+    toast.error(firstField?.message ?? "Verifique os campos do formulário.");
+  };
 
   const title = watch("title");
   const description = watch("description");
@@ -91,7 +96,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
       repoUrl: project.repoUrl ?? "",
       featured: project.featured,
       images: project.images,
-      updatedAt: project.updatedAt,
+      updatedAt: normalizeIsoDateTime(project.updatedAt),
     });
 
     setImages(
@@ -148,6 +153,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
     const payload: ApiProjectFormValues = {
       ...values,
       status: normalizeProjectStatus(values.status),
+      updatedAt: normalizeIsoDateTime(values.updatedAt),
       images: images
         .filter((item) => item.isExisting)
         .map((item) => item.url),
@@ -182,7 +188,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6" noValidate>
       <div className="grid gap-4 md:grid-cols-2">
         <Input
           label="Título"
@@ -261,6 +267,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
               label="Última atualização"
               type="date"
               value={toDateInputValue(field.value)}
+              error={errors.updatedAt?.message}
               onChange={(event) => field.onChange(dateInputToIso(event.target.value))}
             />
           )}

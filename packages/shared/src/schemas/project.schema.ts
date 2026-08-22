@@ -56,7 +56,12 @@ export const projectFormSchema = z.object({
   repoUrl: optionalUrl.optional(),
   featured: z.boolean(),
   images: z.array(z.string().url()),
-  updatedAt: z.string().datetime().optional(),
+  updatedAt: z
+    .string()
+    .optional()
+    .refine((value) => !value || !Number.isNaN(Date.parse(value)), {
+      message: "Data de atualização inválida.",
+    }),
 });
 
 export type ProjectFormValues = z.infer<typeof projectFormSchema>;

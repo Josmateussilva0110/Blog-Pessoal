@@ -13,7 +13,9 @@ import {
 } from "lucide-react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
+import { Image } from "@/components/ui/Image";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { resolveProfileImageUrl } from "@/lib/profileImageUrl";
 import { cn } from "@/lib/format";
 
 const SIDEBAR_STORAGE_KEY = "admin-sidebar-collapsed";
@@ -26,12 +28,6 @@ const adminNav = [
   { to: "/admin/links", label: "links", end: false, icon: Link2 },
   { to: "/admin/settings", label: "settings", end: false, icon: Settings },
 ];
-
-function getUserInitials(email?: string | null) {
-  if (!email) return "?";
-  const local = email.split("@")[0] ?? "";
-  return local.slice(0, 2).toUpperCase();
-}
 
 function readSidebarCollapsed() {
   try {
@@ -236,12 +232,16 @@ export function AdminLayout() {
                 sidebarCollapsed ? "justify-center" : "gap-3",
               )}
             >
-              <span
-                className="flex size-9 shrink-0 items-center justify-center rounded-md border border-accent/20 bg-accent-soft font-mono text-xs font-semibold text-accent"
+              <Image
+                src={resolveProfileImageUrl(user?.profileImagePublicUrl)}
+                alt={user?.username ?? "Administrador"}
+                width={36}
+                height={36}
+                rounded="md"
+                loading="eager"
+                className="shrink-0 border border-accent/20"
                 title={sidebarCollapsed ? user?.username ?? "Administrador" : undefined}
-              >
-                {getUserInitials(user?.email)}
-              </span>
+              />
               {!sidebarCollapsed && (
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-mono text-sm text-text">
