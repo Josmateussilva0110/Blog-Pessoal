@@ -1,17 +1,23 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/format";
 
-export function TerminalWindowBar({ path }: { path: string }) {
+type TerminalWindowBarProps = {
+  path: string;
+  trailing?: ReactNode;
+};
+
+export function TerminalWindowBar({ path, trailing }: TerminalWindowBarProps) {
   return (
-    <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border-subtle bg-surface-raised">
-      <span className="h-2.5 w-2.5 rounded-full bg-red-500/80 shrink-0" />
-      <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80 shrink-0" />
-      <span className="h-2.5 w-2.5 rounded-full bg-terminal/80 shrink-0" />
-      <span className="font-mono text-[11px] ml-2 truncate">
+    <div className="flex items-center gap-2 border-b border-border-subtle bg-surface-raised px-4 py-2.5">
+      <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-red-500/80" />
+      <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-amber-400/80" />
+      <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-terminal/80" />
+      <span className="ml-2 min-w-0 flex-1 truncate font-mono text-[11px]">
         <span className="text-terminal">mateus@dev</span>
         <span className="text-text-subtle">:</span>
         <span className="text-accent">{path}</span>
       </span>
+      {trailing}
     </div>
   );
 }
@@ -21,6 +27,7 @@ interface TerminalWindowProps {
   children: ReactNode;
   className?: string;
   bodyClassName?: string;
+  trailing?: ReactNode;
 }
 
 export function TerminalWindow({
@@ -28,10 +35,11 @@ export function TerminalWindow({
   children,
   className,
   bodyClassName,
+  trailing,
 }: TerminalWindowProps) {
   return (
     <div className={cn("terminal-card overflow-hidden", className)}>
-      <TerminalWindowBar path={path} />
+      <TerminalWindowBar path={path} trailing={trailing} />
       <div className={cn("p-6 md:p-8", bodyClassName)}>{children}</div>
     </div>
   );
@@ -47,7 +55,7 @@ export function TerminalPanel({ title, children, className }: TerminalPanelProps
   return (
     <div className={cn("terminal-card-muted overflow-hidden", className)}>
       {title && (
-        <div className="px-4 py-2 border-b border-border-subtle bg-surface-raised/50">
+        <div className="border-b border-border-subtle bg-surface-raised/50 px-4 py-2">
           <p className="font-mono text-[10px] text-text-subtle">{title}</p>
         </div>
       )}

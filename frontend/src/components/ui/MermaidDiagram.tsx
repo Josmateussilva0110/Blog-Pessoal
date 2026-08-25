@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from "react";
+import { ExpandableChart } from "@/components/ui/ExpandableChart";
 import { cn } from "@/lib/format";
 
 type MermaidDiagramProps = {
@@ -31,8 +32,7 @@ async function renderMermaidChart(id: string, chart: string) {
   return mermaid.render(id, chart);
 }
 
-export function MermaidDiagram({ chart, className }: MermaidDiagramProps) {
-  const baseId = useId().replace(/:/g, "");
+function useMermaidSvg(chart: string, renderId: string) {
   const [svg, setSvg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,10 +44,7 @@ export function MermaidDiagram({ chart, className }: MermaidDiagramProps) {
       setError(null);
 
       try {
-        const { svg: renderedSvg } = await renderMermaidChart(
-          `mermaid-${baseId}`,
-          chart.trim(),
-        );
+        const { svg: renderedSvg } = await renderMermaidChart(renderId, chart.trim());
 
         if (!cancelled) {
           setSvg(renderedSvg);
@@ -68,7 +65,26 @@ export function MermaidDiagram({ chart, className }: MermaidDiagramProps) {
     return () => {
       cancelled = true;
     };
-  }, [baseId, chart]);
+  }, [chart, renderId]);
+
+  return { svg, error, loading: !svg && !error };
+}
+
+function MermaidSvgDisplay({ svg, className }: { svg: string; className?: string }) {
+  return (
+    <div
+      className={cn(
+        "mermaid-diagram overflow-x-auto rounded-xl border border-white/[0.08] bg-white/[0.02] p-4",
+        className,
+      )}
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+}
+
+export function MermaidDiagram({ chart, className }: MermaidDiagramProps) {
+  const baseId = useId().replace(/:/g, "");
+  const { svg, error, loading } = useMermaidSvg(chart, `mermaid-${baseId}`);
 
   if (error) {
     return (
@@ -86,7 +102,7 @@ export function MermaidDiagram({ chart, className }: MermaidDiagramProps) {
     );
   }
 
-  if (!svg) {
+  if (loading || !svg) {
     return (
       <div
         className={cn(
@@ -100,12 +116,16 @@ export function MermaidDiagram({ chart, className }: MermaidDiagramProps) {
   }
 
   return (
-    <div
-      className={cn(
-        "mermaid-diagram overflow-x-auto rounded-xl border border-white/[0.08] bg-white/[0.02] p-4",
-        className,
-      )}
-      dangerouslySetInnerHTML={{ __html: svg }}
+    <ExpandableChart
+      title="// diagrama"
+      className={className}
+      preview={<MermaidSvgDisplay svg={svg} />}
+      fullscreen={
+        <MermaidSvgDisplay
+          svg={svg}
+          className="p-4 sm:p-6 [&_svg]:mx-auto [&_svg]:block [&_svg]:h-auto [&_svg]:max-w-full"
+        />
+      }
     />
   );
 }

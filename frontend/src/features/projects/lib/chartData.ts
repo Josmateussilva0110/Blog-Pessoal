@@ -12,12 +12,16 @@ export function getTechChartData(projects: Project[]) {
   }));
 }
 
-export function getRadarChartData(projects: Project[]) {
+export function getRadarChartData(projects: Project[], options?: { labelMaxLength?: number }) {
   const techData = aggregateTechStack(projects);
   const max = techData[0]?.count ?? 1;
+  const labelMaxLength = options?.labelMaxLength ?? 12;
 
   return techData.slice(0, 6).map((item) => ({
-    tech: item.name.length > 12 ? `${item.name.slice(0, 12)}…` : item.name,
+    tech:
+      item.name.length > labelMaxLength
+        ? `${item.name.slice(0, labelMaxLength)}…`
+        : item.name,
     value: item.count,
     fullMark: max,
   }));
