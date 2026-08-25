@@ -30,7 +30,7 @@ const envSchema = z.object({
         .default("")
         .transform((val) => val.split(",").map((s) => s.trim()).filter(Boolean)),
     /** Use "none" quando o frontend estiver em outro domínio (ex.: Vercel + API no Belmo). */
-    AUTH_COOKIE_SAME_SITE: z.enum(["lax", "none", "strict"]).default("lax"),
+    AUTH_COOKIE_SAME_SITE: z.enum(["lax", "none", "strict"]).optional(),
     TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(1),
     REFRESH_COOKIE_MAX_AGE_DAYS: z.coerce.number().int().min(1).max(90).default(30),
     RENDER_EXTERNAL_URL: z.string().url().optional(),
@@ -50,8 +50,16 @@ const envSchema = z.object({
         origins.add(data.RENDER_EXTERNAL_URL)
     }
 
+    const authCookieSameSite =
+        data.AUTH_COOKIE_SAME_SITE ?? (data.NODE_ENV === "production" ? "none" : "lax")
+
     const { EXPO_PUBLIC_SUPABASE_ANON_KEY: _, RENDER_EXTERNAL_URL: __, ...rest } = data
-    return { ...rest, SUPABASE_ANON_KEY: anonKey, ALLOWED_ORIGINS: [...origins] }
+    return {
+        ...rest,
+        SUPABASE_ANON_KEY: anonKey,
+        ALLOWED_ORIGINS: [...origins],
+        AUTH_COOKIE_SAME_SITE: authCookieSameSite,
+    }
 })
 
 const parsed = envSchema.safeParse(process.env)

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getThumbnailUrl } from "@/lib/imageUrl";
+import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { cn } from "@/lib/format";
 
 interface ProjectImageGalleryProps {
@@ -13,6 +13,7 @@ function padIndex(index: number) {
 
 export function ProjectImageGallery({ images, projectTitle }: ProjectImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   if (images.length === 0) return null;
 
@@ -31,75 +32,80 @@ export function ProjectImageGallery({ images, projectTitle }: ProjectImageGaller
       </div>
 
       <div className="terminal-card overflow-hidden">
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-border-subtle bg-surface-raised">
+        <div className="flex items-center gap-2 border-b border-border-subtle bg-surface-raised px-4 py-2">
           <span className="h-2 w-2 rounded-full bg-red-500/80" />
           <span className="h-2 w-2 rounded-full bg-amber-400/80" />
           <span className="h-2 w-2 rounded-full bg-terminal/80" />
-          <span className="font-mono text-[10px] ml-1 truncate text-text-subtle">
+          <span className="ml-1 truncate font-mono text-[10px] text-text-subtle">
             preview — screenshot-{padIndex(activeIndex)}.png
           </span>
         </div>
 
-        <div className="relative bg-surface border-b border-border-subtle">
+        <button
+          type="button"
+          onClick={() => setLightboxIndex(activeIndex)}
+          className="relative block w-full border-b border-border-subtle bg-surface text-left transition-colors hover:bg-surface-raised/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/40"
+          aria-label={`Ampliar screenshot ${activeIndex + 1} de ${projectTitle}`}
+        >
           <img
             src={activeImage}
             alt={`${projectTitle} — screenshot ${activeIndex + 1}`}
-            className="w-full max-h-[240px] sm:max-h-[320px] md:max-h-[420px] object-contain bg-[#06060c]"
+            className="mx-auto block w-full max-h-[220px] cursor-zoom-in object-contain bg-[#06060c] sm:max-h-[300px] md:max-h-[380px]"
           />
-          <div
-            className="pointer-events-none absolute inset-0 bg-[linear-gradient(transparent_50%,rgb(34_211_238/0.025)_50%)] bg-[length:100%_3px]"
-            aria-hidden
-          />
-        </div>
+        </button>
 
-        <div className="px-4 py-2 font-mono text-[10px] text-text-subtle border-b border-border-subtle">
+        <div className="border-b border-border-subtle px-4 py-2 font-mono text-[10px] text-text-subtle">
           image/png · {activeIndex + 1}/{images.length}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {images.map((image, index) => {
-          const isActive = index === activeIndex;
+      {images.length > 1 && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {images.map((image, index) => {
+            const isActive = index === activeIndex;
 
-          return (
-            <button
-              key={image}
-              type="button"
-              onClick={() => setActiveIndex(index)}
-              className={cn(
-                "terminal-card overflow-hidden text-left transition-colors",
-                isActive
-                  ? "border-accent/35 ring-1 ring-accent/20"
-                  : "hover:border-accent/20",
-              )}
-            >
-              <div className="flex items-center gap-1.5 px-2 py-1 border-b border-border-subtle bg-surface-raised">
-                <span className="h-1.5 w-1.5 rounded-full bg-terminal/70 shrink-0" />
-                <span className="font-mono text-[9px] text-text-subtle truncate">
-                  {padIndex(index)}.png
-                </span>
-              </div>
-              <div className="relative aspect-video bg-surface">
-                <img
-                  src={getThumbnailUrl(image)}
-                  alt={`Miniatura ${index + 1} de ${projectTitle}`}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                  onError={(event) => {
-                    if (event.currentTarget.src !== image) {
-                      event.currentTarget.src = image;
-                    }
-                  }}
-                />
-                <div
-                  className="pointer-events-none absolute inset-0 bg-[linear-gradient(transparent_50%,rgb(34_211_238/0.03)_50%)] bg-[length:100%_2px]"
-                  aria-hidden
-                />
-              </div>
-            </button>
-          );
-        })}
-      </div>
+            return (
+              <button
+                key={image}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                className={cn(
+                  "terminal-card overflow-hidden text-left transition-colors",
+                  isActive
+                    ? "border-accent/35 ring-1 ring-accent/20"
+                    : "hover:border-accent/20",
+                )}
+              >
+                <div className="flex items-center gap-1.5 border-b border-border-subtle bg-surface-raised px-2 py-1">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-terminal/70" />
+                  <span className="truncate font-mono text-[9px] text-text-subtle">
+                    {padIndex(index)}.png
+                  </span>
+                </div>
+                <div className="aspect-video bg-surface">
+                  <img
+                    src={image}
+                    alt={`Miniatura ${index + 1} de ${projectTitle}`}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          key={lightboxIndex}
+          images={images}
+          initialIndex={lightboxIndex}
+          open
+          onClose={() => setLightboxIndex(null)}
+          altPrefix={projectTitle}
+        />
+      )}
     </section>
   );
 }

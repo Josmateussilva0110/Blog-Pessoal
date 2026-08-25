@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
-import { RichTextEditor } from "@/components/ui/RichTextEditor";
+import { MarkdownEditor } from "@/components/ui/MarkdownEditor";
 import { useToast } from "@/components/ui/toast";
 import { normalizeProjectStatus, toFormProjectStatus } from "@/lib/projectStatus";
 import { slugify, splitCommaList } from "@/lib/slugify";
@@ -240,7 +240,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
           name="contentMarkdown"
           control={control}
           render={({ field }) => (
-            <RichTextEditor
+            <MarkdownEditor
               value={field.value}
               onChange={field.onChange}
               error={errors.contentMarkdown?.message}
@@ -248,10 +248,9 @@ export function ProjectForm({ project }: ProjectFormProps) {
           )}
         />
         <p className="text-xs text-text-muted">
-          Use a barra de ferramentas para formatar o texto. Para código, clique no ícone{" "}
-          <code className="font-mono text-accent">&lt;/&gt;</code> ou cole um bloco{" "}
-          <code className="font-mono text-accent">```python</code>. Para diagramas, use o ícone de fluxo ou{" "}
-          <code className="font-mono text-accent">```mermaid</code>.
+          Editor em markdown puro. Use a aba <strong className="font-medium text-text">Preview</strong>{" "}
+          para ver o resultado formatado (tabelas, código, diagramas Mermaid). Também é possível{" "}
+          <strong className="font-medium text-text">Importar .md</strong>.
         </p>
       </div>
 

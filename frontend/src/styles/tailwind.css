@@ -250,80 +250,6 @@
     }
   }
 
-  .tiptap-editor p.is-editor-empty:first-child::before {
-    color: #71717a;
-    content: attr(data-placeholder);
-    float: left;
-    height: 0;
-    pointer-events: none;
-  }
-
-  .tiptap-editor > * + * {
-    margin-top: 0.75rem;
-  }
-
-  .tiptap-editor h2 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #f1f5f9;
-  }
-
-  .tiptap-editor h3 {
-    font-size: 1.0625rem;
-    font-weight: 600;
-    color: #e2e8f0;
-  }
-
-  .tiptap-editor ul,
-  .tiptap-editor ol {
-    padding-left: 1.25rem;
-  }
-
-  .tiptap-editor ul {
-    list-style: disc;
-  }
-
-  .tiptap-editor ol {
-    list-style: decimal;
-  }
-
-  .tiptap-editor blockquote {
-    border-left: 3px solid rgb(34 211 238 / 0.35);
-    color: #94a3b8;
-    padding-left: 0.875rem;
-  }
-
-  .tiptap-editor pre,
-  .tiptap-editor pre.tiptap-code-block {
-    margin-top: 0.75rem;
-    margin-bottom: 0.75rem;
-    overflow-x: auto;
-    border-radius: 0.75rem;
-    border: 1px solid rgb(255 255 255 / 0.08);
-    background: #0d1117;
-    padding: 0.875rem 1rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.8125rem;
-    line-height: 1.6;
-    color: #e2e8f0;
-  }
-
-  .tiptap-editor pre code {
-    background: transparent;
-    padding: 0;
-    color: inherit;
-    font-size: inherit;
-  }
-
-  .tiptap-editor :not(pre) > code {
-    border-radius: 0.375rem;
-    background: rgb(34 211 238 / 0.1);
-    padding: 0.125rem 0.375rem;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.9em;
-    color: #22d3ee;
-  }
-
   .markdown-content {
     color: #94a3b8;
     line-height: 1.75;
@@ -377,6 +303,50 @@
   .markdown-content strong {
     color: #f1f5f9;
     font-weight: 600;
+  }
+
+  .markdown-content h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+
+  .markdown-table-wrap {
+    overflow-x: auto;
+    margin: 1rem 0;
+    border: 1px solid rgb(255 255 255 / 0.08);
+    border-radius: 0.75rem;
+  }
+
+  .markdown-content table {
+    width: 100%;
+    min-width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  @media (min-width: 640px) {
+    .markdown-content table {
+      min-width: 32rem;
+    }
+  }
+
+  .markdown-content th,
+  .markdown-content td {
+    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    padding: 0.65rem 0.85rem;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .markdown-content th {
+    background: rgb(255 255 255 / 0.03);
+    color: #f1f5f9;
+    font-weight: 600;
+  }
+
+  .markdown-content tr:last-child td {
+    border-bottom: 0;
   }
 
   .mermaid-diagram svg {

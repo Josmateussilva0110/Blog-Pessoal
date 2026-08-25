@@ -7,10 +7,12 @@
     "backend"
   ],
   "scripts": {
-    "dev:frontend": "npm run dev -w @blog/frontend",
-    "dev:backend": "npm run dev -w backend",
+    "dev": "NODE_ENV=development npm run dev:backend & npm run dev:frontend",
+    "dev:frontend": "NODE_ENV=development npm run dev -w @blog/frontend",
+    "dev:backend": "NODE_ENV=development npm run dev -w backend",
     "build:shared": "npm run build -w @blog/shared",
-    "build:frontend": "npm run build -w @blog/frontend",
+    "build:frontend": "NODE_ENV=production npm run build -w @blog/frontend",
+    "build:backend": "NODE_ENV=production npm run build -w backend",
     "create-user": "npm run create-user -w backend",
     "reset-user-password": "npm run reset-user-password -w backend"
   },

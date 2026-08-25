@@ -49,6 +49,11 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
         components={{
           pre: MarkdownPre,
           code: MarkdownCode,
+          table: ({ children, ...props }) => (
+            <div className="markdown-table-wrap">
+              <table {...props}>{children}</table>
+            </div>
+          ),
         }}
       >
         {content}

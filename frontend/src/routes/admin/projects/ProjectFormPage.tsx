@@ -15,7 +15,7 @@ export default function ProjectFormPage() {
   });
 
   return (
-    <div className="max-w-3xl w-full">
+    <div className="w-full">
       <AdminPageHeader
         eyebrow="Projetos"
         title={isEditing ? "Editar projeto" : "Novo projeto"}
@@ -49,7 +49,7 @@ export default function ProjectFormPage() {
               $ vim {isEditing ? project?.slug : "new-project"}.md
             </span>
           </div>
-          <div className="p-5 sm:p-6">
+          <div className="p-4 sm:p-5 lg:p-6">
             <ProjectForm project={project ?? undefined} />
           </div>
         </div>
