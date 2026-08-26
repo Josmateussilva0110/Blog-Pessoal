@@ -7,6 +7,7 @@ import { TerminalWindowBar } from "@/components/ui/TerminalWindow";
 import { cn } from "@/lib/format";
 import { TechUsageBarChart } from "./charts/TechUsageBarChart";
 import { TechRadarChart } from "./charts/TechRadarChart";
+import { PlatformPieChart } from "./charts/PlatformPieChart";
 
 interface StackAnalyticsSectionProps {
   projects: Project[];
@@ -86,7 +87,10 @@ export function StackAnalyticsSection({
         />
         <div className="flex flex-col gap-6">
           <div className="h-72 animate-pulse bg-surface-raised terminal-card" />
-          <div className="mx-auto h-80 w-full max-w-sm animate-pulse bg-surface-raised terminal-card" />
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="h-80 animate-pulse bg-surface-raised terminal-card" />
+            <div className="h-80 animate-pulse bg-surface-raised terminal-card" />
+          </div>
         </div>
       </section>
     );
@@ -110,13 +114,23 @@ export function StackAnalyticsSection({
           fullscreen={<TechUsageBarChart projects={projects} expanded />}
         />
 
-        <ChartCard
-          path="~/analytics/radar.json"
-          title="// radar de habilidades"
-          className="w-full md:mx-auto md:max-w-md"
-          preview={<TechRadarChart projects={projects} />}
-          fullscreen={<TechRadarChart projects={projects} expanded />}
-        />
+        <div className="grid gap-6 md:grid-cols-2 md:items-stretch">
+          <ChartCard
+            path="~/analytics/radar.json"
+            title="// radar de habilidades"
+            className="min-w-0 h-full"
+            preview={<TechRadarChart projects={projects} />}
+            fullscreen={<TechRadarChart projects={projects} expanded />}
+          />
+
+          <ChartCard
+            path="~/analytics/platforms.json"
+            title="// distribuição por plataforma"
+            className="min-w-0 h-full"
+            preview={<PlatformPieChart projects={projects} />}
+            fullscreen={<PlatformPieChart projects={projects} expanded />}
+          />
+        </div>
       </div>
     </section>
   );

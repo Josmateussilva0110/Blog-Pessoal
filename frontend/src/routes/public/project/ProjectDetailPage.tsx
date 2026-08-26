@@ -7,6 +7,7 @@ import { useProjectTransition } from "@/features/projects/context/ProjectTransit
 import { ProjectImageGallery } from "@/features/projects/components/ProjectImageGallery";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/features/projects/components/StatusBadge";
+import { PlatformBadge } from "@/features/projects/components/PlatformBadge";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
 import { TerminalWindow, TerminalWindowBar } from "@/components/ui/TerminalWindow";
 import { SITE } from "@/config/constants";
@@ -29,6 +30,11 @@ function MetaPanel({
           <div>
             <p className="text-text-subtle mb-1">status</p>
             <StatusBadge status={project.status} />
+          </div>
+
+          <div>
+            <p className="text-text-subtle mb-1">platform</p>
+            <PlatformBadge platform={project.platform} />
           </div>
 
           <div>
@@ -154,6 +160,7 @@ export function ProjectDetailPage() {
           <header className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-border-subtle">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <StatusBadge status={project.status} />
+              <PlatformBadge platform={project.platform} />
               <span className="font-mono text-[10px] text-text-subtle uppercase tracking-wider">
                 readme.md
               </span>

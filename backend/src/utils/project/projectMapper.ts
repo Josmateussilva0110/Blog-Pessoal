@@ -2,10 +2,10 @@ import type { MarkdownFile, Project } from "@blog/shared"
 import { normalizeProjectStatus } from "./projectStatus"
 
 export const PROJECT_SELECT =
-  "id, slug, title, description, content_markdown, status, tech_stack, repo_url, cover_image_url, images, markdown_files, featured, created_at, updated_at"
+  "id, slug, title, description, content_markdown, status, platform, tech_stack, repo_url, cover_image_url, images, markdown_files, featured, created_at, updated_at"
 
 export const PROJECT_LIST_SELECT =
-  "id, slug, title, description, status, tech_stack, repo_url, cover_image_url, images, featured, created_at, updated_at"
+  "id, slug, title, description, status, platform, tech_stack, repo_url, cover_image_url, images, featured, created_at, updated_at"
 
 type ProjectRow = {
   id: string
@@ -14,6 +14,7 @@ type ProjectRow = {
   description: string
   content_markdown?: string
   status: Project["status"] | "archived" | "closed"
+  platform?: Project["platform"] | null
   tech_stack: string[] | null
   repo_url: string | null
   cover_image_url: string | null
@@ -37,6 +38,7 @@ export function mapProjectRow(row: ProjectRow): Project {
     description: row.description || contentMarkdown,
     contentMarkdown,
     status,
+    platform: row.platform === "mobile" ? "mobile" : "web",
     techStack: row.tech_stack ?? [],
     repoUrl: row.repo_url ?? undefined,
     coverImage,

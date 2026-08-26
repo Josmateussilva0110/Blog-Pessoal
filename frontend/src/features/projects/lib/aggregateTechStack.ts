@@ -6,14 +6,14 @@ export type TechCount = {
 };
 
 export const TECH_CHART_COLORS = [
-  "#a5f3fc",
-  "#67e8f9",
-  "#22d3ee",
-  "#06b6d4",
+  "#0284c7",
+  "#0369a1",
+  "#2563eb",
+  "#1d4ed8",
   "#0891b2",
-  "#4ade80",
-  "#34d399",
-  "#14b8a6",
+  "#0e7490",
+  "#059669",
+  "#0d9488",
 ] as const;
 
 export function aggregateTechStack(projects: Project[]): TechCount[] {

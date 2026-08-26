@@ -3,7 +3,9 @@ import { useRef, type MouseEvent } from "react";
 import { Link } from "react-router-dom";
 import type { Project, ProjectStatus } from "@blog/shared";
 import { useProjectTransition } from "@/features/projects/context/ProjectTransitionProvider";
+import { PlatformCardLabel } from "@/features/projects/components/PlatformBadge";
 import { normalizeProjectStatus } from "@/lib/projectStatus";
+import { normalizeProjectPlatform } from "@/lib/projectPlatform";
 import { projectTransitionName } from "@/lib/viewTransition";
 
 interface ProjectCardProps {
@@ -36,6 +38,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
   const cardRef = useRef<HTMLElement>(null);
   const status = normalizeProjectStatus(project.status);
   const statusInfo = TERMINAL_STATUS[status];
+  const platform = normalizeProjectPlatform(project.platform);
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     if (
@@ -116,16 +119,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
             >
               {statusInfo.icon} {statusInfo.label}
             </span>
-            <div className="flex gap-3">
-              {project.repoUrl && (
-                <span className="font-mono text-[10px] text-text-subtle group-hover:text-text-muted transition-colors">
-                  github
-                </span>
-              )}
-              <span className="font-mono text-[10px] text-text-subtle group-hover:text-text-muted transition-colors">
-                demo
-              </span>
-            </div>
+            <PlatformCardLabel platform={platform} />
           </div>
         </div>
       </article>

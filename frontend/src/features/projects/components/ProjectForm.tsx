@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/Textarea";
 import { MarkdownEditor } from "@/components/ui/MarkdownEditor";
 import { useToast } from "@/components/ui/toast";
 import { normalizeProjectStatus, toFormProjectStatus } from "@/lib/projectStatus";
+import { normalizeProjectPlatform } from "@/lib/projectPlatform";
 import { slugify, splitCommaList } from "@/lib/slugify";
 import { dateInputToIso, normalizeIsoDateTime, toDateInputValue } from "@/lib/format";
 import { cn } from "@/lib/format";
@@ -73,6 +74,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
       description: project?.description ?? "",
       contentMarkdown: project?.contentMarkdown ?? "",
       status: toFormProjectStatus(project?.status ?? "planned"),
+      platform: normalizeProjectPlatform(project?.platform),
       techStack: project?.techStack ?? [],
       repoUrl: project?.repoUrl ?? "",
       featured: project?.featured ?? false,
@@ -103,6 +105,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
       description: project.description,
       contentMarkdown: project.contentMarkdown,
       status: toFormProjectStatus(project.status),
+      platform: normalizeProjectPlatform(project.platform),
       techStack: project.techStack,
       repoUrl: project.repoUrl ?? "",
       featured: project.featured,
@@ -280,11 +283,16 @@ export function ProjectForm({ project }: ProjectFormProps) {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <Select label="Status" error={errors.status?.message} {...register("status")}>
           <option value="planned">Planejado</option>
           <option value="wip">Em andamento</option>
           <option value="completed">Concluído</option>
+        </Select>
+
+        <Select label="Plataforma" error={errors.platform?.message} {...register("platform")}>
+          <option value="web">Web</option>
+          <option value="mobile">Mobile</option>
         </Select>
 
         <Controller

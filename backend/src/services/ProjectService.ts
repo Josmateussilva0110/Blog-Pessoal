@@ -73,6 +73,7 @@ class ProjectService {
       content_markdown: payload.contentMarkdown ?? "",
       status: normalizeProjectStatus(payload.status),
       tech_stack: payload.techStack,
+      platform: payload.platform,
       repo_url: payload.repoUrl ?? null,
       cover_image_url: images[0] ?? null,
       images,

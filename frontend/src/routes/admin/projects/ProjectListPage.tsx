@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/toast";
 import { deleteProject } from "@/features/projects/api/projects.api";
 import { useAdminProjects, projectKeys } from "@/features/projects/hooks/useProjects";
 import { StatusBadge } from "@/features/projects/components/StatusBadge";
+import { PlatformBadge } from "@/features/projects/components/PlatformBadge";
 import type { Project } from "@blog/shared";
 
 export default function ProjectListPage() {
@@ -105,7 +106,10 @@ export default function ProjectListPage() {
                   >
                     {project.title}
                   </Link>
-                  <StatusBadge status={project.status} />
+                  <div className="flex flex-wrap gap-1.5">
+                    <PlatformBadge platform={project.platform} />
+                    <StatusBadge status={project.status} />
+                  </div>
                 </div>
                 <p className="font-mono text-[10px] text-text-subtle">
                   {project.techStack.slice(0, 3).map((t) => `--${t.toLowerCase()}`).join(" ")}
@@ -134,6 +138,9 @@ export default function ProjectListPage() {
                     status
                   </th>
                   <th className="text-left px-5 py-4 font-mono text-[10px] font-medium uppercase tracking-widest text-text-subtle">
+                    platform
+                  </th>
+                  <th className="text-left px-5 py-4 font-mono text-[10px] font-medium uppercase tracking-widest text-text-subtle">
                     stack
                   </th>
                   <th className="text-right px-5 py-4 font-mono text-[10px] font-medium uppercase tracking-widest text-text-subtle">
@@ -157,6 +164,9 @@ export default function ProjectListPage() {
                     </td>
                     <td className="px-5 py-4">
                       <StatusBadge status={project.status} />
+                    </td>
+                    <td className="px-5 py-4">
+                      <PlatformBadge platform={project.platform} />
                     </td>
                     <td className="px-5 py-4 font-mono text-[10px] text-text-subtle">
                       {project.techStack.slice(0, 3).map((t) => `--${t.toLowerCase()}`).join(" ")}

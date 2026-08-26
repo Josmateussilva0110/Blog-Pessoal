@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const projectStatusSchema = z.enum(["planned", "completed", "wip"]);
 
+export const projectPlatformSchema = z.enum(["mobile", "web"]);
+
 export const markdownFileSchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().min(1),
@@ -17,6 +19,7 @@ export const projectSchema = z.object({
   description: z.string().default(""),
   contentMarkdown: z.string().min(1),
   status: projectStatusSchema,
+  platform: projectPlatformSchema.default("web"),
   techStack: z.array(z.string()),
   repoUrl: z.string().url().optional(),
   coverImage: z.string().url().optional(),
@@ -28,6 +31,7 @@ export const projectSchema = z.object({
 });
 
 export type ProjectStatus = z.infer<typeof projectStatusSchema>;
+export type ProjectPlatform = z.infer<typeof projectPlatformSchema>;
 export type MarkdownFile = z.infer<typeof markdownFileSchema>;
 export type Project = z.infer<typeof projectSchema>;
 
@@ -59,6 +63,7 @@ export const projectFormSchema = z.object({
     .min(1, "Resumo obrigatório.")
     .max(500, "O resumo deve ter no máximo 500 caracteres."),
   status: projectStatusSchema,
+  platform: projectPlatformSchema,
   techStack: z.array(z.string()),
   repoUrl: optionalUrl.optional(),
   featured: z.boolean(),

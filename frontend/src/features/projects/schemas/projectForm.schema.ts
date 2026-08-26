@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const projectStatusSchema = z.enum(["planned", "wip", "completed"]);
+const projectPlatformSchema = z.enum(["mobile", "web"]);
 
 const optionalUrl = z
   .string()
@@ -23,6 +24,7 @@ export const projectFormSchema = z.object({
     .max(500, "O resumo deve ter no máximo 500 caracteres."),
   contentMarkdown: z.string().trim().min(1, "Descreva o projeto."),
   status: projectStatusSchema,
+  platform: projectPlatformSchema,
   techStack: z.array(z.string()),
   repoUrl: optionalUrl.optional(),
   featured: z.boolean(),

@@ -11,13 +11,56 @@ import {
 } from "recharts";
 import type { Project } from "@blog/shared";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { CHART_AXIS, CHART_GRID, getTechChartData } from "../../lib/chartData";
+import { CHART_AXIS, CHART_GRID, getBarLabelFill, getTechChartData } from "../../lib/chartData";
 import { ChartTooltip } from "./ChartTooltip";
 
 type TechUsageBarChartProps = {
   projects: Project[];
   expanded?: boolean;
 };
+
+type BarPercentLabelProps = {
+  x?: string | number;
+  y?: string | number;
+  width?: string | number;
+  height?: string | number;
+  value?: string | number | null;
+  payload?: { fill?: string };
+  fontSize?: number;
+};
+
+function BarPercentLabel(props: BarPercentLabelProps) {
+  const x = Number(props.x ?? 0);
+  const y = Number(props.y ?? 0);
+  const width = Number(props.width ?? 0);
+  const height = Number(props.height ?? 0);
+  const value = props.value;
+  const fontSize = props.fontSize ?? 11;
+  const numericValue = typeof value === "number" ? value : Number(value);
+
+  if (!Number.isFinite(numericValue) || width < 28) return null;
+
+  const barColor = props.payload?.fill ?? "#2563eb";
+  const labelFill = getBarLabelFill(barColor);
+  const stroke = labelFill === "#f8fafc" ? "rgba(15, 23, 42, 0.55)" : "rgba(248, 250, 252, 0.7)";
+
+  return (
+    <text
+      x={x + width - 8}
+      y={y + height / 2}
+      fill={labelFill}
+      stroke={stroke}
+      strokeWidth={2}
+      paintOrder="stroke"
+      textAnchor="end"
+      dominantBaseline="middle"
+      fontSize={fontSize}
+      fontWeight={600}
+    >
+      {numericValue}%
+    </text>
+  );
+}
 
 export function TechUsageBarChart({ projects, expanded = false }: TechUsageBarChartProps) {
   const isNarrow = useMediaQuery("(max-width: 639px)");
@@ -73,10 +116,12 @@ export function TechUsageBarChart({ projects, expanded = false }: TechUsageBarCh
             <LabelList
               dataKey="percent"
               position="insideRight"
-              formatter={(value) => `${value}%`}
-              fill="#f8fafc"
-              fontSize={expanded ? 12 : compact ? 9 : 11}
-              fontWeight={600}
+              content={(props) => (
+                <BarPercentLabel
+                  {...(props as BarPercentLabelProps)}
+                  fontSize={expanded ? 12 : compact ? 9 : 11}
+                />
+              )}
             />
           </Bar>
         </BarChart>
