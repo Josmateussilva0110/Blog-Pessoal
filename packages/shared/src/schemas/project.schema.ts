@@ -31,6 +31,13 @@ export type ProjectStatus = z.infer<typeof projectStatusSchema>;
 export type MarkdownFile = z.infer<typeof markdownFileSchema>;
 export type Project = z.infer<typeof projectSchema>;
 
+export const imageOrderEntrySchema = z.union([
+  z.string().url(),
+  z.object({ pending: z.number().int().nonnegative() }),
+]);
+
+export type ImageOrderEntry = z.infer<typeof imageOrderEntrySchema>;
+
 const optionalUrl = z
   .string()
   .url("URL inválida.")
@@ -56,6 +63,7 @@ export const projectFormSchema = z.object({
   repoUrl: optionalUrl.optional(),
   featured: z.boolean(),
   images: z.array(z.string().url()),
+  imageOrder: z.array(imageOrderEntrySchema).optional(),
   updatedAt: z
     .string()
     .optional()

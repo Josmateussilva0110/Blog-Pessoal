@@ -1,8 +1,9 @@
-import type { Project } from "@blog/shared";
+import type { ImageOrderEntry, Project } from "@blog/shared";
 import { projectFormSchema, type ProjectFormValues } from "@/features/projects/schemas/projectForm.schema";
 import type { ProjectFormValues as ApiProjectFormValues } from "@blog/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -15,10 +16,9 @@ import { useToast } from "@/components/ui/toast";
 import { normalizeProjectStatus, toFormProjectStatus } from "@/lib/projectStatus";
 import { slugify, splitCommaList } from "@/lib/slugify";
 import { dateInputToIso, normalizeIsoDateTime, toDateInputValue } from "@/lib/format";
+import { cn } from "@/lib/format";
 import { projectKeys } from "@/features/projects/hooks/useProjects";
-import { ProjectPreviewModal } from "@/features/projects/components/ProjectPreviewModal";
 import { submitProjectForm } from "@/service/projectForm.service";
-import type { ProjectStatus } from "@blog/shared";
 
 type ProjectFormProps = {
   project?: Project;
@@ -31,6 +31,23 @@ type LocalImage = {
   isExisting?: boolean;
 };
 
+function buildImageSubmission(images: LocalImage[]) {
+  let pendingIndex = 0;
+  const imageOrder: ImageOrderEntry[] = images.map((image) => {
+    if (image.isExisting) return image.url;
+
+    const entry = { pending: pendingIndex };
+    pendingIndex += 1;
+    return entry;
+  });
+
+  return {
+    images: images.filter((item) => item.isExisting).map((item) => item.url),
+    imageOrder,
+    files: images.filter((item) => item.file).map((item) => item.file!),
+  };
+}
+
 export function ProjectForm({ project }: ProjectFormProps) {
   const navigate = useNavigate();
   const toast = useToast();
@@ -39,7 +56,6 @@ export function ProjectForm({ project }: ProjectFormProps) {
   const markdownInputRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState<LocalImage[]>([]);
   const [slugTouched, setSlugTouched] = useState(Boolean(project));
-  const [previewOpen, setPreviewOpen] = useState(false);
 
   const {
     register,
@@ -71,11 +87,6 @@ export function ProjectForm({ project }: ProjectFormProps) {
   };
 
   const title = watch("title");
-  const description = watch("description");
-  const contentMarkdown = watch("contentMarkdown");
-  const status = watch("status");
-  const techStack = watch("techStack");
-  const repoUrl = watch("repoUrl");
 
   useEffect(() => {
     if (!slugTouched) {
@@ -149,21 +160,37 @@ export function ProjectForm({ project }: ProjectFormProps) {
     });
   }
 
+  function moveImage(id: string, direction: "up" | "down") {
+    setImages((current) => {
+      const index = current.findIndex((item) => item.id === id);
+      if (index === -1) return current;
+
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= current.length) return current;
+
+      const next = [...current];
+      const [moved] = next.splice(index, 1);
+      next.splice(targetIndex, 0, moved);
+      return next;
+    });
+  }
+
   async function onSubmit(values: ProjectFormValues) {
+    const imageSubmission = buildImageSubmission(images);
+
     const payload: ApiProjectFormValues = {
       ...values,
       status: normalizeProjectStatus(values.status),
       updatedAt: normalizeIsoDateTime(values.updatedAt),
-      images: images
-        .filter((item) => item.isExisting)
-        .map((item) => item.url),
+      images: imageSubmission.images,
+      imageOrder: imageSubmission.imageOrder,
     };
 
     try {
       const result = await submitProjectForm(
         payload,
         {
-          images: images.filter((item) => item.file).map((item) => item.file!),
+          images: imageSubmission.files,
         },
         project?.id,
       );
@@ -187,8 +214,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
   }
 
   return (
-    <>
-      <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6" noValidate>
+    <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6" noValidate>
       <div className="grid gap-4 md:grid-cols-2">
         <Input
           label="Título"
@@ -303,7 +329,8 @@ export function ProjectForm({ project }: ProjectFormProps) {
         <div>
           <h2 className="text-sm font-semibold text-text">Imagens do sistema</h2>
           <p className="text-xs text-text-muted mt-1">
-            Prints e capturas de tela do projeto (JPEG, PNG, WebP ou GIF).
+            Prints e capturas de tela do projeto (JPEG, PNG, WebP ou GIF). A primeira imagem
+            será usada como capa.
           </p>
         </div>
 
@@ -327,13 +354,44 @@ export function ProjectForm({ project }: ProjectFormProps) {
 
         {images.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {images.map((image) => (
+            {images.map((image, index) => (
               <div key={image.id} className="relative group">
+                <span
+                  className="absolute top-2 left-2 z-10 rounded-md bg-black/65 px-2 py-0.5 font-mono text-[10px] text-white"
+                >
+                  #{index + 1}
+                </span>
                 <img
                   src={image.url}
-                  alt="Prévia do projeto"
+                  alt={`Imagem ${index + 1} do projeto`}
                   className="w-full aspect-video object-cover rounded-xl border border-white/10"
                 />
+                <div className="absolute bottom-2 left-2 flex gap-1">
+                  <button
+                    type="button"
+                    className={cn(
+                      "inline-flex size-7 items-center justify-center rounded-md bg-black/60 text-white transition-colors",
+                      "hover:bg-black/80 disabled:pointer-events-none disabled:opacity-35",
+                    )}
+                    aria-label="Mover imagem para cima"
+                    disabled={index === 0}
+                    onClick={() => moveImage(image.id, "up")}
+                  >
+                    <ChevronUp className="size-4" aria-hidden />
+                  </button>
+                  <button
+                    type="button"
+                    className={cn(
+                      "inline-flex size-7 items-center justify-center rounded-md bg-black/60 text-white transition-colors",
+                      "hover:bg-black/80 disabled:pointer-events-none disabled:opacity-35",
+                    )}
+                    aria-label="Mover imagem para baixo"
+                    disabled={index === images.length - 1}
+                    onClick={() => moveImage(image.id, "down")}
+                  >
+                    <ChevronDown className="size-4" aria-hidden />
+                  </button>
+                </div>
                 <button
                   type="button"
                   className="absolute top-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-[11px] text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
@@ -355,32 +413,10 @@ export function ProjectForm({ project }: ProjectFormProps) {
         >
           Cancelar
         </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => setPreviewOpen(true)}
-        >
-          Pré-visualizar
-        </Button>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Salvando..." : project ? "Salvar alterações" : "Criar projeto"}
         </Button>
       </div>
-      </form>
-
-      <ProjectPreviewModal
-        open={previewOpen}
-        onClose={() => setPreviewOpen(false)}
-        data={{
-          title,
-          description,
-          contentMarkdown,
-          status: normalizeProjectStatus(status) as ProjectStatus,
-          techStack,
-          repoUrl: repoUrl?.trim() || undefined,
-          images: images.map((image) => image.url),
-        }}
-      />
-    </>
+    </form>
   );
 }

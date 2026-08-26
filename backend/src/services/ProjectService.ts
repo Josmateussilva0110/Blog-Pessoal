@@ -152,6 +152,17 @@ class ProjectService {
       .filter((path): path is string => path !== null)
   }
 
+  private resolveOrderedImages(payload: ProjectFormValues, uploadedUrls: string[]): string[] {
+    if (payload.imageOrder?.length) {
+      return payload.imageOrder.map((entry) => {
+        if (typeof entry === "string") return entry
+        return uploadedUrls[entry.pending] ?? ""
+      }).filter((url) => url.length > 0)
+    }
+
+    return [...payload.images, ...uploadedUrls]
+  }
+
   private collectRemovedMarkdownPaths(project: Project): string[] {
     return project.markdownFiles.map((file) => file.path)
   }
@@ -209,7 +220,7 @@ class ProjectService {
 
   private async attachUploadedImagesToProject(
     project: Project,
-    initialImages: string[],
+    payload: ProjectFormValues,
     imageFiles: UploadableFile[]
   ): Promise<ServiceResult<Project, ProjectErrorCode>> {
     const uploadedImages = await this.safeUploadImages(project.id, imageFiles)
@@ -219,7 +230,7 @@ class ProjectService {
       return uploadedImages
     }
 
-    const images = [...initialImages, ...uploadedImages.data]
+    const images = this.resolveOrderedImages(payload, uploadedImages.data)
     const updated = await this.updateProjectImages(project.id, images)
 
     if (!updated.status) {
@@ -235,14 +246,14 @@ class ProjectService {
   private async attachUploadedImagesToExistingProject(
     projectId: string,
     existing: Project,
-    currentImages: string[],
+    payload: ProjectFormValues,
     imageFiles: UploadableFile[],
     removedMarkdownPaths: string[]
   ): Promise<ServiceResult<Project, ProjectErrorCode>> {
     const uploadedImages = await this.safeUploadImages(projectId, imageFiles)
     if (!uploadedImages.status) return uploadedImages
 
-    const images = [...currentImages, ...uploadedImages.data]
+    const images = this.resolveOrderedImages(payload, uploadedImages.data)
     const removedImagePaths = this.collectRemovedImagePaths(existing.images, images)
 
     const updated = await this.updateProjectImages(projectId, images, {
@@ -551,7 +562,7 @@ class ProjectService {
         return created
       }
 
-      return this.attachUploadedImagesToProject(created.data, payload.images, imageFiles)
+      return this.attachUploadedImagesToProject(created.data, payload, imageFiles)
     } catch (error) {
       console.error("[ProjectService.create] error:", error)
       return {
@@ -598,7 +609,7 @@ class ProjectService {
       return this.attachUploadedImagesToExistingProject(
         id,
         existing.data,
-        payload.images,
+        payload,
         imageFiles,
         removedMarkdownPaths
       )
