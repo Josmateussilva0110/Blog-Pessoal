@@ -1,3 +1,4 @@
+import { Star } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { useRef, type MouseEvent } from "react";
 import { Link } from "react-router-dom";
@@ -73,11 +74,17 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <span className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
           <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
           <span className="h-2.5 w-2.5 rounded-full bg-terminal/80" />
-          <span className="font-mono text-[11px] ml-2 truncate">
+          <span className="ml-2 min-w-0 flex-1 truncate font-mono text-[11px]">
             <span className="text-terminal">mateus@dev</span>
             <span className="text-text-subtle">:</span>
             <span className="text-accent">~/{project.slug}</span>
           </span>
+          {project.featured && (
+            <Star
+              className="size-3.5 shrink-0 fill-amber-400 text-amber-400"
+              aria-label="Projeto em destaque"
+            />
+          )}
         </div>
 
         <div className="p-4 sm:p-5 flex flex-col flex-1 gap-3 sm:gap-4">
