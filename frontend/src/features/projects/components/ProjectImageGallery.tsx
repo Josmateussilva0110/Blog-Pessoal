@@ -1,17 +1,24 @@
+import type { ProjectPlatform } from "@blog/shared";
 import { useState } from "react";
+import { DeviceFrame } from "@/components/ui/DeviceFrame";
 import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { cn } from "@/lib/format";
 
 interface ProjectImageGalleryProps {
   images: string[];
   projectTitle: string;
+  platform: ProjectPlatform;
 }
 
 function padIndex(index: number) {
   return String(index + 1).padStart(2, "0");
 }
 
-export function ProjectImageGallery({ images, projectTitle }: ProjectImageGalleryProps) {
+export function ProjectImageGallery({
+  images,
+  projectTitle,
+  platform,
+}: ProjectImageGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
@@ -31,31 +38,29 @@ export function ProjectImageGallery({ images, projectTitle }: ProjectImageGaller
         </p>
       </div>
 
-      <div className="terminal-card overflow-hidden">
-        <div className="flex items-center gap-2 border-b border-border-subtle bg-surface-raised px-4 py-2">
-          <span className="h-2 w-2 rounded-full bg-red-500/80" />
-          <span className="h-2 w-2 rounded-full bg-amber-400/80" />
-          <span className="h-2 w-2 rounded-full bg-terminal/80" />
-          <span className="ml-1 truncate font-mono text-[10px] text-text-subtle">
-            preview — screenshot-{padIndex(activeIndex)}.png
-          </span>
-        </div>
-
+      <div className="terminal-card overflow-hidden p-4 sm:p-5">
         <button
           type="button"
           onClick={() => setLightboxIndex(activeIndex)}
-          className="relative block w-full border-b border-border-subtle bg-surface text-left transition-colors hover:bg-surface-raised/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/40"
+          className="relative block w-full text-left transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded-lg"
           aria-label={`Ampliar screenshot ${activeIndex + 1} de ${projectTitle}`}
         >
-          <img
-            src={activeImage}
-            alt={`${projectTitle} — screenshot ${activeIndex + 1}`}
-            className="mx-auto block w-full max-h-[220px] cursor-zoom-in object-contain bg-[#06060c] sm:max-h-[300px] md:max-h-[380px]"
-          />
+          <DeviceFrame platform={platform}>
+            <img
+              src={activeImage}
+              alt={`${projectTitle} — screenshot ${activeIndex + 1}`}
+              className={cn(
+                "mx-auto block w-full cursor-zoom-in object-contain bg-[#06060c]",
+                platform === "mobile"
+                  ? "max-h-[320px] sm:max-h-[420px]"
+                  : "max-h-[220px] sm:max-h-[300px] md:max-h-[380px]",
+              )}
+            />
+          </DeviceFrame>
         </button>
 
-        <div className="border-b border-border-subtle px-4 py-2 font-mono text-[10px] text-text-subtle">
-          image/png · {activeIndex + 1}/{images.length}
+        <div className="mt-3 border-t border-border-subtle pt-3 font-mono text-[10px] text-text-subtle">
+          screenshot-{padIndex(activeIndex)}.png · {activeIndex + 1}/{images.length}
         </div>
       </div>
 
@@ -82,13 +87,20 @@ export function ProjectImageGallery({ images, projectTitle }: ProjectImageGaller
                     {padIndex(index)}.png
                   </span>
                 </div>
-                <div className="aspect-video bg-surface">
-                  <img
-                    src={image}
-                    alt={`Miniatura ${index + 1} de ${projectTitle}`}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
+                <div
+                  className={cn(
+                    "bg-surface p-1.5",
+                    platform === "mobile" ? "aspect-[9/16]" : "aspect-video",
+                  )}
+                >
+                  <DeviceFrame platform={platform} compact>
+                    <img
+                      src={image}
+                      alt={`Miniatura ${index + 1} de ${projectTitle}`}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  </DeviceFrame>
                 </div>
               </button>
             );
@@ -104,6 +116,7 @@ export function ProjectImageGallery({ images, projectTitle }: ProjectImageGaller
           open
           onClose={() => setLightboxIndex(null)}
           altPrefix={projectTitle}
+          platform={platform}
         />
       )}
     </section>

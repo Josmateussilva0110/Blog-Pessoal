@@ -187,6 +187,7 @@ export function ProjectDetailPage() {
                 <ProjectImageGallery
                   images={project.images}
                   projectTitle={project.title}
+                  platform={project.platform}
                 />
               )}
               <MetaPanel project={project} isAuthenticated={isAuthenticated} />
