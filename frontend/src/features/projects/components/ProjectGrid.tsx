@@ -1,4 +1,12 @@
 import type { Project } from "@blog/shared";
+import { motion } from "motion/react";
+import {
+  fadeUp,
+  hoverSpring,
+  inViewOnce,
+  staggerContainer,
+  useSkipEntrance,
+} from "@/lib/motion";
 import { ProjectCard } from "./ProjectCard";
 
 interface ProjectGridProps {
@@ -8,6 +16,8 @@ interface ProjectGridProps {
 }
 
 export function ProjectGrid({ projects, title, columns = 2 }: ProjectGridProps) {
+  const skipEntrance = useSkipEntrance();
+
   if (projects.length === 0) {
     return (
       <p className="font-mono text-sm text-text-muted">
@@ -26,11 +36,25 @@ export function ProjectGrid({ projects, title, columns = 2 }: ProjectGridProps) 
       {title && (
         <h2 className="font-mono text-sm text-accent mb-6">{title}</h2>
       )}
-      <div className={gridClass}>
+      <motion.div
+        className={gridClass}
+        variants={staggerContainer}
+        initial={skipEntrance ? false : "hidden"}
+        whileInView="show"
+        viewport={inViewOnce}
+      >
         {projects.map((project) => (
-          <ProjectCard key={project.id} project={project} />
+          // Anima o wrapper, não o <article> com viewTransitionName do card
+          <motion.div
+            key={project.id}
+            variants={fadeUp}
+            whileHover={{ y: -4, transition: hoverSpring }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <ProjectCard project={project} />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 }

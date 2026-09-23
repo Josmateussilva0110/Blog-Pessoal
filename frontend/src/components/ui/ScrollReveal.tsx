@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { cn } from "@/lib/format";
-import { prefersReducedMotion } from "@/lib/viewTransition";
+import { motion } from "motion/react";
+import type { ReactNode } from "react";
+import { EASE_OUT, useSkipEntrance } from "@/lib/motion";
 
 type ScrollRevealProps = {
   children: ReactNode;
@@ -13,37 +13,17 @@ export function ScrollReveal({
   className,
   delay = 0,
 }: ScrollRevealProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(() => prefersReducedMotion());
-
-  useEffect(() => {
-    if (prefersReducedMotion()) return;
-
-    const node = ref.current;
-    if (!node) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
-    );
-
-    observer.observe(node);
-
-    return () => observer.disconnect();
-  }, []);
+  const skipEntrance = useSkipEntrance();
 
   return (
-    <div
-      ref={ref}
-      className={cn("scroll-reveal", visible && "scroll-reveal-visible", className)}
-      style={delay > 0 ? { transitionDelay: `${delay}ms` } : undefined}
+    <motion.div
+      className={className}
+      initial={skipEntrance ? false : { opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.12, margin: "0px 0px -6% 0px" }}
+      transition={{ duration: 0.65, ease: EASE_OUT, delay: delay / 1000 }}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }

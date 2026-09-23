@@ -1,7 +1,9 @@
 import type { ProjectPlatform } from "@blog/shared";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { cn } from "@/lib/format";
+import { TypingCommand } from "@/components/ui/TypingText";
 
 interface ProjectImageGalleryProps {
   images: string[];
@@ -29,12 +31,12 @@ export function ProjectImageGallery({
     <section className="space-y-4">
       <div>
         <p className="code-comment mb-2">// gallery</p>
-        <p className="font-mono text-xs text-text-subtle">
-          <span className="text-terminal">$ </span>
-          <span className="text-accent">ls</span>
-          <span className="text-text-muted"> ./screenshots</span>
-          <span className="text-text-subtle"> · {images.length} files</span>
-        </p>
+        <TypingCommand
+          className="font-mono text-xs text-text-subtle"
+          command="ls"
+          args=" ./screenshots"
+          suffix={` · ${images.length} files`}
+        />
       </div>
 
       <div className="terminal-card overflow-hidden p-4 sm:p-5">
@@ -67,10 +69,12 @@ export function ProjectImageGallery({
             const isActive = index === activeIndex;
 
             return (
-              <button
+              <motion.button
                 key={image}
                 type="button"
                 onClick={() => setActiveIndex(index)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className={cn(
                   "terminal-card overflow-hidden text-left transition-colors",
                   isActive
@@ -97,7 +101,7 @@ export function ProjectImageGallery({
                     loading="lazy"
                   />
                 </div>
-              </button>
+              </motion.button>
             );
           })}
         </div>

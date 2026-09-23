@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MotionConfig } from "motion/react";
 import type { ReactNode } from "react";
 import { ToastProvider } from "@/components/ui/toast";
 import { AuthProvider } from "@/features/auth";
@@ -14,10 +15,12 @@ const queryClient = new QueryClient({
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <AuthProvider>{children}</AuthProvider>
-      </ToastProvider>
-    </QueryClientProvider>
+    <MotionConfig reducedMotion="user">
+      <QueryClientProvider client={queryClient}>
+        <ToastProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ToastProvider>
+      </QueryClientProvider>
+    </MotionConfig>
   );
 }

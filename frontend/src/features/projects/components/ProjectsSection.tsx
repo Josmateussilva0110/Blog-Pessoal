@@ -2,6 +2,7 @@ import type { Project } from "@blog/shared";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { getHomeProjectSections } from "@/features/projects/lib/homeProjects";
 import { ProjectGrid } from "./ProjectGrid";
+import { TypingCommand } from "@/components/ui/TypingText";
 
 interface ProjectsSectionProps {
   projects?: Project[];
@@ -24,16 +25,12 @@ export function ProjectsSection({ projects, isLoading }: ProjectsSectionProps) {
       </header>
 
       <TerminalWindow path="~/projects" bodyClassName="p-4 sm:p-5 md:p-6 lg:p-8 space-y-8 sm:space-y-10">
-        <p className="font-mono text-xs text-text-subtle -mt-2 mb-2">
-          <span className="text-terminal">$ </span>
-          <span className="text-accent">ls</span>
-          <span className="text-text-muted">
-            {usesFeaturedSpotlight ? " --featured" : " --recent"}
-          </span>
-          {!isLoading && (
-            <span className="text-text-subtle"> · {all.length} repos</span>
-          )}
-        </p>
+        <TypingCommand
+          className="font-mono text-xs text-text-subtle -mt-2 mb-2"
+          command="ls"
+          args={usesFeaturedSpotlight ? " --featured" : " --recent"}
+          suffix={!isLoading && ` · ${all.length} repos`}
+        />
 
         {isLoading ? (
           <div className="grid gap-4 md:grid-cols-3">

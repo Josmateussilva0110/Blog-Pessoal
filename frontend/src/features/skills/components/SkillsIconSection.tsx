@@ -1,9 +1,12 @@
+import { motion } from "motion/react";
 import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
 import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 import { Image } from "@/components/ui/Image";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { getSkillIconUrl } from "@/lib/skillicons";
+import { fadeUp, inViewOnce, staggerContainer } from "@/lib/motion";
+import { TypingCommand } from "@/components/ui/TypingText";
 
 function SkillCard({
   name,
@@ -65,23 +68,35 @@ export function SkillsIconSection() {
       />
 
       <TerminalWindow path="~/skills" bodyClassName="p-4 sm:p-6 md:p-8">
-        <p className="font-mono text-xs text-text-subtle mb-6">
-          <span className="text-terminal">$ </span>
-          <span className="text-accent">ls</span>
-          <span className="text-text-muted"> ./tools</span>
-          <span className="text-text-subtle"> · {skills.length} packages</span>
-        </p>
+        <TypingCommand
+          className="font-mono text-xs text-text-subtle mb-6"
+          command="ls"
+          args=" ./tools"
+          suffix={` · ${skills.length} packages`}
+        />
 
-        <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3 md:gap-4">
+        <motion.div
+          className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3 md:gap-4"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="show"
+          viewport={inViewOnce}
+        >
           {skills.map((skill) => (
-            <SkillCard
+            <motion.div
               key={`${skill.icon}-${skill.label}`}
-              name={skill.label}
-              icon={skill.icon ?? skill.label.toLowerCase()}
-              href={skill.href}
-            />
+              variants={fadeUp}
+              whileTap={{ scale: 0.95 }}
+              className="grid"
+            >
+              <SkillCard
+                name={skill.label}
+                icon={skill.icon ?? skill.label.toLowerCase()}
+                href={skill.href}
+              />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </TerminalWindow>
     </section>
   );

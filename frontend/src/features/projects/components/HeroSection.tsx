@@ -1,9 +1,12 @@
+import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 import { Image, DEFAULT_IMAGE_FALLBACK } from "@/components/ui/Image";
 import { TerminalWindow, TerminalWindowBar } from "@/components/ui/TerminalWindow";
 import { SITE } from "@/config/constants";
 import { usePublicProfileImage } from "@/features/profile/hooks/usePublicProfileImage";
 import { useHeroStats } from "@/features/site-settings/hooks/useHeroStats";
+
+const MotionLink = motion.create(Link);
 
 interface HeroSectionProps {
   projectCount?: number;
@@ -43,18 +46,22 @@ export function HeroSection({ projectCount = 0, isLoading = false }: HeroSection
             </p>
 
             <div className="flex flex-col min-[400px]:flex-row flex-wrap gap-3 mb-8 sm:mb-10">
-              <Link
+              <MotionLink
                 to="/#projetos"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.97 }}
                 className="inline-flex items-center justify-center font-mono text-sm font-medium bg-accent text-surface px-6 py-3 btn-terminal hover:bg-accent-muted transition-colors"
               >
                 ver_projetos()
-              </Link>
-              <a
+              </MotionLink>
+              <motion.a
                 href="/#sobre"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.97 }}
                 className="inline-flex items-center justify-center font-mono text-sm text-text-muted border border-border-subtle px-5 py-3 hover:text-text hover:border-border transition-colors"
               >
                 about --me
-              </a>
+              </motion.a>
             </div>
 
             <div className="border-t border-border-subtle pt-6 sm:pt-8">

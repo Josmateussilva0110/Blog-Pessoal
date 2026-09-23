@@ -3,6 +3,7 @@ import { TerminalPanel, TerminalWindow } from "@/components/ui/TerminalWindow";
 import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
 import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 import { Rocket, Settings, Target, type LucideIcon } from "lucide-react";
+import { TypingCommand } from "@/components/ui/TypingText";
 
 const HIGHLIGHTS: Array<{
   icon: LucideIcon;
@@ -39,11 +40,11 @@ export function AboutSection() {
       />
 
       <TerminalWindow path="~/about.md">
-        <p className="font-mono text-xs text-text-subtle mb-4">
-          <span className="text-terminal">$ </span>
-          <span className="text-accent">cat</span>
-          <span className="text-text-muted"> about.md</span>
-        </p>
+        <TypingCommand
+          className="font-mono text-xs text-text-subtle mb-4"
+          command="cat"
+          args=" about.md"
+        />
 
         <p className="text-text-muted leading-relaxed max-w-2xl mb-8">
           Desenvolvedor apaixonado por criar soluções com foco em experiência e
