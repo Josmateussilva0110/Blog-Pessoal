@@ -1,6 +1,5 @@
 import type { ProjectPlatform } from "@blog/shared";
 import { useState } from "react";
-import { DeviceFrame } from "@/components/ui/DeviceFrame";
 import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { cn } from "@/lib/format";
 
@@ -45,18 +44,16 @@ export function ProjectImageGallery({
           className="relative block w-full text-left transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded-lg"
           aria-label={`Ampliar screenshot ${activeIndex + 1} de ${projectTitle}`}
         >
-          <DeviceFrame platform={platform}>
-            <img
-              src={activeImage}
-              alt={`${projectTitle} — screenshot ${activeIndex + 1}`}
-              className={cn(
-                "mx-auto block w-full cursor-zoom-in object-contain bg-[#06060c]",
-                platform === "mobile"
-                  ? "max-h-[320px] sm:max-h-[420px]"
-                  : "max-h-[220px] sm:max-h-[300px] md:max-h-[380px]",
-              )}
-            />
-          </DeviceFrame>
+          <img
+            src={activeImage}
+            alt={`${projectTitle} — screenshot ${activeIndex + 1}`}
+            className={cn(
+              "mx-auto block w-full cursor-zoom-in rounded-lg object-contain bg-[#06060c]",
+              platform === "mobile"
+                ? "max-h-[320px] sm:max-h-[420px]"
+                : "max-h-[220px] sm:max-h-[300px] md:max-h-[380px]",
+            )}
+          />
         </button>
 
         <div className="mt-3 border-t border-border-subtle pt-3 font-mono text-[10px] text-text-subtle">
@@ -93,14 +90,12 @@ export function ProjectImageGallery({
                     platform === "mobile" ? "aspect-[9/16]" : "aspect-video",
                   )}
                 >
-                  <DeviceFrame platform={platform} compact>
-                    <img
-                      src={image}
-                      alt={`Miniatura ${index + 1} de ${projectTitle}`}
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                  </DeviceFrame>
+                  <img
+                    src={image}
+                    alt={`Miniatura ${index + 1} de ${projectTitle}`}
+                    className="h-full w-full rounded object-cover"
+                    loading="lazy"
+                  />
                 </div>
               </button>
             );
