@@ -7,15 +7,22 @@ import {
   staggerContainer,
   useSkipEntrance,
 } from "@/lib/motion";
+import { FloppyProjectCard } from "./FloppyProjectCard";
 import { ProjectCard } from "./ProjectCard";
 
 interface ProjectGridProps {
   projects: Project[];
   title?: string;
   columns?: 2 | 3;
+  variant?: "window" | "floppy";
 }
 
-export function ProjectGrid({ projects, title, columns = 2 }: ProjectGridProps) {
+export function ProjectGrid({
+  projects,
+  title,
+  columns = 2,
+  variant = "window",
+}: ProjectGridProps) {
   const skipEntrance = useSkipEntrance();
 
   if (projects.length === 0) {
@@ -26,10 +33,13 @@ export function ProjectGrid({ projects, title, columns = 2 }: ProjectGridProps) 
     );
   }
 
-  const gridClass =
-    columns === 3
+  const isFloppy = variant === "floppy";
+  const gridClass = isFloppy
+    ? "grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+    : columns === 3
       ? "grid gap-4 md:grid-cols-3"
       : "grid gap-4 sm:grid-cols-2";
+  const CardComponent = isFloppy ? FloppyProjectCard : ProjectCard;
 
   return (
     <section>
@@ -48,10 +58,14 @@ export function ProjectGrid({ projects, title, columns = 2 }: ProjectGridProps) 
           <motion.div
             key={project.id}
             variants={fadeUp}
-            whileHover={{ y: -4, transition: hoverSpring }}
+            whileHover={
+              isFloppy
+                ? { y: -6, rotate: -1, transition: hoverSpring }
+                : { y: -4, transition: hoverSpring }
+            }
             whileTap={{ scale: 0.99 }}
           >
-            <ProjectCard project={project} />
+            <CardComponent project={project} />
           </motion.div>
         ))}
       </motion.div>

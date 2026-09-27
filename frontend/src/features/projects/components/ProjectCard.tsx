@@ -1,10 +1,14 @@
 import { Star } from "lucide-react";
-import { formatDate } from "@/lib/format";
-import { useRef, type MouseEvent } from "react";
 import { Link } from "react-router-dom";
-import type { Project, ProjectStatus } from "@blog/shared";
-import { useProjectTransition } from "@/features/projects/context/ProjectTransitionProvider";
+import type { Project } from "@blog/shared";
+import { Image } from "@/components/ui/Image";
+import { TerminalWindowBar } from "@/components/ui/TerminalWindow";
 import { PlatformCardLabel } from "@/features/projects/components/PlatformBadge";
+import { CardPrompt } from "@/features/projects/components/CardPrompt";
+import { useProjectCardLink } from "@/features/projects/hooks/useProjectCardLink";
+import { getProjectCover } from "@/features/projects/lib/projectCover";
+import { TERMINAL_STATUS } from "@/features/projects/lib/terminalStatus";
+import { cn } from "@/lib/format";
 import { normalizeProjectStatus } from "@/lib/projectStatus";
 import { normalizeProjectPlatform } from "@/lib/projectPlatform";
 import { projectTransitionName } from "@/lib/viewTransition";
@@ -13,55 +17,16 @@ interface ProjectCardProps {
   project: Project;
 }
 
-const TERMINAL_STATUS: Record<
-  ProjectStatus,
-  { label: string; icon: string; className: string }
-> = {
-  planned: {
-    label: "PLANEJADO",
-    icon: "▲",
-    className: "text-amber-400",
-  },
-  wip: {
-    label: "EM ANDAMENTO",
-    icon: "●",
-    className: "text-terminal",
-  },
-  completed: {
-    label: "CONCLUÍDO",
-    icon: "✓",
-    className: "text-accent",
-  },
-};
-
 export function ProjectCard({ project }: ProjectCardProps) {
-  const { openProject } = useProjectTransition();
-  const cardRef = useRef<HTMLElement>(null);
-  const status = normalizeProjectStatus(project.status);
-  const statusInfo = TERMINAL_STATUS[status];
+  const { cardRef, handleClick } = useProjectCardLink(project);
+  const statusInfo = TERMINAL_STATUS[normalizeProjectStatus(project.status)];
   const platform = normalizeProjectPlatform(project.platform);
-
-  function handleClick(event: MouseEvent<HTMLAnchorElement>) {
-    if (
-      event.button !== 0 ||
-      event.metaKey ||
-      event.ctrlKey ||
-      event.shiftKey ||
-      event.altKey
-    ) {
-      return;
-    }
-
-    if (!cardRef.current) return;
-
-    event.preventDefault();
-    openProject(project, cardRef.current);
-  }
+  const cover = getProjectCover(project);
 
   return (
     <Link
       to={`/projects/${project.slug}`}
-      className="block group"
+      className="block group h-full"
       onClick={handleClick}
     >
       <article
@@ -70,36 +35,54 @@ export function ProjectCard({ project }: ProjectCardProps) {
         className="terminal-card h-full flex flex-col overflow-hidden project-card-vt"
         style={{ viewTransitionName: projectTransitionName(project.slug) }}
       >
-        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border-subtle bg-surface-raised">
-          <span className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
-          <span className="h-2.5 w-2.5 rounded-full bg-terminal/80" />
-          <span className="ml-2 min-w-0 flex-1 truncate font-mono text-[11px]">
-            <span className="text-terminal">mateus@dev</span>
-            <span className="text-text-subtle">:</span>
-            <span className="text-accent">~/{project.slug}</span>
-          </span>
-          {project.featured && (
-            <Star
-              className="size-3.5 shrink-0 fill-amber-400 text-amber-400"
-              aria-label="Projeto em destaque"
+        <TerminalWindowBar
+          path={`~/${project.slug}`}
+          trailing={
+            <span className="flex shrink-0 items-center gap-2">
+              {project.featured && (
+                <Star
+                  className="size-3.5 fill-amber-400 text-amber-400"
+                  aria-label="Projeto em destaque"
+                />
+              )}
+              <span className={cn("font-mono text-[10px]", statusInfo.className)}>
+                {statusInfo.icon} {statusInfo.short}
+              </span>
+            </span>
+          }
+        />
+
+        <div className="crt-screen relative aspect-video border-b border-border-subtle bg-[#06060c]">
+          {cover ? (
+            <Image
+              src={cover.thumb}
+              fallback={cover.original}
+              alt={`Preview de ${project.title}`}
+              rounded="none"
+              fit={platform === "mobile" ? "contain" : "cover"}
+              className={cn(
+                "h-full w-full bg-transparent",
+                platform === "web" && "object-top",
+              )}
             />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-1 font-mono text-[11px] text-text-subtle">
+              <span className="text-accent/70">~/{project.slug}</span>
+              <span>// sem preview</span>
+            </div>
           )}
+          <PlatformCardLabel
+            platform={platform}
+            className="absolute bottom-2.5 left-2.5 z-10"
+          />
         </div>
 
-        <div className="p-4 sm:p-5 flex flex-col flex-1 gap-3 sm:gap-4">
-          <p className="font-mono text-xs">
-            <span className="text-terminal">$ </span>
-            <span className="text-accent">git log</span>
-            <span className="text-text-muted"> --oneline -1</span>
-            <span className="text-text-subtle"> · {formatDate(project.updatedAt)}</span>
-          </p>
-
+        <div className="p-4 sm:p-5 flex flex-col flex-1 gap-3">
           <div className="flex-1">
-            <h3 className="text-base font-semibold text-text group-hover:text-accent transition-colors mb-2">
+            <h3 className="text-base font-semibold text-text group-hover:text-accent transition-colors mb-1.5">
               {project.title}
             </h3>
-            <p className="text-sm text-text-muted leading-relaxed line-clamp-3">
+            <p className="text-sm text-text-muted leading-relaxed line-clamp-2">
               {project.description}
             </p>
           </div>
@@ -120,14 +103,10 @@ export function ProjectCard({ project }: ProjectCardProps) {
             )}
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between pt-2 border-t border-border-subtle">
-            <span
-              className={`font-mono text-[10px] uppercase tracking-wider ${statusInfo.className}`}
-            >
-              {statusInfo.icon} {statusInfo.label}
-            </span>
-            <PlatformCardLabel platform={platform} />
-          </div>
+          <CardPrompt
+            command={`cd ${project.slug} && ./abrir`}
+            className="pt-3 border-t border-border-subtle"
+          />
         </div>
       </article>
     </Link>

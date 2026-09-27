@@ -33,16 +33,16 @@ export function ProjectsSection({ projects, isLoading }: ProjectsSectionProps) {
         />
 
         {isLoading ? (
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="h-64 terminal-card-muted animate-pulse bg-surface-raised"
+                className="mx-auto aspect-[1/1.08] w-full max-w-[20rem] rounded-lg terminal-card-muted animate-pulse bg-surface-raised"
               />
             ))}
           </div>
         ) : (
-          <ProjectGrid projects={spotlightProjects} columns={3} />
+          <ProjectGrid projects={spotlightProjects} columns={3} variant="floppy" />
         )}
 
         {!isLoading && remaining.length > 0 && (

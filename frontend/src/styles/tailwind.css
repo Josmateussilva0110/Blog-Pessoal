@@ -96,6 +96,151 @@
     @apply font-mono text-xs text-text-subtle;
   }
 
+  /* Tela CRT: scanlines fixas + faixa de varredura no hover do card */
+  .crt-screen {
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .crt-screen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0 2px,
+      rgb(0 0 0 / 0.22) 2px 3px
+    );
+    opacity: 0.45;
+    transition: opacity 0.3s;
+  }
+
+  .crt-screen::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: -30%;
+    height: 30%;
+    z-index: 3;
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(34 211 238 / 0.14),
+      transparent
+    );
+    opacity: 0;
+  }
+
+  .group:hover .crt-screen::after,
+  .group:focus-visible .crt-screen::after {
+    opacity: 1;
+  }
+
+  .group:hover .crt-screen::before,
+  .group:focus-visible .crt-screen::before {
+    opacity: 1;
+    animation: crt-sweep 1.8s linear infinite;
+  }
+
+  /* Prompt do card: comando aparece "digitado" no hover */
+  .card-prompt {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .card-prompt-text {
+    display: inline-block;
+    width: 0;
+    max-width: calc(100% - 3ch);
+    overflow: hidden;
+    text-overflow: clip;
+  }
+
+  .group:hover .card-prompt-text,
+  .group:focus-visible .card-prompt-text {
+    width: calc(var(--prompt-chars) * 1ch);
+    animation: prompt-type 0.6s steps(var(--prompt-chars)) both;
+  }
+
+  /* Disquete: borda desenhada pelo fundo externo para acompanhar o chanfro */
+  .floppy-card {
+    --floppy-cut: 26px;
+    background: rgb(34 211 238 / 0.16);
+    clip-path: polygon(0 0, calc(100% - var(--floppy-cut)) 0, 100% var(--floppy-cut), 100% 100%, 0 100%);
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+  }
+
+  .group:hover .floppy-card,
+  .group:focus-visible .floppy-card {
+    background: rgb(34 211 238 / 0.38);
+  }
+
+  .floppy-body {
+    background: linear-gradient(170deg, #10101b 0%, #0a0a12 60%);
+    clip-path: polygon(0 0, calc(100% - var(--floppy-cut) + 0.5px) 0, 100% calc(var(--floppy-cut) - 0.5px), 100% 100%, 0 100%);
+    border-radius: calc(0.5rem - 1px);
+  }
+
+  .floppy-shutter {
+    background: linear-gradient(160deg, #64748b 0%, #334155 45%, #475569 100%);
+    border-right: 1px solid rgb(148 163 184 / 0.35);
+    transition: transform 0.45s var(--slide-easing);
+  }
+
+  .group:hover .floppy-shutter,
+  .group:focus-visible .floppy-shutter {
+    transform: translateX(118%);
+  }
+
+  @media (hover: none) {
+    .floppy-shutter {
+      transform: translateX(118%);
+    }
+
+    .card-prompt-text {
+      width: auto;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .floppy-shutter {
+      transition: none;
+    }
+
+    .group:hover .crt-screen::before,
+    .group:focus-visible .crt-screen::before {
+      animation: none;
+      opacity: 0;
+    }
+
+    .group:hover .card-prompt-text,
+    .group:focus-visible .card-prompt-text {
+      animation: none;
+    }
+  }
+
+  @keyframes crt-sweep {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(440%);
+    }
+  }
+
+  @keyframes prompt-type {
+    from {
+      width: 0;
+    }
+  }
+
   .typing-cursor {
     display: inline-block;
     width: 2px;

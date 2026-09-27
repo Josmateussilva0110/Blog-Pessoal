@@ -26,7 +26,13 @@ export function PlatformBadge({ platform }: { platform: ProjectPlatform | string
   );
 }
 
-export function PlatformCardLabel({ platform }: { platform: ProjectPlatform | string }) {
+export function PlatformCardLabel({
+  platform,
+  className,
+}: {
+  platform: ProjectPlatform | string;
+  className?: string;
+}) {
   const normalized = normalizeProjectPlatform(platform);
 
   return (
@@ -34,6 +40,7 @@ export function PlatformCardLabel({ platform }: { platform: ProjectPlatform | st
       className={cn(
         "inline-flex shrink-0 items-center rounded-md border px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide",
         platformCardStyles[normalized],
+        className,
       )}
     >
       {PLATFORM_LABELS[normalized]}
