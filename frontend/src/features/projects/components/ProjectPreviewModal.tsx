@@ -77,8 +77,8 @@ export function ProjectPreviewModal({ open, onClose, data }: ProjectPreviewModal
 
         <article className="terminal-card overflow-hidden">
           <div className="flex items-center gap-2 px-4 py-2 border-b border-border-subtle bg-surface-raised">
-            <span className="h-2 w-2 rounded-full bg-red-500/80" />
-            <span className="h-2 w-2 rounded-full bg-amber-400/80" />
+            <span className="h-2 w-2 rounded-full bg-danger/80" />
+            <span className="h-2 w-2 rounded-full bg-warning/80" />
             <span className="h-2 w-2 rounded-full bg-terminal/80" />
             <span className="font-mono text-[10px] ml-1 text-text-subtle">
               $ preview --project

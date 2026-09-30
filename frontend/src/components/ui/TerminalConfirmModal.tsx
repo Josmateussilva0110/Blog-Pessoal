@@ -100,7 +100,7 @@ export function TerminalConfirmModal({
             <Button
               type="button"
               size="sm"
-              className="font-mono w-full sm:w-auto bg-red-500/90 text-white border border-red-400/40 hover:bg-red-500"
+              className="font-mono w-full sm:w-auto bg-danger/90 text-white border border-danger/40 hover:bg-danger"
               onClick={onConfirm}
               disabled={isLoading}
             >

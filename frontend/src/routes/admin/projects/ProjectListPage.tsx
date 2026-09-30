@@ -48,7 +48,7 @@ export default function ProjectListPage() {
         <Button
           size="sm"
           variant="outline"
-          className={`font-mono text-red-300 border-red-500/30 hover:text-red-200 hover:border-red-400/50 hover:bg-red-500/10${fullWidth ? " flex-1" : ""}`}
+          className={`font-mono text-danger-text border-danger/30 hover:text-danger-text hover:border-danger/50 hover:bg-danger/10${fullWidth ? " flex-1" : ""}`}
           onClick={() => setProjectToDelete(project)}
           disabled={isDeleting}
         >
@@ -79,7 +79,7 @@ export default function ProjectListPage() {
           loading projects...
         </p>
       ) : error ? (
-        <div className="admin-card p-6 font-mono text-sm text-red-300">
+        <div className="admin-card p-6 font-mono text-sm text-danger-text">
           <span className="text-terminal">error: </span>
           Não foi possível carregar os projetos.
         </div>
@@ -121,8 +121,8 @@ export default function ProjectListPage() {
 
           <div className="admin-card hidden md:block overflow-x-auto">
             <div className="flex items-center gap-2 px-4 py-2 border-b border-border-subtle bg-surface-raised">
-              <span className="h-2 w-2 rounded-full bg-red-500/80" />
-              <span className="h-2 w-2 rounded-full bg-amber-400/80" />
+              <span className="h-2 w-2 rounded-full bg-danger/80" />
+              <span className="h-2 w-2 rounded-full bg-warning/80" />
               <span className="h-2 w-2 rounded-full bg-terminal/80" />
               <span className="font-mono text-[10px] ml-1 text-text-subtle">
                 $ ls ~/projects

@@ -8,6 +8,7 @@ import {
 } from "recharts";
 import type { Project } from "@blog/shared";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { colors } from "@/theme";
 import { CHART_GRID, getRadarChartData } from "../../lib/chartData";
 import { ChartTooltip } from "./ChartTooltip";
 import { cn } from "@/lib/format";
@@ -44,7 +45,7 @@ export function TechRadarChart({ projects, expanded = false }: TechRadarChartPro
           <PolarAngleAxis
             dataKey="tech"
             tick={{
-              fill: "#94a3b8",
+              fill: colors.textMuted,
               fontSize: expanded ? 12 : compact ? 8 : 10,
             }}
           />

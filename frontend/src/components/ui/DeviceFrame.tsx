@@ -19,8 +19,8 @@ function BrowserChrome({ compact }: { compact?: boolean }) {
       )}
     >
       <div className="flex shrink-0 items-center gap-1">
-        <span className={cn("rounded-full bg-red-500/80", compact ? "size-1.5" : "size-2")} />
-        <span className={cn("rounded-full bg-amber-400/80", compact ? "size-1.5" : "size-2")} />
+        <span className={cn("rounded-full bg-danger/80", compact ? "size-1.5" : "size-2")} />
+        <span className={cn("rounded-full bg-warning/80", compact ? "size-1.5" : "size-2")} />
         <span className={cn("rounded-full bg-terminal/80", compact ? "size-1.5" : "size-2")} />
       </div>
     </div>

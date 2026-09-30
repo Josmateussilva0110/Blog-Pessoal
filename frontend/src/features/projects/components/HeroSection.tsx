@@ -6,6 +6,7 @@ import { SITE } from "@/config/constants";
 import { RevealText } from "@/components/ui/RevealText";
 import { usePublicProfileImage } from "@/features/profile/hooks/usePublicProfileImage";
 import { useHeroStats } from "@/features/site-settings/hooks/useHeroStats";
+import { ROUTES } from "@/config/routes";
 
 const MotionLink = motion.create(Link);
 
@@ -42,7 +43,7 @@ export function HeroSection({ projectCount = 0, isLoading = false }: HeroSection
               as="h1"
               text="Código que cria coisas."
               accent={["cria"]}
-              delay={0.2}
+              animated={false}
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-5 sm:mb-6 tracking-tight"
             />
 
@@ -52,7 +53,7 @@ export function HeroSection({ projectCount = 0, isLoading = false }: HeroSection
 
             <div className="flex flex-col min-[400px]:flex-row flex-wrap gap-3 mb-8 sm:mb-10">
               <MotionLink
-                to="/#projetos"
+                to={ROUTES.projectsSection}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 className="inline-flex items-center justify-center font-mono text-sm font-medium bg-accent text-surface px-6 py-3 btn-terminal hover:bg-accent-muted transition-colors"
@@ -60,7 +61,7 @@ export function HeroSection({ projectCount = 0, isLoading = false }: HeroSection
                 ver_projetos()
               </MotionLink>
               <motion.a
-                href="/#sobre"
+                href={ROUTES.aboutSection}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 className="inline-flex items-center justify-center font-mono text-sm text-text-muted border border-border-subtle px-5 py-3 hover:text-text hover:border-border transition-colors"

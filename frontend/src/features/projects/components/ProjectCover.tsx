@@ -21,10 +21,10 @@ export function ProjectCover({ project, platform, sizes, className }: ProjectCov
   const alt = `Preview de ${project.title}`;
 
   return (
-    <div className={cn("relative overflow-hidden bg-[#0b0b14]", className)}>
+    <div className={cn("relative overflow-hidden bg-surface-inset", className)}>
       {!cover ? (
         <div className="project-cover-empty flex h-full items-center justify-center">
-          <span className="flex size-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-xl font-semibold text-text-muted">
+          <span className="flex size-14 items-center justify-center rounded-2xl border border-hairline-strong bg-surface-muted text-xl font-semibold text-text-muted">
             {project.title.charAt(0).toUpperCase()}
           </span>
         </div>
@@ -34,7 +34,7 @@ export function ProjectCover({ project, platform, sizes, className }: ProjectCov
           {/* Aparelho grande e cortado embaixo: a parte de cima da tela fica
               legível, em vez da tela inteira espremida em ~120px de largura */}
           <div className="absolute inset-x-0 top-[12%] flex justify-center">
-            <div className="aspect-[9/19.5] w-[46%] overflow-hidden rounded-[1.6rem] border-[3px] border-white/10 bg-black shadow-2xl shadow-black/60 transition-transform duration-500 ease-out group-hover:-translate-y-2">
+            <div className="aspect-[9/19.5] w-[46%] overflow-hidden rounded-[1.6rem] border-[3px] border-hairline-strong bg-black shadow-2xl shadow-black/60 transition-transform duration-500 ease-out group-hover:-translate-y-2">
               <Image
                 src={cover.thumb}
                 srcSet={cover.srcSet}
@@ -62,7 +62,7 @@ export function ProjectCover({ project, platform, sizes, className }: ProjectCov
             fit="cover"
             className="h-full w-full bg-transparent object-top transition-transform duration-700 ease-out group-hover:scale-[1.04]"
           />
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#0b0b14]/70 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-surface-inset/70 to-transparent" />
         </>
       )}
     </div>

@@ -62,7 +62,7 @@ export function MarkdownEditor({
       <div
         className={cn(
           "w-full overflow-hidden rounded-lg border bg-surface-raised/80",
-          error ? "border-red-400/40" : "border-border-subtle",
+          error ? "border-danger/40" : "border-border-subtle",
         )}
       >
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle bg-surface-raised px-2 py-2 sm:px-3">
@@ -144,7 +144,7 @@ export function MarkdownEditor({
         </div>
       </div>
 
-      {error && <span className="text-xs text-red-300">{error}</span>}
+      {error && <span className="text-xs text-danger-text">{error}</span>}
     </div>
   );
 }

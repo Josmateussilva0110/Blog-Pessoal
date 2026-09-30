@@ -1,6 +1,7 @@
 import type { Project } from "@blog/shared";
 import { aggregateTechStack, getTechColor } from "./aggregateTechStack";
 import { normalizeProjectPlatform } from "@/lib/projectPlatform";
+import { colors } from "@/theme";
 
 const PLATFORM_CHART_COLORS = {
   mobile: "#2563eb",
@@ -54,8 +55,8 @@ export function getRadarChartData(projects: Project[], options?: { labelMaxLengt
   }));
 }
 
-export const CHART_AXIS = { fill: "#64748b", fontSize: 11 };
-export const CHART_GRID = "rgb(34 211 238 / 0.1)";
+export const CHART_AXIS = { fill: colors.textSubtle, fontSize: 11 };
+export const CHART_GRID = colors.border;
 
 function parseHexColor(hex: string) {
   const normalized = hex.replace("#", "");
@@ -73,8 +74,8 @@ function parseHexColor(hex: string) {
 /** Pick label color that stays readable on the bar fill. */
 export function getBarLabelFill(barColor: string): string {
   const rgb = parseHexColor(barColor);
-  if (!rgb) return "#f8fafc";
+  if (!rgb) return colors.text;
 
   const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
-  return luminance > 0.58 ? "#0f172a" : "#f8fafc";
+  return luminance > 0.58 ? colors.textInverse : colors.text;
 }

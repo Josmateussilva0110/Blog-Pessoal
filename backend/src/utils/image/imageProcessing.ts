@@ -1,11 +1,10 @@
 import sharp from "sharp"
+import { PROJECT_IMAGE_MAX_WIDTH, PROJECT_THUMB_MAX_WIDTH } from "@blog/shared"
 
 export const IMAGE_WEBP_QUALITY = 82
 export const IMAGE_THUMB_WEBP_QUALITY = 75
 
-export const PROJECT_IMAGE_MAX_WIDTH = 1920
-/** Cobre os cards de projeto (~600px) em telas 1.5x sem precisar do original */
-export const PROJECT_THUMB_MAX_WIDTH = 960
+export { PROJECT_IMAGE_MAX_WIDTH, PROJECT_THUMB_MAX_WIDTH }
 /** Prints têm muito texto: qualidade maior evita artefatos nas letras */
 export const PROJECT_THUMB_WEBP_QUALITY = 82
 

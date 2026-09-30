@@ -1,6 +1,7 @@
 import type { ProjectPlatform } from "@blog/shared";
 import { Maximize2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Image } from "@/components/ui/Image";
 import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { cn } from "@/lib/format";
 import { getThumbnailUrl } from "@/lib/imageUrl";
@@ -58,25 +59,27 @@ export function ProjectImageGallery({
         <button
           type="button"
           onClick={() => setLightboxIndex(activeIndex)}
-          className="group relative block w-full cursor-zoom-in bg-[#0b0b14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/50"
+          className="group relative block w-full cursor-zoom-in bg-surface-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/50"
           aria-label={`Ampliar imagem ${activeIndex + 1} de ${projectTitle}`}
         >
+          {/* Proporção fixa reserva a altura antes do download: sem layout shift */}
           <img
             src={activeImage}
             alt={`${projectTitle} — imagem ${activeIndex + 1}`}
+            decoding="async"
             className={cn(
-              "mx-auto block w-full object-contain",
+              "mx-auto block aspect-[16/10] w-full object-contain",
               "max-h-[320px] sm:max-h-[460px] md:max-h-[600px] xl:max-h-[680px]",
             )}
           />
-          <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 font-mono text-[11px] text-text-muted opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+          <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full border border-hairline-strong bg-black/60 px-2.5 py-1 font-mono text-[11px] text-text-muted opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
             <Maximize2 className="size-3" aria-hidden />
             ampliar
           </span>
         </button>
 
         {images.length > 1 && (
-          <span className="pointer-events-none absolute left-3 top-3 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 font-mono text-[11px] text-text-muted">
+          <span className="pointer-events-none absolute left-3 top-3 rounded-full border border-hairline-strong bg-black/60 px-2.5 py-1 font-mono text-[11px] text-text-muted">
             {padIndex(activeIndex)} / {padIndex(images.length - 1)}
           </span>
         )}
@@ -95,21 +98,19 @@ export function ProjectImageGallery({
                 aria-label={`Mostrar imagem ${index + 1}`}
                 aria-current={isActive ? "true" : undefined}
                 className={cn(
-                  "shrink-0 overflow-hidden rounded-lg border bg-[#0b0b14] transition-all",
+                  "shrink-0 overflow-hidden rounded-lg border bg-surface-inset transition-all",
                   "aspect-video w-28 sm:w-36",
                   isActive
                     ? "border-accent/60 ring-2 ring-accent/20"
-                    : "border-white/[0.08] opacity-60 hover:opacity-100",
+                    : "border-hairline opacity-60 hover:opacity-100",
                 )}
               >
-                <img
+                <Image
                   src={getThumbnailUrl(image)}
-                  onError={(event) => {
-                    if (event.currentTarget.src !== image) event.currentTarget.src = image;
-                  }}
+                  fallback={image}
                   alt=""
-                  className="h-full w-full object-cover object-top"
-                  loading="lazy"
+                  rounded="none"
+                  className="h-full w-full object-top"
                 />
               </button>
             );
@@ -137,6 +138,7 @@ function PhoneGallery({
   onOpen: (index: number) => void;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef(0);
   const [current, setCurrent] = useState(0);
   const [overflowing, setOverflowing] = useState(false);
 
@@ -151,8 +153,11 @@ function PhoneGallery({
     return () => observer.disconnect();
   }, [images.length]);
 
+  useEffect(() => () => cancelAnimationFrame(frameRef.current), []);
+
   /** Aparelho mais próximo do centro do carrossel */
-  function handleScroll() {
+  function updateCurrent() {
+    frameRef.current = 0;
     const scroller = scrollerRef.current;
     if (!scroller) return;
 
@@ -165,6 +170,11 @@ function PhoneGallery({
       if (Math.abs(itemCenter - center) < Math.abs(best - center)) closest = index;
     });
     setCurrent(closest);
+  }
+
+  // No máximo uma medição por frame, por mais eventos de scroll que cheguem
+  function handleScroll() {
+    if (!frameRef.current) frameRef.current = requestAnimationFrame(updateCurrent);
   }
 
   function scrollToPhone(index: number) {
@@ -190,14 +200,18 @@ function PhoneGallery({
               <button
                 type="button"
                 onClick={() => onOpen(index)}
-                className="block w-[62vw] max-w-[240px] cursor-zoom-in overflow-hidden rounded-[1.6rem] border-[3px] border-white/10 bg-black shadow-2xl shadow-black/60 transition-transform duration-300 hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 sm:w-[210px] lg:w-[230px]"
+                className="block w-[62vw] max-w-[240px] cursor-zoom-in overflow-hidden rounded-[1.6rem] border-[3px] border-hairline-strong bg-black shadow-2xl shadow-black/60 transition-transform duration-300 hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 sm:w-[210px] lg:w-[230px]"
                 aria-label={`Ampliar imagem ${index + 1} de ${projectTitle}`}
               >
-                <img
-                  src={image}
+                {/* Aparelho tem no máximo 240px: a miniatura basta; o original fica para o lightbox */}
+                <Image
+                  src={getThumbnailUrl(image)}
+                  fallback={image}
                   alt={`${projectTitle} — imagem ${index + 1}`}
-                  className="aspect-[9/20] w-full object-cover object-top"
-                  loading={index < 3 ? "eager" : "lazy"}
+                  rounded="none"
+                  className="aspect-[9/20] w-full object-top"
+                  loading={index === 0 ? "eager" : "lazy"}
+                  decoding="async"
                 />
               </button>
             </li>
@@ -216,7 +230,7 @@ function PhoneGallery({
               aria-current={index === current ? "true" : undefined}
               className={cn(
                 "h-1.5 rounded-full transition-all duration-300",
-                index === current ? "w-5 bg-accent" : "w-1.5 bg-white/20 hover:bg-white/40",
+                index === current ? "w-5 bg-accent" : "w-1.5 bg-hairline-hover hover:bg-text-subtle",
               )}
             />
           ))}

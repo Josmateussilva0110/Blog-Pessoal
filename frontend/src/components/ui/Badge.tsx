@@ -10,8 +10,8 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 const variantStyles: Record<BadgeVariant, string> = {
   default: "bg-white/5 text-text-muted border-white/10",
   accent: "bg-accent-soft text-accent border-accent/25",
-  success: "bg-emerald-500/15 text-terminal border-emerald-400/25",
-  warning: "bg-amber-500/15 text-amber-300 border-amber-400/25",
+  success: "bg-success/15 text-terminal border-success/25",
+  warning: "bg-warning/15 text-warning-text border-warning/25",
   muted: "bg-white/5 text-text-subtle border-white/5",
 };
 

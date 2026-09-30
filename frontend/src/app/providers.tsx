@@ -3,6 +3,7 @@ import { MotionConfig } from "motion/react";
 import type { ReactNode } from "react";
 import { ToastProvider } from "@/components/ui/toast";
 import { AuthProvider } from "@/features/auth";
+import { ThemeProvider } from "@/theme";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,12 +16,14 @@ const queryClient = new QueryClient({
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <MotionConfig reducedMotion="user">
-      <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </ToastProvider>
-      </QueryClientProvider>
-    </MotionConfig>
+    <ThemeProvider>
+      <MotionConfig reducedMotion="user">
+        <QueryClientProvider client={queryClient}>
+          <ToastProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </ToastProvider>
+        </QueryClientProvider>
+      </MotionConfig>
+    </ThemeProvider>
   );
 }

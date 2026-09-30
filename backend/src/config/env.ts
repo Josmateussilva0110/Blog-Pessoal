@@ -1,13 +1,8 @@
-import path from "path"
-import { config } from "dotenv"
 import { z } from "zod"
+import { loadEnvFiles } from "./loadEnvFiles"
 
 // Local: carrega .env da raiz do monorepo ou de backend/
-const backendRoot = path.resolve(__dirname, "../..")
-const monorepoRoot = path.resolve(backendRoot, "..")
-const quietDotenv = process.env.NODE_ENV === "production"
-config({ path: path.join(monorepoRoot, ".env"), quiet: quietDotenv })
-config({ path: path.join(backendRoot, ".env"), quiet: quietDotenv })
+loadEnvFiles({ quiet: process.env.NODE_ENV === "production" })
 
 const envSchema = z.object({
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),

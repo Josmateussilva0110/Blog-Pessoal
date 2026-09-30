@@ -1,4 +1,5 @@
 import type { NavigateFunction } from "react-router-dom";
+import { SECTION_IDS } from "@/config/routes";
 
 export function projectTransitionName(slug: string) {
   return `project-${slug}`;
@@ -13,7 +14,7 @@ export function supportsViewTransitions() {
 }
 
 export function scrollToProjectsSection(behavior: ScrollBehavior = "smooth") {
-  document.getElementById("projetos")?.scrollIntoView({ behavior, block: "start" });
+  document.getElementById(SECTION_IDS.projects)?.scrollIntoView({ behavior, block: "start" });
 }
 
 export function scrollToProjectsSectionWhenReady(
@@ -23,7 +24,7 @@ export function scrollToProjectsSectionWhenReady(
   let attempts = 0;
 
   const tryScroll = () => {
-    const section = document.getElementById("projetos");
+    const section = document.getElementById(SECTION_IDS.projects);
     if (section) {
       section.scrollIntoView({ behavior, block: "start" });
       return;
@@ -39,7 +40,7 @@ export function scrollToProjectsSectionWhenReady(
 }
 
 export type HomeLocationState = {
-  scrollTo?: "projetos";
+  scrollTo?: typeof SECTION_IDS.projects;
 };
 
 export function scrollToPageTop(behavior: ScrollBehavior = "instant") {

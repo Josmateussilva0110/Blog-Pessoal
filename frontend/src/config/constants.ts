@@ -1,3 +1,5 @@
+import { ROUTES } from "@/config/routes";
+
 export const SITE = {
   name: "mateus.dev",
   title: "Dev Blog",
@@ -9,8 +11,8 @@ export const SITE = {
 } as const;
 
 export const NAV_LINKS = [
-  { label: "home", href: "/" },
-  { label: "projects", href: "/#projetos" },
-  { label: "about", href: "/#sobre" },
+  { label: "home", href: ROUTES.home },
+  { label: "projects", href: ROUTES.projectsSection },
+  { label: "about", href: ROUTES.aboutSection },
   { label: "github", href: "https://github.com", external: true },
 ] as const;

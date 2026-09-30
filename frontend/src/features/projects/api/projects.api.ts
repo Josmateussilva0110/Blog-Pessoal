@@ -1,4 +1,4 @@
-import type { CreateProjectInput, Project } from "@blog/shared";
+import type { CreateProjectInput, HomeProjects, Project } from "@blog/shared";
 import { projectsService } from "@/service";
 import type { ApiResponse } from "@/service/types";
 
@@ -16,6 +16,11 @@ export async function fetchProjects(): Promise<Project[]> {
 
 export async function fetchAdminProjects(): Promise<Project[]> {
   const result = await projectsService.listAdmin();
+  return unwrap(result);
+}
+
+export async function fetchHomeProjects(): Promise<HomeProjects> {
+  const result = await projectsService.home();
   return unwrap(result);
 }
 

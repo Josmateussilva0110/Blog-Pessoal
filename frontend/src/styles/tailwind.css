@@ -7,8 +7,17 @@
   --color-surface: #080810;
   --color-surface-raised: rgb(34 211 238 / 0.03);
   --color-surface-overlay: rgb(34 211 238 / 0.06);
+  /* Fundo por trás de imagens e capas */
+  --color-surface-inset: #0b0b14;
+  /* Preenchimento neutro discreto (chips, skeletons) */
+  --color-surface-muted: rgb(255 255 255 / 0.05);
   --color-border: rgb(34 211 238 / 0.12);
   --color-border-subtle: rgb(34 211 238 / 0.06);
+  /* Divisórias neutras (sem o tom do acento) */
+  --color-hairline: rgb(255 255 255 / 0.08);
+  --color-hairline-subtle: rgb(255 255 255 / 0.06);
+  --color-hairline-strong: rgb(255 255 255 / 0.1);
+  --color-hairline-hover: rgb(255 255 255 / 0.2);
 
   --color-accent: #22d3ee;
   --color-accent-muted: #06b6d4;
@@ -16,10 +25,18 @@
 
   --color-terminal: #4ade80;
   --color-terminal-muted: rgb(74 222 128 / 0.7);
+  /* Estados: base (fundos/bordas com opacidade) e -text (legível sobre o fundo escuro) */
+  --color-success: #10b981;
+  --color-success-text: #6ee7b7;
+  --color-warning: #fbbf24;
+  --color-warning-text: #fcd34d;
+  --color-danger: #ef4444;
+  --color-danger-text: #fca5a5;
 
   --color-text: #f1f5f9;
   --color-text-muted: #94a3b8;
   --color-text-subtle: #64748b;
+  --color-text-inverse: #0f172a;
 }
 
 @layer base {
@@ -106,15 +123,15 @@
 
   .group:hover .project-card,
   .group:focus-visible .project-card {
-    border-color: rgb(34 211 238 / 0.28);
-    box-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 24px 48px -20px rgb(34 211 238 / 0.18);
+    border-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
+    box-shadow: 0 1px 0 var(--color-hairline-subtle) inset, 0 24px 48px -20px color-mix(in srgb, var(--color-accent) 18%, transparent);
   }
 
   /* Fundo da capa mobile: brilho que sai de trás do aparelho + grade pontilhada */
   .project-cover-mobile {
     background-image:
-      radial-gradient(ellipse 55% 70% at 50% 85%, rgb(34 211 238 / 0.16), transparent 70%),
-      radial-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px);
+      radial-gradient(ellipse 55% 70% at 50% 85%, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 70%),
+      radial-gradient(var(--color-hairline-subtle) 1px, transparent 1px);
     background-size: 100% 100%, 16px 16px;
   }
 
@@ -141,7 +158,12 @@
     height: 36px;
     border-radius: 9999px;
     /* Gradiente em vez de filter: blur, que quebra dentro dos painéis 3D */
-    background: radial-gradient(closest-side, rgb(34 211 238 / 0.22), rgb(34 211 238 / 0.08) 55%, transparent);
+    background: radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--color-accent) 22%, transparent),
+      color-mix(in srgb, var(--color-accent) 8%, transparent) 55%,
+      transparent
+    );
     pointer-events: none;
   }
 
@@ -153,11 +175,6 @@
     background-color: currentColor;
     vertical-align: baseline;
     animation: cursor-blink 1s step-end infinite;
-  }
-
-  /* Header, conteúdo e footer mudam de largura juntos ao entrar/sair de um projeto */
-  .page-width {
-    transition: max-width 0.5s var(--slide-easing, ease);
   }
 
   .ios-nav-main {

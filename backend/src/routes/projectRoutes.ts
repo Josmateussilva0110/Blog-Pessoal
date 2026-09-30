@@ -12,6 +12,7 @@ import {
 const router = Router()
 
 router.get("/", ProjectController.list)
+router.get("/home", ProjectController.listHome)
 router.get("/featured", ProjectController.listFeatured)
 router.get("/count", ProjectController.count)
 router.get("/admin", authMiddleware, ProjectController.listAll)

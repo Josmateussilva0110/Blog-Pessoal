@@ -18,6 +18,17 @@ class ProjectController {
     return response.status(200).json({ success: true, data: result.data })
   }
 
+  async listHome(_request: Request, response: Response): Promise<Response> {
+    const result = await ProjectService.listHome()
+
+    if (!result.status) {
+      return sendServiceError(response, result.error, projectErrorHttpStatusMap)
+    }
+
+    setPublicCacheHeaders(response)
+    return response.status(200).json({ success: true, data: result.data })
+  }
+
   async listFeatured(_request: Request, response: Response): Promise<Response> {
     const result = await ProjectService.listFeatured()
 

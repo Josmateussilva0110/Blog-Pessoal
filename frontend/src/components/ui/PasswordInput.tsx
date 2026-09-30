@@ -30,7 +30,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
               "placeholder:text-text-subtle",
               "focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/20",
               "transition-all duration-200",
-              error && "border-red-400/40",
+              error && "border-danger/40",
               className,
             )}
             {...props}
@@ -51,7 +51,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
             )}
           </button>
         </div>
-        {error && <span className="text-xs text-red-300">{error}</span>}
+        {error && <span className="text-xs text-danger-text">{error}</span>}
       </div>
     );
   },

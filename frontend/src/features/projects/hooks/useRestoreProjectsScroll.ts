@@ -5,6 +5,7 @@ import {
   scrollToProjectsSectionWhenReady,
   type HomeLocationState,
 } from "@/lib/viewTransition";
+import { SECTION_IDS } from "@/config/routes";
 
 /** Tempo em que a seção fica "presa" enquanto o conteúdo acima termina de carregar */
 const ANCHOR_MS = 2000;
@@ -41,7 +42,7 @@ export function useRestoreProjectsScroll() {
   const navigate = useNavigate();
   const { isTransitioning } = useProjectTransition();
   const state = location.state as HomeLocationState | null;
-  const returningToProjects = state?.scrollTo === "projetos";
+  const returningToProjects = state?.scrollTo === SECTION_IDS.projects;
   const stopAnchorRef = useRef<(() => void) | null>(null);
 
   // Não depende do estado da rota: segue ancorando mesmo depois de limpá-lo

@@ -4,6 +4,7 @@ import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
 import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 import { Rocket, Settings, Target, type LucideIcon } from "lucide-react";
 import { TypingCommand } from "@/components/ui/TypingText";
+import { SECTION_IDS } from "@/config/routes";
 
 const HIGHLIGHTS: Array<{
   icon: LucideIcon;
@@ -32,7 +33,7 @@ export function AboutSection() {
   const socialLinks = siteLinks?.social ?? DEFAULT_SITE_LINKS.social;
 
   return (
-    <section id="sobre" className="py-12 sm:py-16 md:py-20 scroll-mt-24 sm:scroll-mt-28">
+    <section id={SECTION_IDS.about} className="py-12 sm:py-16 md:py-20 scroll-mt-24 sm:scroll-mt-28">
       <SectionHeader
         tag="Apresentação"
         title="Sobre mim"

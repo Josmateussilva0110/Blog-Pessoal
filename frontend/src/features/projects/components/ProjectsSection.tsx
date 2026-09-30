@@ -1,21 +1,23 @@
-import type { Project } from "@blog/shared";
+import type { HomeProjects } from "@blog/shared";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
-import { getHomeProjectSections } from "@/features/projects/lib/homeProjects";
 import { ProjectGrid } from "./ProjectGrid";
 import { TypingCommand } from "@/components/ui/TypingText";
 import { RevealText } from "@/components/ui/RevealText";
+import { SECTION_IDS } from "@/config/routes";
 
 interface ProjectsSectionProps {
-  projects?: Project[];
+  home?: HomeProjects;
   isLoading: boolean;
 }
 
-export function ProjectsSection({ projects, isLoading }: ProjectsSectionProps) {
-  const all = projects ?? [];
-  const { spotlightProjects, remaining, usesFeaturedSpotlight } = getHomeProjectSections(all);
+export function ProjectsSection({ home, isLoading }: ProjectsSectionProps) {
+  const spotlight = home?.spotlight ?? [];
+  const others = home?.others ?? [];
+  const total = spotlight.length + others.length;
+  const usesFeaturedSpotlight = home?.spotlightMode === "featured";
 
   return (
-    <section id="projetos" className="py-12 sm:py-16 md:py-20 scroll-mt-24 sm:scroll-mt-28">
+    <section id={SECTION_IDS.projects} className="py-12 sm:py-16 md:py-20 scroll-mt-24 sm:scroll-mt-28">
       <header className="mb-8 sm:mb-10">
         <p className="code-comment mb-2">
           {usesFeaturedSpotlight ? "// projetos em destaque" : "// projetos recentes"}
@@ -31,7 +33,7 @@ export function ProjectsSection({ projects, isLoading }: ProjectsSectionProps) {
           className="font-mono text-xs text-text-subtle -mt-2 mb-2"
           command="ls"
           args={usesFeaturedSpotlight ? " --featured" : " --recent"}
-          suffix={!isLoading && ` · ${all.length} repos`}
+          suffix={!isLoading && ` · ${total} repos`}
         />
 
         {isLoading ? (
@@ -41,13 +43,13 @@ export function ProjectsSection({ projects, isLoading }: ProjectsSectionProps) {
             ))}
           </div>
         ) : (
-          <ProjectGrid projects={spotlightProjects} size="large" />
+          <ProjectGrid projects={spotlight} size="large" />
         )}
 
-        {!isLoading && remaining.length > 0 && (
+        {!isLoading && others.length > 0 && (
           <div id="projetos-todos" className="scroll-mt-24 sm:scroll-mt-28 pt-6 sm:pt-8 border-t border-border-subtle">
             <p className="code-comment mb-6">// todos os projetos</p>
-            <ProjectGrid projects={remaining} />
+            <ProjectGrid projects={others} />
           </div>
         )}
       </TerminalWindow>

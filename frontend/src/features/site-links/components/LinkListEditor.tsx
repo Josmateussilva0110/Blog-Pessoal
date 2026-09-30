@@ -128,7 +128,7 @@ export function LinkListEditor({
                     type="button"
                     size="sm"
                     variant="ghost"
-                    className="px-2 text-red-400 hover:text-red-300"
+                    className="px-2 text-danger hover:text-danger-text"
                     onClick={() => removeItem(index)}
                     aria-label="Remover link"
                   >

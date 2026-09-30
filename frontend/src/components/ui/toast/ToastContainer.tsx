@@ -7,18 +7,18 @@ const variantStyles: Record<
   { container: string; icon: string; Icon: typeof CheckCircle2 }
 > = {
   success: {
-    container: "border-emerald-400/25 bg-emerald-500/10",
-    icon: "text-emerald-300",
+    container: "border-success/25 bg-success/10",
+    icon: "text-success-text",
     Icon: CheckCircle2,
   },
   error: {
-    container: "border-red-400/25 bg-red-500/10",
-    icon: "text-red-300",
+    container: "border-danger/25 bg-danger/10",
+    icon: "text-danger-text",
     Icon: XCircle,
   },
   alert: {
-    container: "border-amber-400/25 bg-amber-500/10",
-    icon: "text-amber-300",
+    container: "border-warning/25 bg-warning/10",
+    icon: "text-warning-text",
     Icon: AlertTriangle,
   },
 };

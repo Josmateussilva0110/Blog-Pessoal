@@ -1,9 +1,7 @@
-import type { ImageOrderEntry, Project } from "@blog/shared";
+import type { Project, ProjectFormValues as ApiProjectFormValues, ProjectStatus } from "@blog/shared";
 import { projectFormSchema, type ProjectFormValues } from "@/features/projects/schemas/projectForm.schema";
-import type { ProjectFormValues as ApiProjectFormValues } from "@blog/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -13,49 +11,30 @@ import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
 import { MarkdownEditor } from "@/components/ui/MarkdownEditor";
 import { useToast } from "@/components/ui/toast";
-import { normalizeProjectStatus, toFormProjectStatus } from "@/lib/projectStatus";
-import { normalizeProjectPlatform } from "@/lib/projectPlatform";
-import { slugify, splitCommaList } from "@/lib/slugify";
-import { dateInputToIso, normalizeIsoDateTime, toDateInputValue } from "@/lib/format";
-import { cn } from "@/lib/format";
+import { ROUTES } from "@/config/routes";
+import { ProjectImagesField } from "@/features/projects/components/ProjectImagesField";
 import { projectKeys } from "@/features/projects/hooks/useProjects";
+import { buildImageSubmission, useProjectImages } from "@/features/projects/hooks/useProjectImages";
+import { toProjectFormValues } from "@/features/projects/lib/projectFormValues";
+import { dateInputToIso, normalizeIsoDateTime, toDateInputValue } from "@/lib/format";
+import { PLATFORM_LABELS } from "@/lib/projectPlatform";
+import { normalizeProjectStatus } from "@/lib/projectStatus";
+import { slugify, splitCommaList } from "@/lib/slugify";
+import { getStatusLabel } from "@/lib/utils";
 import { submitProjectForm } from "@/service/projectForm.service";
 
 type ProjectFormProps = {
   project?: Project;
 };
 
-type LocalImage = {
-  id: string;
-  url: string;
-  file?: File;
-  isExisting?: boolean;
-};
-
-function buildImageSubmission(images: LocalImage[]) {
-  let pendingIndex = 0;
-  const imageOrder: ImageOrderEntry[] = images.map((image) => {
-    if (image.isExisting) return image.url;
-
-    const entry = { pending: pendingIndex };
-    pendingIndex += 1;
-    return entry;
-  });
-
-  return {
-    images: images.filter((item) => item.isExisting).map((item) => item.url),
-    imageOrder,
-    files: images.filter((item) => item.file).map((item) => item.file!),
-  };
-}
+const STATUS_OPTIONS: ProjectStatus[] = ["planned", "wip", "completed"];
 
 export function ProjectForm({ project }: ProjectFormProps) {
   const navigate = useNavigate();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const imageInputRef = useRef<HTMLInputElement>(null);
   const markdownInputRef = useRef<HTMLInputElement>(null);
-  const [images, setImages] = useState<LocalImage[]>([]);
+  const { images, resetImages, addFiles, removeImage, moveImage } = useProjectImages();
   const [slugTouched, setSlugTouched] = useState(Boolean(project));
 
   const {
@@ -68,19 +47,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
     formState: { errors, isSubmitting },
   } = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
-    defaultValues: {
-      title: project?.title ?? "",
-      slug: project?.slug ?? "",
-      description: project?.description ?? "",
-      contentMarkdown: project?.contentMarkdown ?? "",
-      status: toFormProjectStatus(project?.status ?? "planned"),
-      platform: normalizeProjectPlatform(project?.platform),
-      techStack: project?.techStack ?? [],
-      repoUrl: project?.repoUrl ?? "",
-      featured: project?.featured ?? false,
-      images: project?.images ?? [],
-      updatedAt: normalizeIsoDateTime(project?.updatedAt),
-    },
+    defaultValues: toProjectFormValues(project),
   });
 
   const onInvalid = (formErrors: FieldErrors<ProjectFormValues>) => {
@@ -99,41 +66,9 @@ export function ProjectForm({ project }: ProjectFormProps) {
   useEffect(() => {
     if (!project) return;
 
-    reset({
-      title: project.title,
-      slug: project.slug,
-      description: project.description,
-      contentMarkdown: project.contentMarkdown,
-      status: toFormProjectStatus(project.status),
-      platform: normalizeProjectPlatform(project.platform),
-      techStack: project.techStack,
-      repoUrl: project.repoUrl ?? "",
-      featured: project.featured,
-      images: project.images,
-      updatedAt: normalizeIsoDateTime(project.updatedAt),
-    });
-
-    setImages(
-      project.images.map((url) => ({
-        id: url,
-        url,
-        isExisting: true,
-      })),
-    );
-  }, [project, reset]);
-
-  function handleImageSelection(event: React.ChangeEvent<HTMLInputElement>) {
-    const selected = Array.from(event.target.files ?? []);
-    event.target.value = "";
-
-    const nextImages = selected.map((file) => ({
-      id: `${file.name}-${file.lastModified}`,
-      url: URL.createObjectURL(file),
-      file,
-    }));
-
-    setImages((current) => [...current, ...nextImages]);
-  }
+    reset(toProjectFormValues(project));
+    resetImages(project.images);
+  }, [project, reset, resetImages]);
 
   async function handleMarkdownSelection(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -151,31 +86,6 @@ export function ProjectForm({ project }: ProjectFormProps) {
     } catch {
       toast.error("Não foi possível ler o arquivo .md.");
     }
-  }
-
-  function removeImage(id: string) {
-    setImages((current) => {
-      const target = current.find((item) => item.id === id);
-      if (target?.file) {
-        URL.revokeObjectURL(target.url);
-      }
-      return current.filter((item) => item.id !== id);
-    });
-  }
-
-  function moveImage(id: string, direction: "up" | "down") {
-    setImages((current) => {
-      const index = current.findIndex((item) => item.id === id);
-      if (index === -1) return current;
-
-      const targetIndex = direction === "up" ? index - 1 : index + 1;
-      if (targetIndex < 0 || targetIndex >= current.length) return current;
-
-      const next = [...current];
-      const [moved] = next.splice(index, 1);
-      next.splice(targetIndex, 0, moved);
-      return next;
-    });
   }
 
   async function onSubmit(values: ProjectFormValues) {
@@ -208,7 +118,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
       }
 
       toast.success(project ? "Projeto atualizado." : "Projeto criado.");
-      navigate("/admin/projects", { replace: true });
+      navigate(ROUTES.adminProjects, { replace: true });
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Não foi possível salvar o projeto.",
@@ -285,14 +195,16 @@ export function ProjectForm({ project }: ProjectFormProps) {
 
       <div className="grid gap-4 md:grid-cols-3">
         <Select label="Status" error={errors.status?.message} {...register("status")}>
-          <option value="planned">Planejado</option>
-          <option value="wip">Em andamento</option>
-          <option value="completed">Concluído</option>
+          {STATUS_OPTIONS.map((status) => (
+            <option key={status} value={status}>
+              {getStatusLabel(status)}
+            </option>
+          ))}
         </Select>
 
         <Select label="Plataforma" error={errors.platform?.message} {...register("platform")}>
-          <option value="web">Web</option>
-          <option value="mobile">Mobile</option>
+          <option value="web">{PLATFORM_LABELS.web}</option>
+          <option value="mobile">{PLATFORM_LABELS.mobile}</option>
         </Select>
 
         <Controller
@@ -314,7 +226,7 @@ export function ProjectForm({ project }: ProjectFormProps) {
         <label className="flex items-center gap-3 text-sm text-text-muted">
           <input
             type="checkbox"
-            className="size-4 rounded border-white/20 bg-transparent"
+            className="size-4 rounded border-hairline-hover bg-transparent"
             {...register("featured")}
           />
           Destacar na home
@@ -339,91 +251,18 @@ export function ProjectForm({ project }: ProjectFormProps) {
         {...register("repoUrl")}
       />
 
-      <section className="admin-card-muted p-4 sm:p-5 space-y-4">
-        <div>
-          <h2 className="text-sm font-semibold text-text">Imagens do sistema</h2>
-          <p className="text-xs text-text-muted mt-1">
-            Prints e capturas de tela do projeto (JPEG, PNG, WebP ou GIF). A primeira imagem
-            será usada como capa.
-          </p>
-        </div>
-
-        <input
-          ref={imageInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          multiple
-          className="hidden"
-          onChange={handleImageSelection}
-        />
-
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          onClick={() => imageInputRef.current?.click()}
-        >
-          Adicionar imagens
-        </Button>
-
-        {images.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {images.map((image, index) => (
-              <div key={image.id} className="relative group">
-                <span
-                  className="absolute top-2 left-2 z-10 rounded-md bg-black/65 px-2 py-0.5 font-mono text-[10px] text-white"
-                >
-                  #{index + 1}
-                </span>
-                <img
-                  src={image.url}
-                  alt={`Imagem ${index + 1} do projeto`}
-                  className="w-full aspect-video object-cover rounded-xl border border-white/10"
-                />
-                <div className="absolute bottom-2 left-2 flex gap-1">
-                  <button
-                    type="button"
-                    className={cn(
-                      "inline-flex size-7 items-center justify-center rounded-md bg-black/60 text-white transition-colors",
-                      "hover:bg-black/80 disabled:pointer-events-none disabled:opacity-35",
-                    )}
-                    aria-label="Mover imagem para cima"
-                    disabled={index === 0}
-                    onClick={() => moveImage(image.id, "up")}
-                  >
-                    <ChevronUp className="size-4" aria-hidden />
-                  </button>
-                  <button
-                    type="button"
-                    className={cn(
-                      "inline-flex size-7 items-center justify-center rounded-md bg-black/60 text-white transition-colors",
-                      "hover:bg-black/80 disabled:pointer-events-none disabled:opacity-35",
-                    )}
-                    aria-label="Mover imagem para baixo"
-                    disabled={index === images.length - 1}
-                    onClick={() => moveImage(image.id, "down")}
-                  >
-                    <ChevronDown className="size-4" aria-hidden />
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  className="absolute top-2 right-2 rounded-lg bg-black/60 px-2 py-1 text-[11px] text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                  onClick={() => removeImage(image.id)}
-                >
-                  Remover
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      <ProjectImagesField
+        images={images}
+        onAdd={addFiles}
+        onRemove={removeImage}
+        onMove={moveImage}
+      />
 
       <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
         <Button
           type="button"
           variant="outline"
-          onClick={() => navigate("/admin/projects")}
+          onClick={() => navigate(ROUTES.adminProjects)}
         >
           Cancelar
         </Button>

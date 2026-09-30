@@ -35,16 +35,33 @@ export type ProjectPlatform = z.infer<typeof projectPlatformSchema>;
 export type MarkdownFile = z.infer<typeof markdownFileSchema>;
 export type Project = z.infer<typeof projectSchema>;
 
+/** Como a home escolheu os projetos em destaque: marcados como destaque ou os mais recentes */
+export type HomeSpotlightMode = "featured" | "recent";
+
+/** Projetos da home já separados pelo backend (ambas as listas por updatedAt, mais recente primeiro) */
+export type HomeProjects = {
+  spotlight: Project[];
+  others: Project[];
+  spotlightMode: HomeSpotlightMode;
+};
+
+/**
+ * URL http(s): z.url() sozinho aceita javascript:, data: etc., que viram
+ * XSS ou rastreamento quando renderizados em href/src.
+ */
+const httpUrl = z
+  .string()
+  .url("URL inválida.")
+  .refine((value) => /^https?:\/\//i.test(value), "Use um endereço http(s).");
+
 export const imageOrderEntrySchema = z.union([
-  z.string().url(),
+  httpUrl,
   z.object({ pending: z.number().int().nonnegative() }),
 ]);
 
 export type ImageOrderEntry = z.infer<typeof imageOrderEntrySchema>;
 
-const optionalUrl = z
-  .string()
-  .url("URL inválida.")
+const optionalUrl = httpUrl
   .or(z.literal(""))
   .transform((value) => (value === "" ? undefined : value));
 
@@ -67,7 +84,7 @@ export const projectFormSchema = z.object({
   techStack: z.array(z.string()),
   repoUrl: optionalUrl.optional(),
   featured: z.boolean(),
-  images: z.array(z.string().url()),
+  images: z.array(httpUrl),
   imageOrder: z.array(imageOrderEntrySchema).optional(),
   updatedAt: z
     .string()

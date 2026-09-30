@@ -14,6 +14,8 @@ import { useRestingTransform } from "@/lib/transform3d";
 type ScrollRevealProps = {
   children: ReactNode;
   className?: string;
+  /** Entra de baixo inclinada; desligar em seções acima da dobra (ex.: hero) */
+  enter?: boolean;
   /** Inclina e esmaece a seção quando ela sai pelo topo da tela */
   exit?: boolean;
 };
@@ -28,7 +30,12 @@ function mix(from: number, to: number, progress: MotionValue<number>) {
  * Painel ligado ao scroll: entra de baixo inclinado para trás e cresce,
  * e ao sair tomba para frente e esmaece.
  */
-export function ScrollReveal({ children, className, exit = true }: ScrollRevealProps) {
+export function ScrollReveal({
+  children,
+  className,
+  enter: enterEnabled = true,
+  exit = true,
+}: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const skipEntrance = useSkipEntrance();
   const reducedMotion = useReducedMotion();
@@ -44,16 +51,18 @@ export function ScrollReveal({ children, className, exit = true }: ScrollRevealP
   const enter = useSpring(enterRaw, SMOOTH);
   const leave = useSpring(exitRaw, SMOOTH);
   const leaveAmount = exit ? 1 : 0;
+  // Sem entrada, a seção já começa no estado final (sem atrasar o primeiro paint)
+  const entered = (from: number, to: number) => (enterEnabled ? mix(from, to, enter) : to);
 
   const rotateX = useTransform(
-    () => mix(18, 0, enter) + mix(0, -14, leave) * leaveAmount,
+    () => entered(18, 0) + mix(0, -14, leave) * leaveAmount,
   );
   const scale = useTransform(
-    () => mix(0.88, 1, enter) - mix(0, 0.08, leave) * leaveAmount,
+    () => entered(0.88, 1) - mix(0, 0.08, leave) * leaveAmount,
   );
-  const y = useTransform(() => mix(90, 0, enter));
+  const y = useTransform(() => entered(90, 0));
   const opacity = useTransform(
-    () => mix(0.15, 1, enter) - mix(0, 0.7, leave) * leaveAmount,
+    () => entered(0.15, 1) - mix(0, 0.7, leave) * leaveAmount,
   );
 
   const transform = useRestingTransform({ perspective: 1400, y, scale, rotateX });

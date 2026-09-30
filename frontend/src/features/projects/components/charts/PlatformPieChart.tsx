@@ -1,6 +1,7 @@
 import type { Project } from "@blog/shared";
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { colors } from "@/theme";
 import { getPlatformChartData } from "../../lib/chartData";
 import { ChartTooltip } from "./ChartTooltip";
 
@@ -42,7 +43,7 @@ function PieSliceLabel({
     <text
       x={x}
       y={y}
-      fill="#f8fafc"
+      fill={colors.text}
       stroke="rgba(15, 23, 42, 0.55)"
       strokeWidth={2}
       paintOrder="stroke"

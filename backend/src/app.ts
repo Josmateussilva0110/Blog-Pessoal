@@ -9,6 +9,7 @@ import { healthRateLimiter } from "./middleware/healthRateLimit"
 import { errorHandler } from "./middleware/errorHandler"
 import { notFound } from "./middleware/notFound"
 import router from "./routes/routes"
+import { noStoreByDefault } from "./utils/http/httpCache"
 import { isAllowedCorsOrigin } from "./utils/http/corsOrigins"
 
 function healthPayload() {
@@ -56,13 +57,11 @@ app.use(rateLimiter)
 // API JSON-only — urlencoded desabilitado (superfície de Prototype Pollution via qs)
 app.use(express.json({ limit: "10kb" }))
 
-app.use("/api", router)
+app.use("/api", noStoreByDefault, router)
 
 if (env.NODE_ENV === "development") {
     try {
         const swaggerUi = require("swagger-ui-express") as typeof import("swagger-ui-express")
-        const { swaggerSpec } = require("./config/swagger") as typeof import("./config/swagger")
-        app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
         console.log("📄 Swagger disponível em /api/docs")
     } catch (error) {
         console.warn(

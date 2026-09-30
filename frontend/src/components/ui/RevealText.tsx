@@ -13,23 +13,25 @@ interface RevealTextProps {
   accent?: string[];
   /** Atraso em segundos antes da primeira palavra */
   delay?: number;
+  /** Desligar para textos acima da dobra (ex.: <h1> do hero), que devem aparecer no primeiro paint */
+  animated?: boolean;
 }
 
-// Só transformações 2D: blur + rotação 3D no mesmo elemento gera artefatos
-// de renderização no Chrome (feixes/cunhas brancas durante a animação)
+// Sem filter: blur — o texto fica dentro dos painéis com transform 3D do
+// ScrollReveal, e filtro + rotação 3D gera artefatos no Chrome
 const word: Variants = {
   hidden: {
     opacity: 0,
     y: "0.6em",
-    filter: "blur(10px)",
   },
   show: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
     transition: { duration: 0.9, ease: EASE_OUT },
   },
 };
+
+const STATIC_TAGS = { h1: "h1", h2: "h2", h3: "h3", p: "p" } as const;
 
 const MOTION_TAGS = {
   h1: motion.h1,
@@ -42,17 +44,33 @@ function stripPunctuation(value: string) {
   return value.replace(/[.,!?;:]/g, "");
 }
 
-/** Revela o texto palavra por palavra, subindo e saindo do desfoque. */
+/** Revela o texto palavra por palavra, subindo e surgindo. */
 export function RevealText({
   text,
   as = "h2",
   className,
   accent = [],
   delay = 0,
+  animated = true,
 }: RevealTextProps) {
   const reveal = useInViewReveal<HTMLHeadingElement>(0.5);
   const Tag = MOTION_TAGS[as];
   const words = text.split(" ");
+  const isAccent = (value: string) => accent.includes(stripPunctuation(value));
+
+  if (!animated) {
+    const StaticTag = STATIC_TAGS[as];
+    return (
+      <StaticTag className={className}>
+        {words.map((value, index) => (
+          <Fragment key={`${value}-${index}`}>
+            {isAccent(value) ? <span className="text-accent">{value}</span> : value}
+            {index < words.length - 1 && " "}
+          </Fragment>
+        ))}
+      </StaticTag>
+    );
+  }
 
   return (
     <Tag
@@ -73,7 +91,7 @@ export function RevealText({
             variants={word}
             className={cn(
               "inline-block",
-              accent.includes(stripPunctuation(value)) && "text-accent",
+              isAccent(value) && "text-accent",
             )}
           >
             {value}

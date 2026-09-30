@@ -19,6 +19,7 @@ import {
   supportsViewTransitions,
   type SlideDirection,
 } from "@/lib/viewTransition";
+import { ROUTES } from "@/config/routes";
 
 type SlidePhase = "idle" | "exit" | "enter";
 
@@ -84,7 +85,7 @@ export function ProjectTransitionProvider({ children }: { children: ReactNode })
       void _element;
 
       if (prefersReducedMotion()) {
-        navigate(`/projects/${_project.slug}`);
+        navigate(ROUTES.project(_project.slug));
         scrollToPageTop("instant");
         return;
       }
@@ -95,7 +96,7 @@ export function ProjectTransitionProvider({ children }: { children: ReactNode })
       setSlidePhase("enter");
 
       void runViewTransition(() => {
-        navigate(`/projects/${_project.slug}`);
+        navigate(ROUTES.project(_project.slug));
         scrollToPageTop("instant");
       }, "push").finally(finishTransition);
     },

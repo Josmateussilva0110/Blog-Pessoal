@@ -90,12 +90,12 @@ export function MermaidDiagram({ chart, className }: MermaidDiagramProps) {
     return (
       <div
         className={cn(
-          "rounded-xl border border-red-400/30 bg-red-500/10 p-4 text-sm text-red-200",
+          "rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm text-danger-text",
           className,
         )}
       >
         <p className="font-medium mb-2">Erro no diagrama Mermaid</p>
-        <pre className="overflow-x-auto text-xs text-red-100/90 whitespace-pre-wrap">
+        <pre className="overflow-x-auto text-xs text-danger-text/90 whitespace-pre-wrap">
           {chart}
         </pre>
       </div>

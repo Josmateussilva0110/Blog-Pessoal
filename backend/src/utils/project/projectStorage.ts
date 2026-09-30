@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto"
+import { PROJECT_ASSETS_BUCKET, PROJECT_IMAGES_BUCKET } from "../../constants/storage.constants"
 import { supabaseAdmin } from "../../database/supabase/supabase"
 import type { UploadableFile } from "../../types/projects/uploadableFile"
 import {
@@ -6,8 +7,8 @@ import {
   processProjectImage,
 } from "../image/imageProcessing"
 
-export const PROJECT_IMAGES_BUCKET = "project-images"
-export const PROJECT_ASSETS_BUCKET = "project-assets"
+// Reexportado para quem já importa os buckets daqui
+export { PROJECT_ASSETS_BUCKET, PROJECT_IMAGES_BUCKET }
 
 const IMAGE_MIMES = new Set([
   "image/jpeg",

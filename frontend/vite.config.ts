@@ -45,6 +45,9 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
+        // Antes do alias raiz (o primeiro que casa vence): constantes sem puxar
+        // os schemas/zod para o bundle inicial
+        "@blog/shared/constants": path.resolve(__dirname, "../packages/shared/src/constants/index.ts"),
         "@blog/shared": path.resolve(__dirname, "../packages/shared/src/index.ts"),
       },
     },

@@ -13,9 +13,10 @@ import {
 import { invalidateProjectsCache, projectsCountCache, projectsListCache } from "../utils/project/projectCache"
 import { ServiceResult } from "../types/serviceResults/ServiceResult"
 import { ProjectErrorCode } from "../types/code/projectCode"
-import type { Project } from "@blog/shared"
+import type { HomeProjects, Project } from "@blog/shared"
 import { resolveUserIdFromAccessToken } from "../utils/auth/accessToken"
 import { normalizeProjectStatus } from "../utils/project/projectStatus"
+import { splitHomeProjects } from "../utils/project/homeProjects"
 
 class ProjectService {
   private async resolveAuthenticatedUserId(
@@ -144,6 +145,34 @@ class ProjectService {
     }
 
     return { status: true, data: mapProjectRow(data) }
+  }
+
+  /**
+   * O cliente só pode reordenar ou remover imagens que o projeto já tem;
+   * imagens novas chegam como arquivo (pending). Sem isso, qualquer URL
+   * externa (rastreamento) iria direto para o banco e para as páginas públicas.
+   */
+  private ensureKnownImageUrls(
+    payload: ProjectFormValues,
+    allowedUrls: string[]
+  ): ServiceResult<void, ProjectErrorCode> {
+    const allowed = new Set(allowedUrls)
+    const referenced = [
+      ...payload.images,
+      ...(payload.imageOrder ?? []).filter((entry): entry is string => typeof entry === "string"),
+    ]
+
+    if (referenced.every((url) => allowed.has(url))) {
+      return { status: true, data: undefined }
+    }
+
+    return {
+      status: false,
+      error: {
+        code: ProjectErrorCode.PROJECT_ASSET_INVALID,
+        message: "Imagem inválida: envie novas imagens como arquivo.",
+      },
+    }
   }
 
   private collectRemovedImagePaths(existingUrls: string[], keptUrls: string[]): string[] {
@@ -365,6 +394,14 @@ class ProjectService {
     }
   }
 
+  /** Projetos públicos já separados em destaque e restante (usa o cache da lista) */
+  async listHome(): Promise<ServiceResult<HomeProjects, ProjectErrorCode>> {
+    const result = await this.list()
+    if (!result.status) return result
+
+    return { status: true, data: splitHomeProjects(result.data) }
+  }
+
   async listAll(): Promise<ServiceResult<Project[], ProjectErrorCode>> {
     try {
       const { data, error } = await supabaseAdmin
@@ -552,6 +589,10 @@ class ProjectService {
       const userResult = await this.resolveAuthenticatedUserId(accessToken)
       if (!userResult.status) return userResult
 
+      // Projeto novo ainda não tem imagens: todas devem vir como arquivo
+      const imagesResult = this.ensureKnownImageUrls(payload, [])
+      if (!imagesResult.status) return imagesResult
+
       const slugResult = await this.ensureSlugAvailable(payload.slug)
       if (!slugResult.status) return slugResult
 
@@ -585,6 +626,9 @@ class ProjectService {
     try {
       const existing = await this.getById(id)
       if (!existing.status) return existing
+
+      const imagesResult = this.ensureKnownImageUrls(payload, existing.data.images)
+      if (!imagesResult.status) return imagesResult
 
       const slugResult = await this.ensureSlugAvailableForUpdate(
         existing.data.slug,

@@ -1,10 +1,10 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useMemo } from "react";
 import { HeroSection } from "@/features/projects/components/HeroSection";
 import { AboutSection } from "@/features/about/components/AboutSection";
 import { SkillsIconSection } from "@/features/skills/components/SkillsIconSection";
 import { ProjectsSection } from "@/features/projects/components/ProjectsSection";
-import { useProjects } from "@/features/projects/hooks/useProjects";
-import { useRestoreProjectsScroll } from "@/hooks/useRestoreProjectsScroll";
+import { useHomeProjects } from "@/features/projects/hooks/useProjects";
+import { useRestoreProjectsScroll } from "@/features/projects/hooks/useRestoreProjectsScroll";
 import { ScrollReveal } from "@/components/ui/ScrollReveal";
 
 const StackAnalyticsSection = lazy(() =>
@@ -22,12 +22,15 @@ function SectionFallback() {
 }
 
 export function HomePage() {
-  const { data: projects, isLoading } = useProjects();
+  const { data: home, isLoading } = useHomeProjects();
+  // Lista completa para contagem e gráficos (destaque + restante)
+  const projects = useMemo(() => (home ? [...home.spotlight, ...home.others] : undefined), [home]);
   useRestoreProjectsScroll();
 
   return (
     <>
-      <ScrollReveal>
+      {/* Hero fica acima da dobra: sem entrada para não atrasar o LCP */}
+      <ScrollReveal enter={false}>
         <HeroSection projectCount={projects?.length} isLoading={isLoading} />
       </ScrollReveal>
       <ScrollReveal>
@@ -42,7 +45,7 @@ export function HomePage() {
         </Suspense>
       </ScrollReveal>
       <ScrollReveal exit={false}>
-        <ProjectsSection projects={projects} isLoading={isLoading} />
+        <ProjectsSection home={home} isLoading={isLoading} />
       </ScrollReveal>
     </>
   );

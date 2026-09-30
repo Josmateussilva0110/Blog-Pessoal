@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/format";
 import { isMermaidChart, MermaidDiagram } from "@/components/ui/MermaidDiagram";
 import { MarkdownCodeBlock } from "@/components/ui/MarkdownCodeBlock";
-import { headingId, nodeText } from "@/lib/markdownHeadings";
+import { rehypeHeadingIds } from "@/lib/markdownHeadings";
 
 type MarkdownContentProps = {
   content: string;
@@ -47,20 +47,11 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
     <div className={cn("markdown-content", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        // Ids nos títulos para o índice da página poder linkar até eles
+        rehypePlugins={[rehypeHeadingIds]}
         components={{
           pre: MarkdownPre,
           code: MarkdownCode,
-          // Ids nos títulos para o índice da página poder linkar até eles
-          h2: ({ node: _node, children, ...props }) => (
-            <h2 id={headingId(nodeText(children))} {...props}>
-              {children}
-            </h2>
-          ),
-          h3: ({ node: _node, children, ...props }) => (
-            <h3 id={headingId(nodeText(children))} {...props}>
-              {children}
-            </h3>
-          ),
           table: ({ children, ...props }) => (
             <div className="markdown-table-wrap">
               <table {...props}>{children}</table>

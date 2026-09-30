@@ -2,11 +2,12 @@ import type { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { useProjectTransition } from "@/features/projects/context/ProjectTransitionProvider";
 import { supportsViewTransitions } from "@/lib/viewTransition";
+import { isProjectDetailPath } from "@/config/routes";
 
 export function IosNavPage({ children }: { children: ReactNode }) {
   const location = useLocation();
   const { slideDirection, slidePhase } = useProjectTransition();
-  const isDetail = location.pathname.startsWith("/projects/");
+  const isDetail = isProjectDetailPath(location.pathname);
   const useManualSlide = !supportsViewTransitions();
 
   let motionClass = "";

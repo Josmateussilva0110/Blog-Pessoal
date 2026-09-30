@@ -3,6 +3,7 @@ import { useInView } from "motion/react";
 import { useRef } from "react";
 import { useLocation } from "react-router-dom";
 import type { HomeLocationState } from "@/lib/viewTransition";
+import { SECTION_IDS } from "@/config/routes";
 
 /** Mesmo easing usado nas transições CSS do site */
 export const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -43,7 +44,7 @@ export const inViewRepeat = { once: false, amount: 0.15 } as const;
 export function useSkipEntrance() {
   const location = useLocation();
   const state = location.state as HomeLocationState | null;
-  return state?.scrollTo === "projetos";
+  return state?.scrollTo === SECTION_IDS.projects;
 }
 
 /**

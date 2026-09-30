@@ -3,11 +3,14 @@ import { Link } from "react-router-dom";
 import type { Project } from "@blog/shared";
 import { ProjectCover } from "@/features/projects/components/ProjectCover";
 import { useProjectCardLink } from "@/features/projects/hooks/useProjectCardLink";
-import { TERMINAL_STATUS } from "@/features/projects/lib/terminalStatus";
+import { StatusDot } from "@/features/projects/components/StatusDot";
+import { TechChip } from "@/features/projects/components/TechChip";
 import { cn } from "@/lib/format";
 import { normalizeProjectStatus } from "@/lib/projectStatus";
 import { normalizeProjectPlatform, PLATFORM_LABELS } from "@/lib/projectPlatform";
+import { getStatusLabel } from "@/lib/utils";
 import { projectTransitionName } from "@/lib/viewTransition";
+import { ROUTES } from "@/config/routes";
 
 const MAX_TECH = 3;
 
@@ -19,7 +22,7 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, size = "default" }: ProjectCardProps) {
   const { cardRef, handleClick } = useProjectCardLink(project);
-  const statusInfo = TERMINAL_STATUS[normalizeProjectStatus(project.status)];
+  const status = normalizeProjectStatus(project.status);
   const platform = normalizeProjectPlatform(project.platform);
   const isLarge = size === "large";
   const extraTech = project.techStack.length - MAX_TECH;
@@ -27,7 +30,7 @@ export function ProjectCard({ project, size = "default" }: ProjectCardProps) {
 
   return (
     <Link
-      to={`/projects/${project.slug}`}
+      to={ROUTES.project(project.slug)}
       className="group block h-full rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
       onClick={handleClick}
     >
@@ -46,7 +49,7 @@ export function ProjectCard({ project, size = "default" }: ProjectCardProps) {
               : "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
           }
           className={cn(
-            "border-b border-white/[0.06]",
+            "border-b border-hairline-subtle",
             isLarge ? "aspect-[16/10]" : "aspect-[16/11]",
           )}
         />
@@ -54,14 +57,14 @@ export function ProjectCard({ project, size = "default" }: ProjectCardProps) {
         <div className={cn("flex flex-1 flex-col", isLarge ? "gap-4 p-6" : "gap-3.5 p-5")}>
           <div className="flex items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-wider text-text-subtle">
             <span className="flex min-w-0 items-center gap-2">
-              <span className={cn("size-1.5 shrink-0 rounded-full", statusInfo.stripe)} aria-hidden />
+              <StatusDot status={status} />
               <span className="truncate">
-                {statusInfo.label} · {PLATFORM_LABELS[platform]}
+                {getStatusLabel(status)} · {PLATFORM_LABELS[platform]}
               </span>
             </span>
             {project.featured && (
               <Star
-                className="size-3.5 shrink-0 fill-amber-400 text-amber-400"
+                className="size-3.5 shrink-0 fill-warning text-warning"
                 aria-label="Projeto em destaque"
               />
             )}
@@ -84,12 +87,7 @@ export function ProjectCard({ project, size = "default" }: ProjectCardProps) {
           {project.techStack.length > 0 && (
             <ul className="flex flex-wrap gap-1.5" aria-label="Tecnologias">
               {project.techStack.slice(0, MAX_TECH).map((tech) => (
-                <li
-                  key={tech}
-                  className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-0.5 text-xs font-medium text-text-muted"
-                >
-                  {tech}
-                </li>
+                <TechChip key={tech}>{tech}</TechChip>
               ))}
               {extraTech > 0 && (
                 <li className="px-1.5 py-0.5 text-xs font-medium text-text-subtle">
@@ -99,7 +97,7 @@ export function ProjectCard({ project, size = "default" }: ProjectCardProps) {
             </ul>
           )}
 
-          <div className="flex items-center justify-between border-t border-white/[0.06] pt-4">
+          <div className="flex items-center justify-between border-t border-hairline-subtle pt-4">
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-text transition-colors group-hover:text-accent">
               Ver projeto
               <ArrowUpRight

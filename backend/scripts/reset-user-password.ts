@@ -6,27 +6,7 @@
  *
  * Requer SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no .env (raiz ou backend/).
  */
-import { createClient } from "@supabase/supabase-js";
-import { config } from "dotenv";
-import path from "path";
-
-const backendRoot = path.resolve(__dirname, "..");
-const monorepoRoot = path.resolve(backendRoot, "..");
-
-config({ path: path.join(monorepoRoot, ".env") });
-config({ path: path.join(backendRoot, ".env") });
-
-const supabaseUrl = process.env.SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !serviceRoleKey) {
-  console.error("Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no .env");
-  process.exit(1);
-}
-
-const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
+import { supabaseAdmin } from "./lib/supabaseAdmin";
 
 function generateTemporaryPassword() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";

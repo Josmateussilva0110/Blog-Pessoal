@@ -1,23 +1,25 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Project } from "@blog/shared";
+import type { HomeProjects } from "@blog/shared";
 import {
   fetchAdminProjects,
   fetchFeaturedProjects,
+  fetchHomeProjects,
   fetchProjectBySlug,
-  fetchProjects,
 } from "../api/projects.api";
 
 export const projectKeys = {
   all: ["projects"] as const,
   admin: () => [...projectKeys.all, "admin"] as const,
   featured: () => [...projectKeys.all, "featured"] as const,
+  home: () => [...projectKeys.all, "home"] as const,
   detail: (slug: string) => [...projectKeys.all, "detail", slug] as const,
 };
 
-export function useProjects() {
+/** Projetos da home já separados em destaque e restante pelo backend */
+export function useHomeProjects() {
   return useQuery({
-    queryKey: projectKeys.all,
-    queryFn: fetchProjects,
+    queryKey: projectKeys.home(),
+    queryFn: fetchHomeProjects,
   });
 }
 
@@ -42,9 +44,12 @@ export function useProject(slug: string) {
     queryKey: projectKeys.detail(slug),
     queryFn: () => fetchProjectBySlug(slug),
     enabled: Boolean(slug),
+    // Vindo da home, o card já tem os dados: a página abre sem esperar a requisição
     placeholderData: () => {
-      const projects = queryClient.getQueryData<Project[]>(projectKeys.all);
-      return projects?.find((project) => project.slug === slug);
+      const home = queryClient.getQueryData<HomeProjects>(projectKeys.home());
+      return [...(home?.spotlight ?? []), ...(home?.others ?? [])].find(
+        (project) => project.slug === slug,
+      );
     },
   });
 }

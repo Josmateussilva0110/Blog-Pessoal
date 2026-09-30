@@ -57,7 +57,7 @@ export function ProjectToc({
           Nesta página
         </p>
       )}
-      <ul className="space-y-0.5 border-l border-white/[0.08]">
+      <ul className="space-y-0.5 border-l border-hairline">
         {headings.map((heading) => {
           const isActive = heading.id === activeId;
 

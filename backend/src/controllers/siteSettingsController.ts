@@ -13,7 +13,7 @@ class SiteSettingsController {
       return sendServiceError(response, result.error, siteSettingsErrorHttpStatusMap)
     }
 
-    setPublicCacheHeaders(response, 300)
+    setPublicCacheHeaders(response)
     return response.status(200).json({ success: true, data: result.data })
   }
 

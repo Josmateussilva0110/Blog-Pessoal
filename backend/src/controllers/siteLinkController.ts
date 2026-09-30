@@ -13,7 +13,7 @@ class SiteLinkController {
       return sendServiceError(response, result.error, siteLinkErrorHttpStatusMap)
     }
 
-    setPublicCacheHeaders(response, 300)
+    setPublicCacheHeaders(response)
     return response.status(200).json({ success: true, data: result.data })
   }
 

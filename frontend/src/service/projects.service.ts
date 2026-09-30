@@ -1,4 +1,4 @@
-import type { CreateProjectInput, Project } from "@blog/shared";
+import type { CreateProjectInput, HomeProjects, Project } from "@blog/shared";
 import { request } from "./client";
 
 const BASE = "/projects";
@@ -10,6 +10,10 @@ export const projectsService = {
 
   listAdmin() {
     return request<Project[]>(`${BASE}/admin`);
+  },
+
+  home() {
+    return request<HomeProjects>(`${BASE}/home`);
   },
 
   featured() {

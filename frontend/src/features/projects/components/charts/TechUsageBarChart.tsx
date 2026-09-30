@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import type { Project } from "@blog/shared";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { colors } from "@/theme";
 import { CHART_AXIS, CHART_GRID, getBarLabelFill, getTechChartData } from "../../lib/chartData";
 import { ChartTooltip } from "./ChartTooltip";
 
@@ -42,7 +43,8 @@ function BarPercentLabel(props: BarPercentLabelProps) {
 
   const barColor = props.payload?.fill ?? "#2563eb";
   const labelFill = getBarLabelFill(barColor);
-  const stroke = labelFill === "#f8fafc" ? "rgba(15, 23, 42, 0.55)" : "rgba(248, 250, 252, 0.7)";
+  // Contorno oposto ao texto para o rótulo ler bem sobre qualquer barra
+  const stroke = labelFill === colors.text ? "rgb(15 23 42 / 0.55)" : "rgb(248 250 252 / 0.7)";
 
   return (
     <text
