@@ -31,12 +31,14 @@ export function ProjectCover({ project, platform, sizes, className }: ProjectCov
       ) : platform === "mobile" ? (
         <>
           <div className="project-cover-mobile absolute inset-0" aria-hidden />
-          <div className="absolute inset-x-0 bottom-0 top-[10%] flex justify-center">
-            <div className="h-[112%] aspect-[9/19.5] overflow-hidden rounded-[1.4rem] border-[3px] border-white/10 bg-black shadow-2xl shadow-black/60 transition-transform duration-500 ease-out group-hover:-translate-y-2">
+          {/* Aparelho grande e cortado embaixo: a parte de cima da tela fica
+              legível, em vez da tela inteira espremida em ~120px de largura */}
+          <div className="absolute inset-x-0 top-[12%] flex justify-center">
+            <div className="aspect-[9/19.5] w-[46%] overflow-hidden rounded-[1.6rem] border-[3px] border-white/10 bg-black shadow-2xl shadow-black/60 transition-transform duration-500 ease-out group-hover:-translate-y-2">
               <Image
                 src={cover.thumb}
                 srcSet={cover.srcSet}
-                sizes="220px"
+                sizes="(min-width: 768px) 280px, 46vw"
                 decoding="async"
                 fallback={cover.original}
                 alt={alt}

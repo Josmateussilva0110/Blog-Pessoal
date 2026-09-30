@@ -205,7 +205,7 @@ export function ProjectDetailPage() {
         </div>
       )}
 
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-12">
+      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12 xl:gap-16">
         <div className="min-w-0">
           {hasDocs && (
             <section aria-labelledby="documentacao">

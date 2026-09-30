@@ -9,6 +9,7 @@ import {
 import { useEffect, useRef, type ReactNode } from "react";
 import { cn } from "@/lib/format";
 import { useSkipEntrance } from "@/lib/motion";
+import { useRestingTransform } from "@/lib/transform3d";
 
 type ScrollRevealProps = {
   children: ReactNode;
@@ -55,6 +56,8 @@ export function ScrollReveal({ children, className, exit = true }: ScrollRevealP
     () => mix(0.15, 1, enter) - mix(0, 0.7, leave) * leaveAmount,
   );
 
+  const transform = useRestingTransform({ perspective: 1400, y, scale, rotateX });
+
   // Mesmo elemento nos dois casos: ao religar o efeito nada é remontado, e as
   // springs já estão acompanhando o scroll, então não há salto
   const animated = !skipEntrance && !reducedMotion;
@@ -74,13 +77,11 @@ export function ScrollReveal({ children, className, exit = true }: ScrollRevealP
       style={
         animated
           ? {
-              rotateX,
-              scale,
-              y,
+              transform,
               opacity,
-              transformPerspective: 1400,
               transformOrigin: "50% 50%",
-              willChange: "transform, opacity",
+              // Sem will-change: com ele o Chrome congela a resolução do desenho
+              // na escala de entrada (0.88) e o conteúdo fica sem foco em escala 1
             }
           : undefined
       }

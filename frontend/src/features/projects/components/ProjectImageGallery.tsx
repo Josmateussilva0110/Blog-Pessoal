@@ -66,7 +66,7 @@ export function ProjectImageGallery({
             alt={`${projectTitle} — imagem ${activeIndex + 1}`}
             className={cn(
               "mx-auto block w-full object-contain",
-              "max-h-[320px] sm:max-h-[440px] md:max-h-[560px]",
+              "max-h-[320px] sm:max-h-[460px] md:max-h-[600px] xl:max-h-[680px]",
             )}
           />
           <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 font-mono text-[11px] text-text-muted opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">

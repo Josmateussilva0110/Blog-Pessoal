@@ -8,6 +8,7 @@ import {
 import { useRef, type PointerEvent, type ReactNode } from "react";
 import { cn } from "@/lib/format";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useRestingTransform } from "@/lib/transform3d";
 
 interface TiltCardProps {
   children: ReactNode;
@@ -37,6 +38,7 @@ export function TiltCard({ children, className, max = 12 }: TiltCardProps) {
   const scale = useTransform(hover, [0, 1], [1, 1.04]);
   const lift = useTransform(hover, [0, 1], [0, -8]);
 
+  const transform = useRestingTransform({ perspective: 900, y: lift, scale, rotateX, rotateY });
   const shadowX = useTransform(rotateY, (v) => v * -1.6);
   const shadowScale = useTransform(hover, [0, 1], [0.85, 1]);
 
@@ -79,13 +81,7 @@ export function TiltCard({ children, className, max = 12 }: TiltCardProps) {
       />
       <motion.div
         className="relative"
-        style={{
-          rotateX,
-          rotateY,
-          scale,
-          y: lift,
-          transformPerspective: 900,
-        }}
+        style={{ transform }}
       >
         {children}
       </motion.div>

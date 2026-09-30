@@ -155,6 +155,11 @@
     animation: cursor-blink 1s step-end infinite;
   }
 
+  /* Header, conteúdo e footer mudam de largura juntos ao entrar/sair de um projeto */
+  .page-width {
+    transition: max-width 0.5s var(--slide-easing, ease);
+  }
+
   .ios-nav-main {
     overflow-x: clip;
     position: relative;

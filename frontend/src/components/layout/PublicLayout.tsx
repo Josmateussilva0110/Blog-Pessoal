@@ -5,14 +5,18 @@ import { BackgroundOrbs } from "./BackgroundOrbs";
 import { ScrollToTopButton } from "@/components/ui/ScrollToTopButton";
 import { ProjectTransitionProvider } from "@/features/projects/context/ProjectTransitionProvider";
 import { IosNavPage } from "./IosNavPage";
+import { usePageWidthClass } from "@/hooks/usePageWidth";
+import { cn } from "@/lib/format";
 
 export function PublicLayout() {
+  const pageWidth = usePageWidthClass();
+
   return (
     <ProjectTransitionProvider>
       <div className="min-h-dvh flex flex-col relative">
         <BackgroundOrbs />
         <Header />
-        <main className="flex-1 mx-auto w-full max-w-6xl px-4 sm:px-6 ios-nav-main">
+        <main className={cn("flex-1 mx-auto w-full px-4 sm:px-6 ios-nav-main", pageWidth)}>
           <IosNavPage>
             <Outlet />
           </IosNavPage>

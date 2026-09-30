@@ -5,6 +5,7 @@ import { SITE } from "@/config/constants";
 import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
 import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 import { TypingText } from "@/components/ui/TypingText";
+import { usePageWidthClass } from "@/hooks/usePageWidth";
 import { cn } from "@/lib/format";
 import { prefersReducedMotion, scrollToPageTop } from "@/lib/viewTransition";
 
@@ -104,6 +105,7 @@ function NavLinks({
 
 export function Header() {
   const { pathname } = useLocation();
+  const pageWidth = usePageWidthClass();
   const { data: siteLinks } = useSiteLinks();
   const navLinks = siteLinks?.nav ?? DEFAULT_SITE_LINKS.nav;
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -125,7 +127,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 px-4 sm:px-6 pt-4 sm:pt-5 pb-2 bg-surface/80 backdrop-blur-md border-b border-border-subtle/60">
-      <div className="relative z-[60] mx-auto max-w-6xl flex items-center justify-between gap-4">
+      <div className={cn("relative z-[60] mx-auto flex items-center justify-between gap-4", pageWidth)}>
         <Link
           to="/"
           className="font-mono text-sm font-semibold text-text hover:text-accent transition-colors min-w-0 truncate"
