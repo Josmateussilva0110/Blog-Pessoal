@@ -4,7 +4,10 @@ export const IMAGE_WEBP_QUALITY = 82
 export const IMAGE_THUMB_WEBP_QUALITY = 75
 
 export const PROJECT_IMAGE_MAX_WIDTH = 1920
-export const PROJECT_THUMB_MAX_WIDTH = 480
+/** Cobre os cards de projeto (~600px) em telas 1.5x sem precisar do original */
+export const PROJECT_THUMB_MAX_WIDTH = 960
+/** Prints têm muito texto: qualidade maior evita artefatos nas letras */
+export const PROJECT_THUMB_WEBP_QUALITY = 82
 
 export const PROFILE_IMAGE_MAX_WIDTH = 800
 export const PROFILE_THUMB_MAX_WIDTH = 320
@@ -19,6 +22,7 @@ async function toWebpVariants(
   buffer: Buffer,
   mainMaxWidth: number,
   thumbMaxWidth: number,
+  thumbQuality = IMAGE_THUMB_WEBP_QUALITY,
 ): Promise<ProcessedImage> {
   const pipeline = sharp(buffer, { animated: false }).rotate()
 
@@ -31,7 +35,7 @@ async function toWebpVariants(
     pipeline
       .clone()
       .resize({ width: thumbMaxWidth, withoutEnlargement: true })
-      .webp({ quality: IMAGE_THUMB_WEBP_QUALITY })
+      .webp({ quality: thumbQuality })
       .toBuffer(),
   ])
 
@@ -43,7 +47,12 @@ async function toWebpVariants(
 }
 
 export async function processProjectImage(buffer: Buffer): Promise<ProcessedImage> {
-  return toWebpVariants(buffer, PROJECT_IMAGE_MAX_WIDTH, PROJECT_THUMB_MAX_WIDTH)
+  return toWebpVariants(
+    buffer,
+    PROJECT_IMAGE_MAX_WIDTH,
+    PROJECT_THUMB_MAX_WIDTH,
+    PROJECT_THUMB_WEBP_QUALITY,
+  )
 }
 
 export async function processProfileImage(buffer: Buffer): Promise<ProcessedImage> {

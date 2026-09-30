@@ -3,6 +3,7 @@ import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { getHomeProjectSections } from "@/features/projects/lib/homeProjects";
 import { ProjectGrid } from "./ProjectGrid";
 import { TypingCommand } from "@/components/ui/TypingText";
+import { RevealText } from "@/components/ui/RevealText";
 
 interface ProjectsSectionProps {
   projects?: Project[];
@@ -19,9 +20,10 @@ export function ProjectsSection({ projects, isLoading }: ProjectsSectionProps) {
         <p className="code-comment mb-2">
           {usesFeaturedSpotlight ? "// projetos em destaque" : "// projetos recentes"}
         </p>
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-text tracking-tight">
-          O que estou construindo
-        </h2>
+        <RevealText
+          text="O que estou construindo"
+          className="text-xl sm:text-2xl md:text-3xl font-bold text-text tracking-tight"
+        />
       </header>
 
       <TerminalWindow path="~/projects" bodyClassName="p-4 sm:p-5 md:p-6 lg:p-8 space-y-8 sm:space-y-10">
@@ -33,16 +35,13 @@ export function ProjectsSection({ projects, isLoading }: ProjectsSectionProps) {
         />
 
         {isLoading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="mx-auto aspect-[1/1.08] w-full max-w-[20rem] rounded-lg terminal-card-muted animate-pulse bg-surface-raised"
-              />
+          <div className="grid gap-6 md:grid-cols-2">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="project-card h-[26rem] animate-pulse rounded-2xl" />
             ))}
           </div>
         ) : (
-          <ProjectGrid projects={spotlightProjects} columns={3} variant="floppy" />
+          <ProjectGrid projects={spotlightProjects} size="large" />
         )}
 
         {!isLoading && remaining.length > 0 && (

@@ -1,29 +1,22 @@
 import type { Project } from "@blog/shared";
 import { motion } from "motion/react";
-import {
-  fadeUp,
-  hoverSpring,
-  inViewOnce,
-  staggerContainer,
-  useSkipEntrance,
-} from "@/lib/motion";
-import { FloppyProjectCard } from "./FloppyProjectCard";
+import { TiltCard } from "@/components/ui/TiltCard";
+import { cardRise, staggerContainer, useInViewReveal } from "@/lib/motion";
 import { ProjectCard } from "./ProjectCard";
 
 interface ProjectGridProps {
   projects: Project[];
   title?: string;
-  columns?: 2 | 3;
-  variant?: "window" | "floppy";
+  /** "large": cards maiores em 2 colunas, usados nos destaques */
+  size?: "default" | "large";
 }
 
 export function ProjectGrid({
   projects,
   title,
-  columns = 2,
-  variant = "window",
+  size = "default",
 }: ProjectGridProps) {
-  const skipEntrance = useSkipEntrance();
+  const reveal = useInViewReveal<HTMLDivElement>();
 
   if (projects.length === 0) {
     return (
@@ -33,13 +26,10 @@ export function ProjectGrid({
     );
   }
 
-  const isFloppy = variant === "floppy";
-  const gridClass = isFloppy
-    ? "grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-    : columns === 3
-      ? "grid gap-4 md:grid-cols-3"
-      : "grid gap-4 sm:grid-cols-2";
-  const CardComponent = isFloppy ? FloppyProjectCard : ProjectCard;
+  const isLarge = size === "large";
+  const gridClass = isLarge
+    ? "grid gap-6 md:grid-cols-2"
+    : "grid gap-5 sm:grid-cols-2 lg:grid-cols-3";
 
   return (
     <section>
@@ -48,24 +38,17 @@ export function ProjectGrid({
       )}
       <motion.div
         className={gridClass}
+        ref={reveal.ref}
         variants={staggerContainer}
-        initial={skipEntrance ? false : "hidden"}
-        whileInView="show"
-        viewport={inViewOnce}
+        initial={reveal.initial}
+        animate={reveal.animate}
       >
         {projects.map((project) => (
           // Anima o wrapper, não o <article> com viewTransitionName do card
-          <motion.div
-            key={project.id}
-            variants={fadeUp}
-            whileHover={
-              isFloppy
-                ? { y: -6, rotate: -1, transition: hoverSpring }
-                : { y: -4, transition: hoverSpring }
-            }
-            whileTap={{ scale: 0.99 }}
-          >
-            <CardComponent project={project} />
+          <motion.div key={project.id} variants={cardRise} whileTap={{ scale: 0.98 }}>
+            <TiltCard className="h-full" max={isLarge ? 7 : 9}>
+              <ProjectCard project={project} size={size} />
+            </TiltCard>
           </motion.div>
         ))}
       </motion.div>

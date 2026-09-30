@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { RevealText } from "./RevealText";
 
 interface SectionHeaderProps {
   tag?: string;
@@ -17,7 +18,10 @@ export function SectionHeader({
     <header className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
       <div className="max-w-lg min-w-0">
         {tag && <p className="code-comment mb-2">{"// "}{tag.toLowerCase()}</p>}
-        <h2 className="text-xl sm:text-2xl font-bold text-text tracking-tight">{title}</h2>
+        <RevealText
+          text={title}
+          className="text-xl sm:text-2xl font-bold text-text tracking-tight"
+        />
         {subtitle && (
           <p className="text-sm text-text-muted mt-1.5 leading-relaxed">
             {subtitle}

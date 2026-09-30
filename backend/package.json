@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "create-user": "tsx scripts/create-user.ts",
-    "reset-user-password": "tsx scripts/reset-user-password.ts"
+    "reset-user-password": "tsx scripts/reset-user-password.ts",
+    "regenerate-thumbnails": "tsx scripts/regenerate-project-thumbnails.ts"
   },
   "engines": {
     "node": ">=20"

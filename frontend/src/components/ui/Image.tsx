@@ -142,6 +142,7 @@ export function Image({
   style,
   loading = "lazy",
   onError,
+  srcSet,
   ...props
 }: ImageProps) {
   const preset = variantStyles[variant];
@@ -161,6 +162,8 @@ export function Image({
     <img
       {...props}
       src={currentSrc}
+      // Depois de cair no fallback o srcSet apontaria de novo para a imagem quebrada
+      srcSet={currentSrc === src ? srcSet : undefined}
       alt={alt}
       loading={loading}
       style={{ ...dimensions.style, ...style }}

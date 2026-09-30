@@ -5,7 +5,7 @@ import { Image } from "@/components/ui/Image";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { getSkillIconUrl } from "@/lib/skillicons";
-import { fadeUp, inViewOnce, staggerContainer } from "@/lib/motion";
+import { fadeUp, inViewRepeat, staggerContainer } from "@/lib/motion";
 import { TypingCommand } from "@/components/ui/TypingText";
 
 function SkillCard({
@@ -80,7 +80,7 @@ export function SkillsIconSection() {
           variants={staggerContainer}
           initial="hidden"
           whileInView="show"
-          viewport={inViewOnce}
+          viewport={inViewRepeat}
         >
           {skills.map((skill) => (
             <motion.div

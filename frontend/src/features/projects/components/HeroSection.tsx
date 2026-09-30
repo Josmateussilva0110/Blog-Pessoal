@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Image, DEFAULT_IMAGE_FALLBACK } from "@/components/ui/Image";
 import { TerminalWindow, TerminalWindowBar } from "@/components/ui/TerminalWindow";
 import { SITE } from "@/config/constants";
+import { RevealText } from "@/components/ui/RevealText";
 import { usePublicProfileImage } from "@/features/profile/hooks/usePublicProfileImage";
 import { useHeroStats } from "@/features/site-settings/hooks/useHeroStats";
 
@@ -37,9 +38,13 @@ export function HeroSection({ projectCount = 0, isLoading = false }: HeroSection
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-5 sm:mb-6 tracking-tight">
-              Código que <span className="text-accent">cria</span> coisas.
-            </h1>
+            <RevealText
+              as="h1"
+              text="Código que cria coisas."
+              accent={["cria"]}
+              delay={0.2}
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-5 sm:mb-6 tracking-tight"
+            />
 
             <p className="text-sm sm:text-base md:text-lg text-text-muted leading-relaxed max-w-xl mb-8 sm:mb-10">
               {SITE.description}

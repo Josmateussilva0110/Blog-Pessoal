@@ -15,7 +15,9 @@ function useTypewriter<T extends HTMLElement>(
   { speed, delay, startOnView, onDone }: TypewriterOptions,
 ) {
   const ref = useRef<T>(null);
-  const inView = useInView(ref, { once: true, amount: 0.6 });
+  const inView = useInView(ref, { amount: 0.6 });
+  /** Qualquer parte visível: só apaga o texto depois que ele sai por completo da tela */
+  const partlyVisible = useInView(ref);
   const reducedMotion = useReducedMotion();
   const [length, setLength] = useState(0);
   const [started, setStarted] = useState(false);
@@ -28,6 +30,13 @@ function useTypewriter<T extends HTMLElement>(
     setLength(0);
     setStarted(false);
   }, [total]);
+
+  // Redigita sempre que o elemento volta para a tela
+  useEffect(() => {
+    if (!startOnView || partlyVisible) return;
+    setLength(0);
+    setStarted(false);
+  }, [startOnView, partlyVisible]);
 
   useEffect(() => {
     if (!canStart || started) return;

@@ -27,7 +27,9 @@ export function HomePage() {
 
   return (
     <>
-      <HeroSection projectCount={projects?.length} isLoading={isLoading} />
+      <ScrollReveal>
+        <HeroSection projectCount={projects?.length} isLoading={isLoading} />
+      </ScrollReveal>
       <ScrollReveal>
         <AboutSection />
       </ScrollReveal>
@@ -39,7 +41,7 @@ export function HomePage() {
           <StackAnalyticsSection projects={projects ?? []} isLoading={isLoading} />
         </Suspense>
       </ScrollReveal>
-      <ScrollReveal>
+      <ScrollReveal exit={false}>
         <ProjectsSection projects={projects} isLoading={isLoading} />
       </ScrollReveal>
     </>
