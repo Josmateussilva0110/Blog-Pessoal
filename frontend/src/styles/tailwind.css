@@ -314,6 +314,21 @@
     color: #f1f5f9;
   }
 
+  /* Links do índice param abaixo do header fixo */
+  .markdown-content h2,
+  .markdown-content h3 {
+    scroll-margin-top: 6rem;
+  }
+
+  /* Documentação na página do projeto: mais respiro entre seções */
+  .project-docs > h2:not(:first-child) {
+    margin-top: 2.75rem;
+  }
+
+  .project-docs > h3:not(:first-child) {
+    margin-top: 1.75rem;
+  }
+
   .markdown-content h3 {
     font-size: 1.125rem;
     font-weight: 600;

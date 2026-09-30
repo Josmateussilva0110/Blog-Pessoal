@@ -1,9 +1,9 @@
 import type { ProjectPlatform } from "@blog/shared";
-import { motion } from "motion/react";
-import { useState } from "react";
+import { Maximize2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { cn } from "@/lib/format";
-import { TypingCommand } from "@/components/ui/TypingText";
+import { getThumbnailUrl } from "@/lib/imageUrl";
 
 interface ProjectImageGalleryProps {
   images: string[];
@@ -27,96 +27,200 @@ export function ProjectImageGallery({
 
   const activeImage = images[activeIndex] ?? images[0];
 
-  return (
-    <section className="space-y-4">
-      <div>
-        <p className="code-comment mb-2">// gallery</p>
-        <TypingCommand
-          className="font-mono text-xs text-text-subtle"
-          command="ls"
-          args=" ./screenshots"
-          suffix={` · ${images.length} files`}
-        />
-      </div>
+  const lightbox = lightboxIndex !== null && (
+    <ImageLightbox
+      key={lightboxIndex}
+      images={images}
+      initialIndex={lightboxIndex}
+      open
+      onClose={() => setLightboxIndex(null)}
+      altPrefix={projectTitle}
+      platform={platform}
+    />
+  );
 
-      <div className="terminal-card overflow-hidden p-4 sm:p-5">
+  if (platform === "mobile") {
+    return (
+      <>
+        <PhoneGallery
+          images={images}
+          projectTitle={projectTitle}
+          onOpen={setLightboxIndex}
+        />
+        {lightbox}
+      </>
+    );
+  }
+
+  return (
+    <section className="space-y-3" aria-label="Galeria de imagens">
+      <div className="project-card relative overflow-hidden rounded-2xl">
         <button
           type="button"
           onClick={() => setLightboxIndex(activeIndex)}
-          className="relative block w-full text-left transition-opacity hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-surface rounded-lg"
-          aria-label={`Ampliar screenshot ${activeIndex + 1} de ${projectTitle}`}
+          className="group relative block w-full cursor-zoom-in bg-[#0b0b14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/50"
+          aria-label={`Ampliar imagem ${activeIndex + 1} de ${projectTitle}`}
         >
           <img
             src={activeImage}
-            alt={`${projectTitle} — screenshot ${activeIndex + 1}`}
+            alt={`${projectTitle} — imagem ${activeIndex + 1}`}
             className={cn(
-              "mx-auto block w-full cursor-zoom-in rounded-lg object-contain bg-[#06060c]",
-              platform === "mobile"
-                ? "max-h-[320px] sm:max-h-[420px]"
-                : "max-h-[220px] sm:max-h-[300px] md:max-h-[380px]",
+              "mx-auto block w-full object-contain",
+              "max-h-[320px] sm:max-h-[440px] md:max-h-[560px]",
             )}
           />
+          <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 font-mono text-[11px] text-text-muted opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+            <Maximize2 className="size-3" aria-hidden />
+            ampliar
+          </span>
         </button>
 
-        <div className="mt-3 border-t border-border-subtle pt-3 font-mono text-[10px] text-text-subtle">
-          screenshot-{padIndex(activeIndex)}.png · {activeIndex + 1}/{images.length}
-        </div>
+        {images.length > 1 && (
+          <span className="pointer-events-none absolute left-3 top-3 rounded-full border border-white/10 bg-black/60 px-2.5 py-1 font-mono text-[11px] text-text-muted">
+            {padIndex(activeIndex)} / {padIndex(images.length - 1)}
+          </span>
+        )}
       </div>
 
       {images.length > 1 && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="flex gap-2.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {images.map((image, index) => {
             const isActive = index === activeIndex;
 
             return (
-              <motion.button
+              <button
                 key={image}
                 type="button"
                 onClick={() => setActiveIndex(index)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                aria-label={`Mostrar imagem ${index + 1}`}
+                aria-current={isActive ? "true" : undefined}
                 className={cn(
-                  "terminal-card overflow-hidden text-left transition-colors",
+                  "shrink-0 overflow-hidden rounded-lg border bg-[#0b0b14] transition-all",
+                  "aspect-video w-28 sm:w-36",
                   isActive
-                    ? "border-accent/35 ring-1 ring-accent/20"
-                    : "hover:border-accent/20",
+                    ? "border-accent/60 ring-2 ring-accent/20"
+                    : "border-white/[0.08] opacity-60 hover:opacity-100",
                 )}
               >
-                <div className="flex items-center gap-1.5 border-b border-border-subtle bg-surface-raised px-2 py-1">
-                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-terminal/70" />
-                  <span className="truncate font-mono text-[9px] text-text-subtle">
-                    {padIndex(index)}.png
-                  </span>
-                </div>
-                <div
-                  className={cn(
-                    "bg-surface p-1.5",
-                    platform === "mobile" ? "aspect-[9/16]" : "aspect-video",
-                  )}
-                >
-                  <img
-                    src={image}
-                    alt={`Miniatura ${index + 1} de ${projectTitle}`}
-                    className="h-full w-full rounded object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              </motion.button>
+                <img
+                  src={getThumbnailUrl(image)}
+                  onError={(event) => {
+                    if (event.currentTarget.src !== image) event.currentTarget.src = image;
+                  }}
+                  alt=""
+                  className="h-full w-full object-cover object-top"
+                  loading="lazy"
+                />
+              </button>
             );
           })}
         </div>
       )}
 
-      {lightboxIndex !== null && (
-        <ImageLightbox
-          key={lightboxIndex}
-          images={images}
-          initialIndex={lightboxIndex}
-          open
-          onClose={() => setLightboxIndex(null)}
-          altPrefix={projectTitle}
-          platform={platform}
-        />
+      {lightbox}
+    </section>
+  );
+}
+
+/**
+ * Prints de celular são estreitos: todos lado a lado como aparelhos, em vez de
+ * um por vez num bloco largo cheio de espaço vazio. No celular vira um
+ * carrossel de ponta a ponta com o aparelho da vez centralizado.
+ */
+function PhoneGallery({
+  images,
+  projectTitle,
+  onOpen,
+}: {
+  images: string[];
+  projectTitle: string;
+  onOpen: (index: number) => void;
+}) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [current, setCurrent] = useState(0);
+  const [overflowing, setOverflowing] = useState(false);
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    const measure = () => setOverflowing(scroller.scrollWidth > scroller.clientWidth + 1);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(scroller);
+    return () => observer.disconnect();
+  }, [images.length]);
+
+  /** Aparelho mais próximo do centro do carrossel */
+  function handleScroll() {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    const center = scroller.scrollLeft + scroller.clientWidth / 2;
+    const items = Array.from(scroller.querySelectorAll<HTMLElement>("[data-phone]"));
+    let closest = 0;
+    items.forEach((item, index) => {
+      const itemCenter = item.offsetLeft + item.offsetWidth / 2;
+      const best = items[closest].offsetLeft + items[closest].offsetWidth / 2;
+      if (Math.abs(itemCenter - center) < Math.abs(best - center)) closest = index;
+    });
+    setCurrent(closest);
+  }
+
+  function scrollToPhone(index: number) {
+    scrollerRef.current
+      ?.querySelectorAll<HTMLElement>("[data-phone]")
+      [index]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }
+
+  return (
+    <section
+      className="project-card project-cover-mobile -mx-4 overflow-hidden border-x-0 sm:mx-0 sm:rounded-2xl sm:border-x"
+      aria-label="Galeria de imagens"
+    >
+      <div
+        ref={scrollerRef}
+        onScroll={handleScroll}
+        className="snap-x snap-mandatory overflow-x-auto py-8 [scrollbar-width:none] sm:py-10 [&::-webkit-scrollbar]:hidden"
+      >
+        {/* Padding lateral de meia tela menos meio aparelho: qualquer um pode centralizar */}
+        <ul className="mx-auto flex w-max gap-4 px-[19vw] sm:gap-6 sm:px-8">
+          {images.map((image, index) => (
+            <li key={image} data-phone className="snap-center">
+              <button
+                type="button"
+                onClick={() => onOpen(index)}
+                className="block w-[62vw] max-w-[240px] cursor-zoom-in overflow-hidden rounded-[1.6rem] border-[3px] border-white/10 bg-black shadow-2xl shadow-black/60 transition-transform duration-300 hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 sm:w-[210px] lg:w-[230px]"
+                aria-label={`Ampliar imagem ${index + 1} de ${projectTitle}`}
+              >
+                <img
+                  src={image}
+                  alt={`${projectTitle} — imagem ${index + 1}`}
+                  className="aspect-[9/20] w-full object-cover object-top"
+                  loading={index < 3 ? "eager" : "lazy"}
+                />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {overflowing && images.length > 1 && (
+        <div className="-mt-4 flex justify-center gap-1.5 pb-5">
+          {images.map((image, index) => (
+            <button
+              key={image}
+              type="button"
+              onClick={() => scrollToPhone(index)}
+              aria-label={`Ir para a imagem ${index + 1}`}
+              aria-current={index === current ? "true" : undefined}
+              className={cn(
+                "h-1.5 rounded-full transition-all duration-300",
+                index === current ? "w-5 bg-accent" : "w-1.5 bg-white/20 hover:bg-white/40",
+              )}
+            />
+          ))}
+        </div>
       )}
     </section>
   );
