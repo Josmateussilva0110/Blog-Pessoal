@@ -97,7 +97,8 @@ export function AdminLayout() {
         }
         className={cn(
           "admin-sidebar fixed inset-y-0 left-0 z-50 flex w-[var(--admin-sidebar-width)] flex-col overflow-hidden border-r",
-          "transition-[width,transform] duration-200 ease-out lg:static lg:translate-x-0",
+          // Desktop: fixa na altura da tela, sem esticar junto com o conteúdo da página
+          "transition-[width,transform] duration-200 ease-out lg:sticky lg:top-0 lg:h-dvh lg:shrink-0 lg:translate-x-0",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
@@ -153,7 +154,7 @@ export function AdminLayout() {
           </div>
         </div>
 
-        <nav className={cn("flex-1 space-y-1 py-4", sidebarCollapsed ? "px-2" : "px-3")}>
+        <nav className={cn("min-h-0 flex-1 space-y-1 overflow-y-auto py-4", sidebarCollapsed ? "px-2" : "px-3")}>
           {adminNav.map((item) => {
             const Icon = item.icon;
 

@@ -8,6 +8,7 @@ import { ProjectImageGallery } from "@/features/projects/components/ProjectImage
 import { ProjectDetailSkeleton } from "@/features/projects/components/ProjectDetailSkeleton";
 import { ProjectInfo } from "@/features/projects/components/ProjectInfo";
 import { ProjectToc } from "@/features/projects/components/ProjectToc";
+import { ProjectUpdates } from "@/features/projects/components/ProjectUpdates";
 import { StatusDot } from "@/features/projects/components/StatusDot";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
 import { SITE } from "@/config/constants";
@@ -182,12 +183,17 @@ export function ProjectDetailPage() {
               />
             </section>
           )}
+          <ProjectUpdates updates={project.updates ?? []} projectSlug={project.slug} />
         </div>
 
-        {/* Mobile: aparece antes da documentação; desktop: coluna lateral fixa */}
-        <aside className="order-first space-y-8 lg:order-none lg:sticky lg:top-24">
+        {/* Mobile: aparece antes da documentação; desktop: coluna lateral com o índice fixo */}
+        <aside className="order-first space-y-8 lg:order-none lg:self-stretch">
           <ProjectInfo project={project} />
-          {hasToc && isDesktop && <ProjectToc headings={headings} />}
+          {hasToc && isDesktop && (
+            <div className="lg:sticky lg:top-24 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain">
+              <ProjectToc headings={headings} />
+            </div>
+          )}
         </aside>
       </div>
     </article>

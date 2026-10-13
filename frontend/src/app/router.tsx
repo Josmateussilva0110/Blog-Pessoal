@@ -17,6 +17,12 @@ const ProjectDetailPage = lazy(() =>
   })),
 );
 
+const ProjectUpdatePage = lazy(() =>
+  import("@/routes/public/project/ProjectUpdatePage").then((module) => ({
+    default: module.ProjectUpdatePage,
+  })),
+);
+
 const LoginPage = lazy(() => import("@/routes/admin/login/LoginPage"));
 const ChangePasswordPage = lazy(
   () => import("@/routes/admin/change-password/ChangePasswordPage"),
@@ -79,6 +85,10 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: "projects/:slug", element: withSuspense(ProjectDetailPage, "public") },
+      {
+        path: "projects/:slug/atualizacoes/:updateId",
+        element: withSuspense(ProjectUpdatePage, "public"),
+      },
     ],
   },
   {

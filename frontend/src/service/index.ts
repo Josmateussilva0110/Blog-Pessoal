@@ -1,6 +1,7 @@
 export { getApiBaseUrl } from "./apiBaseUrl";
 export { request, HttpError } from "./client";
 export { projectsService } from "./projects.service";
+export { projectUpdatesService } from "./projectUpdates.service";
 export { siteLinksService } from "./siteLinks.service";
 export { siteSettingsService } from "./siteSettings.service";
 export { authService } from "./auth.service";

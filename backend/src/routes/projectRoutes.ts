@@ -1,5 +1,6 @@
 import { Router } from "express"
 import ProjectController from "../controllers/projectController"
+import ProjectUpdateController from "../controllers/projectUpdateController"
 import { authMiddleware } from "../middleware/auth"
 import { rejectIfMustChangePassword } from "../middleware/rejectIfMustChangePassword"
 import { validate } from "../middleware/validate"
@@ -7,6 +8,8 @@ import { handleProjectUpload } from "../middleware/uploadProjectFiles"
 import {
   projectIdParamSchema,
   projectSlugParamSchema,
+  projectUpdateParamSchema,
+  projectUpdatePayloadSchema,
 } from "../schemas/projectSchema"
 
 const router = Router()
@@ -21,6 +24,12 @@ router.get(
   authMiddleware,
   validate(projectIdParamSchema, "params"),
   ProjectController.getById
+)
+router.get(
+  "/id/:id/updates",
+  authMiddleware,
+  validate(projectIdParamSchema, "params"),
+  ProjectUpdateController.list
 )
 router.get("/:slug", validate(projectSlugParamSchema, "params"), ProjectController.getBySlug)
 
@@ -47,6 +56,33 @@ router.delete(
   rejectIfMustChangePassword,
   validate(projectIdParamSchema, "params"),
   ProjectController.remove
+)
+
+// Atualizações (changelog) do projeto
+router.post(
+  "/:id/updates",
+  authMiddleware,
+  rejectIfMustChangePassword,
+  validate(projectIdParamSchema, "params"),
+  validate(projectUpdatePayloadSchema, "body"),
+  ProjectUpdateController.create
+)
+
+router.put(
+  "/:id/updates/:updateId",
+  authMiddleware,
+  rejectIfMustChangePassword,
+  validate(projectUpdateParamSchema, "params"),
+  validate(projectUpdatePayloadSchema, "body"),
+  ProjectUpdateController.update
+)
+
+router.delete(
+  "/:id/updates/:updateId",
+  authMiddleware,
+  rejectIfMustChangePassword,
+  validate(projectUpdateParamSchema, "params"),
+  ProjectUpdateController.remove
 )
 
 export default router

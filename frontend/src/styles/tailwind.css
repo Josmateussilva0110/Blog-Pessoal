@@ -351,6 +351,13 @@
     margin-top: 1.75rem;
   }
 
+  /* Atualizações do projeto: títulos internos menores que o título do item */
+  .project-update-body h2,
+  .project-update-body h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
   .markdown-content h3 {
     font-size: 1.125rem;
     font-weight: 600;

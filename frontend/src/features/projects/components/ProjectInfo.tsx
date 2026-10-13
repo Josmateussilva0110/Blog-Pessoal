@@ -2,6 +2,7 @@ import type { Project } from "@blog/shared";
 import type { ReactNode } from "react";
 import { StatusDot } from "@/features/projects/components/StatusDot";
 import { TechChip } from "@/features/projects/components/TechChip";
+import { PROJECT_UPDATES_SECTION_ID } from "@/features/projects/components/ProjectUpdates";
 import { formatDate } from "@/lib/format";
 import { normalizeProjectPlatform, PLATFORM_LABELS } from "@/lib/projectPlatform";
 import { normalizeProjectStatus } from "@/lib/projectStatus";
@@ -20,6 +21,7 @@ function InfoRow({ label, children }: { label: string; children: ReactNode }) {
 export function ProjectInfo({ project }: { project: Project }) {
   const status = normalizeProjectStatus(project.status);
   const platform = normalizeProjectPlatform(project.platform);
+  const latestUpdate = project.updates?.[0];
 
   return (
     <div className="project-card rounded-2xl p-5">
@@ -35,7 +37,16 @@ export function ProjectInfo({ project }: { project: Project }) {
         </InfoRow>
         <InfoRow label="Plataforma">{PLATFORM_LABELS[platform]}</InfoRow>
         <InfoRow label="Criado em">{formatDate(project.createdAt)}</InfoRow>
-        <InfoRow label="Atualizado em">{formatDate(project.updatedAt)}</InfoRow>
+        {latestUpdate && (
+          <InfoRow label="Última atualização">
+            <a
+              href={`#${PROJECT_UPDATES_SECTION_ID}`}
+              className="text-accent transition-colors hover:text-accent/80 hover:underline"
+            >
+              {latestUpdate.version ?? formatDate(latestUpdate.publishedAt)}
+            </a>
+          </InfoRow>
+        )}
       </dl>
 
       {project.techStack.length > 0 && (

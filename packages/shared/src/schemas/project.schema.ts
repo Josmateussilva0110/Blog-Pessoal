@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { projectUpdateSchema } from "./projectUpdate.schema";
 
 export const projectStatusSchema = z.enum(["planned", "completed", "wip"]);
 
@@ -26,6 +27,8 @@ export const projectSchema = z.object({
   images: z.array(z.string().url()).default([]),
   markdownFiles: z.array(markdownFileSchema).default([]),
   featured: z.boolean().default(false),
+  /** Só vem preenchido no detalhe do projeto (listas não carregam atualizações) */
+  updates: z.array(projectUpdateSchema).default([]),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -100,6 +103,7 @@ export const createProjectSchema = projectSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  updates: true,
 });
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;

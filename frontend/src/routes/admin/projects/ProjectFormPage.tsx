@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AdminPageHeader } from "@/components/layout/AdminPageHeader";
 import { ProjectForm } from "@/features/projects/components/ProjectForm";
+import { ProjectUpdatesManager } from "@/features/projects/components/ProjectUpdatesManager";
 import { fetchProjectById } from "@/features/projects/api/projects.api";
 
 export default function ProjectFormPage() {
@@ -52,6 +53,13 @@ export default function ProjectFormPage() {
           <div className="p-4 sm:p-5 lg:p-6">
             <ProjectForm project={project ?? undefined} />
           </div>
+        </div>
+      )}
+
+      {/* Atualizações dependem do projeto já existir */}
+      {isEditing && project && (
+        <div className="admin-card mt-6 p-4 sm:p-5 lg:p-6">
+          <ProjectUpdatesManager projectId={project.id} />
         </div>
       )}
     </div>

@@ -55,6 +55,8 @@ app.get("/api/health", healthRateLimiter, sendHealth)
 app.use(rateLimiter)
 
 // API JSON-only — urlencoded desabilitado (superfície de Prototype Pollution via qs)
+// Atualizações de projeto levam markdown: limite maior só nessa rota (o parser global pula o corpo já lido)
+app.use("/api/projects/:id/updates", express.json({ limit: "100kb" }))
 app.use(express.json({ limit: "10kb" }))
 
 app.use("/api", noStoreByDefault, router)

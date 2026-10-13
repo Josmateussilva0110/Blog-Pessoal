@@ -13,6 +13,8 @@ export const ROUTES = {
   projectsSection: `/#${SECTION_IDS.projects}`,
   aboutSection: `/#${SECTION_IDS.about}`,
   project: (slug: string) => `${PROJECT_PATH_PREFIX}${slug}`,
+  projectUpdate: (slug: string, updateId: string) =>
+    `${PROJECT_PATH_PREFIX}${slug}/atualizacoes/${updateId}`,
   adminProjects: "/admin/projects",
   adminProjectEdit: (id: Project["id"]) => `/admin/projects/${id}/edit`,
 } as const;

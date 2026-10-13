@@ -17,6 +17,7 @@ import type { HomeProjects, Project } from "@blog/shared"
 import { resolveUserIdFromAccessToken } from "../utils/auth/accessToken"
 import { normalizeProjectStatus } from "../utils/project/projectStatus"
 import { splitHomeProjects } from "../utils/project/homeProjects"
+import ProjectUpdateService from "./ProjectUpdateService"
 
 class ProjectService {
   private async resolveAuthenticatedUserId(
@@ -530,9 +531,13 @@ class ProjectService {
         }
       }
 
+      const project = mapProjectRow(data)
+      // Sem atualizações a página continua funcionando: a falha só é registrada
+      const updatesResult = await ProjectUpdateService.listByProject(project.id)
+
       return {
         status: true,
-        data: mapProjectRow(data),
+        data: { ...project, updates: updatesResult.status ? updatesResult.data : [] },
       }
     } catch (error) {
       console.error("[ProjectService.getBySlug] error:", error)

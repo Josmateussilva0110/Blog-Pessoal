@@ -61,7 +61,7 @@ export function rehypeHeadingIds() {
   };
 }
 
-function stripInlineMarkdown(text: string) {
+export function stripInlineMarkdown(text: string) {
   return text
     .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/[*_`~]/g, "")

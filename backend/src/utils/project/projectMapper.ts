@@ -45,6 +45,7 @@ export function mapProjectRow(row: ProjectRow): Project {
     images,
     markdownFiles: row.markdown_files ?? [],
     featured: row.featured ?? false,
+    updates: [],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }
