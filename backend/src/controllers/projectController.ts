@@ -69,6 +69,7 @@ class ProjectController {
       return sendServiceError(response, result.error, projectErrorHttpStatusMap)
     }
 
+    setPublicCacheHeaders(response)
     return response.status(200).json({ success: true, data: result.data })
   }
 

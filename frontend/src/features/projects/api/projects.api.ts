@@ -29,8 +29,8 @@ export async function fetchFeaturedProjects(): Promise<Project[]> {
   return unwrap(result);
 }
 
-export async function fetchProjectBySlug(slug: string): Promise<Project | null> {
-  const result = await projectsService.getBySlug(slug);
+export async function fetchProjectBySlug(slug: string, fresh = false): Promise<Project | null> {
+  const result = await projectsService.getBySlug(slug, fresh);
   if (!result.success) {
     if (result.code === "NOT_FOUND") return null;
     throw new Error(result.message);

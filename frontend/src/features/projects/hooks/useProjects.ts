@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { HomeProjects } from "@blog/shared";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
   fetchAdminProjects,
   fetchFeaturedProjects,
@@ -39,10 +40,12 @@ export function useFeaturedProjects() {
 
 export function useProject(slug: string) {
   const queryClient = useQueryClient();
+  // Admin logado acabou de editar: não pode ver a cópia do cache HTTP (até 60s)
+  const { isAuthenticated } = useAuth();
 
   return useQuery({
     queryKey: projectKeys.detail(slug),
-    queryFn: () => fetchProjectBySlug(slug),
+    queryFn: () => fetchProjectBySlug(slug, isAuthenticated),
     enabled: Boolean(slug),
     // Vindo da home, o card já tem os dados: a página abre sem esperar a requisição
     placeholderData: () => {

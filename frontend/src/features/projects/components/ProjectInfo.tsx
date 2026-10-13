@@ -37,16 +37,20 @@ export function ProjectInfo({ project }: { project: Project }) {
         </InfoRow>
         <InfoRow label="Plataforma">{PLATFORM_LABELS[platform]}</InfoRow>
         <InfoRow label="Criado em">{formatDate(project.createdAt)}</InfoRow>
-        {latestUpdate && (
-          <InfoRow label="Última atualização">
+        {/* Sempre presente (sem atualizações cai na data do projeto): a altura do
+            cartão não muda quando o detalhe completo substitui os dados da home */}
+        <InfoRow label="Última atualização">
+          {latestUpdate ? (
             <a
               href={`#${PROJECT_UPDATES_SECTION_ID}`}
               className="text-accent transition-colors hover:text-accent/80 hover:underline"
             >
               {latestUpdate.version ?? formatDate(latestUpdate.publishedAt)}
             </a>
-          </InfoRow>
-        )}
+          ) : (
+            formatDate(project.updatedAt)
+          )}
+        </InfoRow>
       </dl>
 
       {project.techStack.length > 0 && (

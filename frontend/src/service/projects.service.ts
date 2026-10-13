@@ -20,8 +20,9 @@ export const projectsService = {
     return request<Project[]>(`${BASE}/featured`);
   },
 
-  getBySlug(slug: string) {
-    return request<Project>(`${BASE}/${slug}`);
+  /** fresh: revalida no servidor em vez de usar o cache HTTP do navegador */
+  getBySlug(slug: string, fresh = false) {
+    return request<Project>(`${BASE}/${slug}`, { cache: fresh ? "no-cache" : undefined });
   },
 
   getById(id: string) {

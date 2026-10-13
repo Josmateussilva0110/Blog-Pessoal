@@ -19,6 +19,8 @@ type RequestOptions = {
   body?: unknown;
   params?: Record<string, string | number | boolean | undefined>;
   signal?: AbortSignal;
+  /** Política de cache HTTP do fetch (ex.: "no-cache" revalida via ETag) */
+  cache?: RequestCache;
   /** Evita loop ao renovar sessão ou em rotas públicas de auth. */
   skipAuthRefresh?: boolean;
 };
@@ -70,7 +72,7 @@ export async function request<T>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<ApiResponse<T>> {
-  const { method = "GET", body, params, signal, skipAuthRefresh = false } =
+  const { method = "GET", body, params, signal, cache, skipAuthRefresh = false } =
     options;
 
   try {
@@ -82,6 +84,7 @@ export async function request<T>(
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal,
+      cache,
     });
 
     if (

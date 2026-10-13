@@ -10,14 +10,23 @@ import {
   removeStoragePaths,
   uploadProjectImages,
 } from "../utils/project/projectStorage"
-import { invalidateProjectsCache, projectsCountCache, projectsListCache } from "../utils/project/projectCache"
+import {
+  invalidateProjectsCache,
+  projectDetailCache,
+  projectsCountCache,
+  projectsListCache,
+} from "../utils/project/projectCache"
 import { ServiceResult } from "../types/serviceResults/ServiceResult"
 import { ProjectErrorCode } from "../types/code/projectCode"
 import type { HomeProjects, Project } from "@blog/shared"
 import { resolveUserIdFromAccessToken } from "../utils/auth/accessToken"
 import { normalizeProjectStatus } from "../utils/project/projectStatus"
 import { splitHomeProjects } from "../utils/project/homeProjects"
-import ProjectUpdateService from "./ProjectUpdateService"
+import {
+  PROJECT_UPDATE_SELECT,
+  mapProjectUpdateRow,
+  type ProjectUpdateRow,
+} from "../utils/project-update/projectUpdateMapper"
 
 class ProjectService {
   private async resolveAuthenticatedUserId(
@@ -515,13 +524,21 @@ class ProjectService {
 
   async getBySlug(slug: string): Promise<ServiceResult<Project, ProjectErrorCode>> {
     try {
+      const cached = projectDetailCache.get(slug)
+      if (cached) {
+        return { status: true, data: cached }
+      }
+
+      // Projeto e atualizações numa só consulta (embed pela FK project_updates.project_id)
       const { data, error } = await supabaseAdmin
         .from("projects")
-        .select(PROJECT_SELECT)
+        .select(`${PROJECT_SELECT}, project_updates(${PROJECT_UPDATE_SELECT})`)
         .eq("slug", slug)
+        .order("published_at", { referencedTable: "project_updates", ascending: false })
         .maybeSingle()
 
       if (error || !data) {
+        if (error) console.error("[ProjectService.getBySlug]", error)
         return {
           status: false,
           error: {
@@ -531,14 +548,14 @@ class ProjectService {
         }
       }
 
-      const project = mapProjectRow(data)
-      // Sem atualizações a página continua funcionando: a falha só é registrada
-      const updatesResult = await ProjectUpdateService.listByProject(project.id)
-
-      return {
-        status: true,
-        data: { ...project, updates: updatesResult.status ? updatesResult.data : [] },
+      const { project_updates: updateRows, ...projectRow } = data
+      const project: Project = {
+        ...mapProjectRow(projectRow),
+        updates: ((updateRows as ProjectUpdateRow[] | null) ?? []).map(mapProjectUpdateRow),
       }
+
+      projectDetailCache.set(slug, project)
+      return { status: true, data: project }
     } catch (error) {
       console.error("[ProjectService.getBySlug] error:", error)
       return {
