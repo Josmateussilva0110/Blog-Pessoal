@@ -26,12 +26,15 @@ export const projectUpdateFormSchema = z.object({
     .string()
     .trim()
     .max(20000, "O texto deve ter no máximo 20000 caracteres."),
+  // ISO com fuso (o formulário envia toISOString); evita datas ambíguas ou fora de faixa
   publishedAt: z
     .string()
     .min(1, "Data obrigatória.")
-    .refine((value) => !Number.isNaN(Date.parse(value)), {
-      message: "Data inválida.",
-    }),
+    .datetime({ offset: true, message: "Data inválida." })
+    .refine((value) => {
+      const year = new Date(value).getUTCFullYear();
+      return year >= 2000 && year <= 2100;
+    }, "Data fora do intervalo permitido."),
 });
 
 export type ProjectUpdateFormInput = z.input<typeof projectUpdateFormSchema>;

@@ -1,3 +1,4 @@
+import type { IncomingMessage } from "node:http"
 import express, { type Request, type Response } from "express"
 import cors from "cors"
 import helmet from "helmet"
@@ -43,6 +44,16 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"],
 }))
 
+// Atualizações de projeto levam markdown: o corpo (até 100kb) é lido na própria
+// rota, depois da autenticação, para anônimos não forçarem o parse de corpos grandes
+const PROJECT_UPDATES_PATH = /^\/api\/projects\/[^/]+\/updates(?:[/?]|$)/
+
+function isGlobalJsonRequest(incoming: IncomingMessage): boolean {
+    // body-parser tipa como IncomingMessage, mas em runtime é o Request do Express
+    const request = incoming as Request
+    return Boolean(request.is("application/json")) && !PROJECT_UPDATES_PATH.test(request.originalUrl)
+}
+
 // ── Rotas ────────────────────────────────────────────────
 const sendHealth = (_req: Request, res: Response) => {
     res.json(healthPayload())
@@ -55,9 +66,7 @@ app.get("/api/health", healthRateLimiter, sendHealth)
 app.use(rateLimiter)
 
 // API JSON-only — urlencoded desabilitado (superfície de Prototype Pollution via qs)
-// Atualizações de projeto levam markdown: limite maior só nessa rota (o parser global pula o corpo já lido)
-app.use("/api/projects/:id/updates", express.json({ limit: "100kb" }))
-app.use(express.json({ limit: "10kb" }))
+app.use(express.json({ limit: "10kb", type: isGlobalJsonRequest }))
 
 app.use("/api", noStoreByDefault, router)
 

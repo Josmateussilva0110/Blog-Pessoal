@@ -1,3 +1,4 @@
+import { env } from "../config/env"
 import { supabaseAuth, supabaseAdmin, createSupabaseClientForUser, createEphemeralAuthClient } from "../database/supabase/supabase"
 import { USER_PROFILE_SELECT } from "../constants/user.constants"
 import { ServiceResult } from "../types/serviceResults/ServiceResult"
@@ -263,7 +264,9 @@ class UserService {
                 password,
             })
 
-            if (error || !data.session || !data.user) {
+            // Conta que não é o admin recebe a mesma resposta de credencial inválida
+            // (não revela que a conta existe) e os tokens emitidos nunca saem daqui
+            if (error || !data.session || !data.user || data.user.id !== env.ADMIN_USER_ID) {
                 return {
                     status: false,
                     error: {

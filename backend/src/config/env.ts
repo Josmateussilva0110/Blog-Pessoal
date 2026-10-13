@@ -11,6 +11,8 @@ const envSchema = z.object({
     SUPABASE_ANON_KEY: z.string().min(1, "SUPABASE_ANON_KEY ausente").optional(),
     EXPO_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, "SUPABASE_SERVICE_ROLE_KEY ausente").transform((s) => s.trim()),
+    /** Única conta com acesso ao admin; qualquer outra conta do Supabase Auth é recusada */
+    ADMIN_USER_ID: z.uuid("ADMIN_USER_ID ausente ou inválido — use o UUID do admin em Supabase → Authentication → Users"),
     SUPABASE_JWT_SECRET: z
         .string()
         .min(1, "SUPABASE_JWT_SECRET ausente — use o JWT Secret em Supabase → Settings → API")

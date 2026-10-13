@@ -83,6 +83,15 @@ async function refreshAccessToken(
   return result.data.accessToken
 }
 
+/** Só o admin configurado em ADMIN_USER_ID usa as rotas protegidas */
+export function isAdminUser(userId: string): boolean {
+  return userId === env.ADMIN_USER_ID
+}
+
+function rejectNonAdmin(response: Response): void {
+  response.status(403).json({ success: false, message: "Acesso restrito ao administrador." })
+}
+
 export async function authMiddleware(
   request: Request,
   response: Response,
@@ -94,6 +103,10 @@ export async function authMiddleware(
     const user = await resolveUserFromAccessToken(accessToken)
 
     if (user) {
+      if (!isAdminUser(user.id)) {
+        rejectNonAdmin(response)
+        return
+      }
       request.user = user
       request.accessToken = accessToken
       next()
@@ -114,6 +127,11 @@ export async function authMiddleware(
 
   if (!user) {
     response.status(401).json({ success: false, message: "Token inválido ou expirado" })
+    return
+  }
+
+  if (!isAdminUser(user.id)) {
+    rejectNonAdmin(response)
     return
   }
 

@@ -1,4 +1,4 @@
-import { Router } from "express"
+import express, { Router } from "express"
 import ProjectController from "../controllers/projectController"
 import ProjectUpdateController from "../controllers/projectUpdateController"
 import { authMiddleware } from "../middleware/auth"
@@ -58,12 +58,16 @@ router.delete(
   ProjectController.remove
 )
 
-// Atualizações (changelog) do projeto
+// Atualizações (changelog) do projeto. O corpo só é lido depois da autenticação
+// (o parser global de 10kb ignora estas rotas, ver app.ts)
+const parseProjectUpdateBody = express.json({ limit: "100kb" })
+
 router.post(
   "/:id/updates",
   authMiddleware,
   rejectIfMustChangePassword,
   validate(projectIdParamSchema, "params"),
+  parseProjectUpdateBody,
   validate(projectUpdatePayloadSchema, "body"),
   ProjectUpdateController.create
 )
@@ -73,6 +77,7 @@ router.put(
   authMiddleware,
   rejectIfMustChangePassword,
   validate(projectUpdateParamSchema, "params"),
+  parseProjectUpdateBody,
   validate(projectUpdatePayloadSchema, "body"),
   ProjectUpdateController.update
 )
