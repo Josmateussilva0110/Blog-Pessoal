@@ -58,6 +58,14 @@ SyntaxHighlighter.registerLanguage("tsx", tsx);
 SyntaxHighlighter.registerLanguage("typescript", typescript);
 SyntaxHighlighter.registerLanguage("yaml", yaml);
 
+// O tema pinta o <code> (inline) com fundo próprio, que aparece atrás de cada
+// linha como se o texto estivesse selecionado: o bloco já tem o fundo dele
+const CODE_TAG_STYLE = {
+  ...oneDark['code[class*="language-"]'],
+  background: "transparent",
+  textShadow: "none",
+};
+
 function normalizeLanguage(language?: string): string | undefined {
   if (!language) return undefined;
 
@@ -141,6 +149,7 @@ export function MarkdownCodeBlock({
           }}
           PreTag="div"
           CodeTag="code"
+          codeTagProps={{ style: CODE_TAG_STYLE }}
         >
           {code}
         </SyntaxHighlighter>
