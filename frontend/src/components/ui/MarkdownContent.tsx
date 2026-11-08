@@ -22,7 +22,7 @@ function MarkdownCode({ inline, className, children }: CodeProps) {
 
   if (inline) {
     return (
-      <code className="rounded-md bg-accent-soft px-1.5 py-0.5 font-mono text-[0.9em] text-accent">
+      <code className="rounded-md bg-home-inset px-1.5 py-0.5 font-mono text-[0.9em] text-home-ink">
         {code}
       </code>
     );

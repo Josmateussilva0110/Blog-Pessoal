@@ -24,7 +24,7 @@ async function renderMermaidChart(id: string, chart: string) {
       startOnLoad: false,
       theme: "dark",
       securityLevel: "strict",
-      fontFamily: "Plus Jakarta Sans, system-ui, sans-serif",
+      fontFamily: "Geist, system-ui, sans-serif",
     });
     mermaidInitialized = true;
   }

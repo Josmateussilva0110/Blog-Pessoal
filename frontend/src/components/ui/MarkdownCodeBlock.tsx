@@ -103,22 +103,22 @@ export function MarkdownCodeBlock({
   return (
     <div
       className={cn(
-        "markdown-code-block my-4 overflow-hidden rounded-xl border border-white/[0.08] bg-[#0d1117]",
+        "markdown-code-block my-4 overflow-hidden rounded-xl border border-home-line bg-home-device",
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] bg-white/[0.03] px-4 py-2">
-        <span className="font-mono text-[11px] uppercase tracking-wide text-text-subtle">
+      <div className="flex items-center justify-between gap-3 border-b border-home-line bg-home-inset/60 px-4 py-2">
+        <span className="font-mono text-[11px] uppercase tracking-wide text-home-muted">
           {label}
         </span>
         <button
           type="button"
           onClick={handleCopy}
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-[11px] transition-colors",
+            "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-[11px] transition-colors focus-visible:outline-2 focus-visible:outline-brand",
             copied
               ? "border-terminal/30 bg-terminal/10 text-terminal"
-              : "border-white/10 text-text-muted hover:border-accent/25 hover:bg-accent-soft hover:text-text",
+              : "border-home-line text-home-muted hover:bg-home-inset hover:text-home-ink",
           )}
           aria-label={copied ? "Código copiado" : "Copiar código"}
         >

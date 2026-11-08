@@ -29,13 +29,13 @@ function UpdateNavLink({ slug, update, direction }: UpdateNavLinkProps) {
     <Link
       to={ROUTES.projectUpdate(slug, update.id)}
       className={cn(
-        "project-card group flex flex-col gap-1 rounded-xl px-4 py-3 transition-colors hover:border-accent/40",
+        "group flex flex-col gap-1 rounded-xl bg-home-inset px-4 py-3 transition-colors hover:bg-home-raised focus-visible:outline-2 focus-visible:outline-brand",
         isNewer && "sm:col-start-2 sm:text-right",
       )}
     >
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-text-subtle",
+          "inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-home-muted",
           isNewer && "sm:justify-end",
         )}
       >
@@ -43,7 +43,7 @@ function UpdateNavLink({ slug, update, direction }: UpdateNavLinkProps) {
         {isNewer ? "Mais recente" : "Mais antiga"}
         {isNewer && <ArrowRight className="size-3.5" aria-hidden />}
       </span>
-      <span className="text-sm font-medium text-text transition-colors group-hover:text-accent">
+      <span className="text-sm font-medium text-home-ink">
         {update.version ? `${update.version} · ` : ""}
         {update.title}
       </span>
@@ -79,16 +79,19 @@ export function ProjectUpdatePage() {
   // Dados vindos da home ainda não têm as atualizações: espera a resposta do detalhe
   if (isLoading || (isPlaceholderData && !update)) {
     return (
-      <div className="animate-pulse py-6 sm:py-8">
-        <div className="h-4 w-36 rounded bg-surface-muted" />
-        <div className="mt-8 max-w-3xl space-y-4">
-          <div className="h-3 w-40 rounded bg-surface-muted" />
-          <div className="h-10 w-2/3 rounded bg-surface-muted" />
+      <div className="flex flex-col gap-3 pt-4 sm:pt-6">
+        <span role="status" className="sr-only">
+          Carregando atualização…
+        </span>
+        <div className="home-card animate-pulse space-y-4 p-6 sm:p-10" aria-hidden>
+          <div className="h-9 w-40 rounded-xl bg-home-inset" />
+          <div className="h-3 w-40 rounded bg-home-inset" />
+          <div className="h-10 w-2/3 rounded-lg bg-home-inset" />
         </div>
-        <div className="mt-10 space-y-3">
-          <div className="h-4 w-full rounded bg-surface-muted" />
-          <div className="h-4 w-5/6 rounded bg-surface-muted" />
-          <div className="h-4 w-4/6 rounded bg-surface-muted" />
+        <div className="home-card animate-pulse space-y-3 p-6 sm:p-10" aria-hidden>
+          <div className="h-4 w-full rounded bg-home-inset" />
+          <div className="h-4 w-5/6 rounded bg-home-inset" />
+          <div className="h-4 w-4/6 rounded bg-home-inset" />
         </div>
       </div>
     );
@@ -96,53 +99,57 @@ export function ProjectUpdatePage() {
 
   if (!project || !update) {
     return (
-      <div className="py-20 text-center terminal-card">
-        <p className="text-text-muted">Atualização não encontrada.</p>
-        <Link
-          to={project ? ROUTES.project(project.slug) : ROUTES.home}
-          className="text-accent text-sm mt-4 inline-block hover:underline"
-        >
-          {project ? "Voltar ao projeto" : "Voltar ao início"}
-        </Link>
+      <div className="pt-4 sm:pt-6">
+        <div className="home-card px-6 py-20 text-center">
+          <p className="text-home-muted">Atualização não encontrada.</p>
+          <Link
+            to={project ? ROUTES.project(project.slug) : ROUTES.home}
+            className="mt-4 inline-block text-sm text-brand underline decoration-brand/40 underline-offset-[3px] hover:decoration-brand"
+          >
+            {project ? "Voltar ao projeto" : "Voltar ao início"}
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <article className="py-6 sm:py-8">
-      <Link
-        to={ROUTES.project(project.slug)}
-        className="group inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-accent"
-      >
-        <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
-        Voltar a {project.title}
-      </Link>
+    <article className="flex flex-col gap-3 pt-4 sm:pt-6">
+      <header className="home-card flex flex-col gap-8 p-6 sm:p-10">
+        <Link
+          to={ROUTES.project(project.slug)}
+          className="group inline-flex min-h-10 items-center gap-1.5 self-start rounded-xl bg-home-inset px-3.5 text-sm text-home-muted transition-colors hover:bg-home-raised hover:text-home-ink focus-visible:outline-2 focus-visible:outline-brand"
+        >
+          <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
+          Voltar a {project.title}
+        </Link>
 
-      <header className="mt-8 mb-8 sm:mb-10 max-w-3xl">
-        <p className="mb-3 font-mono text-[11px] uppercase tracking-wider text-text-subtle">
-          Atualização do projeto
-        </p>
-        <ProjectUpdateMeta update={update} />
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-text sm:text-4xl">
-          {update.title}
-        </h1>
+        <div>
+          <p className="mb-3 font-mono text-xs uppercase tracking-[0.08em] text-home-muted">
+            Atualização do projeto
+          </p>
+          <ProjectUpdateMeta update={update} />
+          <h1 className="mt-4 max-w-3xl text-3xl font-semibold leading-tight tracking-[-0.035em] text-home-ink sm:text-5xl">
+            {update.title}
+          </h1>
+        </div>
       </header>
 
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12 xl:gap-16">
-        <div className="min-w-0">
+      <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="home-card min-w-0 p-5 sm:p-8 lg:p-10">
           {hasToc && !isDesktop && (
-            <details className="project-card group mb-8 rounded-xl">
-              <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm text-text [&::-webkit-details-marker]:hidden">
+            <details className="group mb-8 rounded-xl bg-home-inset">
+              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between px-4 text-sm text-home-ink [&::-webkit-details-marker]:hidden">
                 <span>
                   Nesta página
-                  <span className="ml-2 font-mono text-xs text-text-subtle">{headings.length}</span>
+                  <span className="ml-2 font-mono text-xs text-home-muted">{headings.length}</span>
                 </span>
                 <ChevronDown
-                  className="size-4 text-text-subtle transition-transform group-open:rotate-180"
+                  className="size-4 text-home-muted transition-transform group-open:rotate-180"
                   aria-hidden
                 />
               </summary>
-              <div className="border-t border-hairline-subtle px-4 py-3">
+              <div className="border-t border-home-line px-4 py-3">
                 <ProjectToc headings={headings} showTitle={false} />
               </div>
             </details>
@@ -153,7 +160,7 @@ export function ProjectUpdatePage() {
           {(older || newer) && (
             <nav
               aria-label="Outras atualizações"
-              className="mt-16 grid gap-3 border-t border-hairline-subtle pt-8 sm:grid-cols-2"
+              className="mt-12 grid gap-3 border-t border-home-line pt-8 sm:grid-cols-2"
             >
               {older && <UpdateNavLink slug={project.slug} update={older} direction="older" />}
               {newer && <UpdateNavLink slug={project.slug} update={newer} direction="newer" />}
@@ -162,7 +169,7 @@ export function ProjectUpdatePage() {
         </div>
 
         {hasToc && isDesktop && (
-          <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain">
+          <aside className="home-card p-5 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain">
             <ProjectToc headings={headings} />
           </aside>
         )}

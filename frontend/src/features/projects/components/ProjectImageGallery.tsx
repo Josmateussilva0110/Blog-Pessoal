@@ -55,11 +55,11 @@ export function ProjectImageGallery({
 
   return (
     <section className="space-y-3" aria-label="Galeria de imagens">
-      <div className="project-card relative overflow-hidden rounded-2xl">
+      <div className="home-card relative overflow-hidden">
         <button
           type="button"
           onClick={() => setLightboxIndex(activeIndex)}
-          className="group relative block w-full cursor-zoom-in bg-surface-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/50"
+          className="group relative block w-full cursor-zoom-in bg-home-inset focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
           aria-label={`Ampliar imagem ${activeIndex + 1} de ${projectTitle}`}
         >
           {/* Proporção fixa reserva a altura antes do download: sem layout shift */}
@@ -72,14 +72,14 @@ export function ProjectImageGallery({
               "max-h-[320px] sm:max-h-[460px] md:max-h-[600px] xl:max-h-[680px]",
             )}
           />
-          <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full border border-hairline-strong bg-black/60 px-2.5 py-1 font-mono text-[11px] text-text-muted opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+          <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full border border-home-line bg-home-card/85 px-2.5 py-1 text-xs text-home-ink opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
             <Maximize2 className="size-3" aria-hidden />
             ampliar
           </span>
         </button>
 
         {images.length > 1 && (
-          <span className="pointer-events-none absolute left-3 top-3 rounded-full border border-hairline-strong bg-black/60 px-2.5 py-1 font-mono text-[11px] text-text-muted">
+          <span className="pointer-events-none absolute left-3 top-3 rounded-full border border-home-line bg-home-card/85 px-2.5 py-1 font-mono text-[11px] text-home-muted backdrop-blur-sm">
             {padIndex(activeIndex)} / {padIndex(images.length - 1)}
           </span>
         )}
@@ -98,11 +98,11 @@ export function ProjectImageGallery({
                 aria-label={`Mostrar imagem ${index + 1}`}
                 aria-current={isActive ? "true" : undefined}
                 className={cn(
-                  "shrink-0 overflow-hidden rounded-lg border bg-surface-inset transition-all",
+                  "shrink-0 overflow-hidden rounded-xl border bg-home-inset transition-[opacity,border-color,box-shadow]",
                   "aspect-video w-28 sm:w-36",
                   isActive
-                    ? "border-accent/60 ring-2 ring-accent/20"
-                    : "border-hairline opacity-60 hover:opacity-100",
+                    ? "border-brand ring-2 ring-brand/25"
+                    : "border-home-line opacity-60 hover:opacity-100",
                 )}
               >
                 <Image
@@ -185,7 +185,7 @@ function PhoneGallery({
 
   return (
     <section
-      className="project-card project-cover-mobile -mx-4 overflow-hidden border-x-0 sm:mx-0 sm:rounded-2xl sm:border-x"
+      className="home-stage -mx-4 overflow-hidden sm:mx-0 sm:rounded-3xl"
       aria-label="Galeria de imagens"
     >
       <div
@@ -200,7 +200,7 @@ function PhoneGallery({
               <button
                 type="button"
                 onClick={() => onOpen(index)}
-                className="block w-[62vw] max-w-[240px] cursor-zoom-in overflow-hidden rounded-[1.6rem] border-[3px] border-hairline-strong bg-black shadow-2xl shadow-black/60 transition-transform duration-300 hover:-translate-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 sm:w-[210px] lg:w-[230px]"
+                className="block w-[62vw] max-w-[240px] cursor-zoom-in overflow-hidden rounded-[1.75rem] border border-white/15 bg-home-device p-1.5 shadow-[0_30px_70px_rgb(0_0_0/0.55)] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand sm:w-[210px] lg:w-[230px]"
                 aria-label={`Ampliar imagem ${index + 1} de ${projectTitle}`}
               >
                 {/* Aparelho tem no máximo 240px: a miniatura basta; o original fica para o lightbox */}
@@ -209,7 +209,7 @@ function PhoneGallery({
                   fallback={image}
                   alt={`${projectTitle} — imagem ${index + 1}`}
                   rounded="none"
-                  className="aspect-[9/20] w-full object-top"
+                  className="aspect-[9/20] w-full rounded-[1.375rem] object-top"
                   loading={index === 0 ? "eager" : "lazy"}
                   decoding="async"
                 />
@@ -230,7 +230,7 @@ function PhoneGallery({
               aria-current={index === current ? "true" : undefined}
               className={cn(
                 "h-1.5 rounded-full transition-all duration-300",
-                index === current ? "w-5 bg-accent" : "w-1.5 bg-hairline-hover hover:bg-text-subtle",
+                index === current ? "w-5 bg-brand" : "w-1.5 bg-home-raised hover:bg-home-muted",
               )}
             />
           ))}

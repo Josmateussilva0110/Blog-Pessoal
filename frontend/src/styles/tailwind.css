@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
 
   --color-surface: #080810;
   --color-surface-raised: rgb(34 211 238 / 0.03);
@@ -124,28 +124,6 @@
 
   .code-comment {
     @apply font-mono text-xs text-text-subtle;
-  }
-
-  /* Card de projeto: superfície levemente elevada com borda que acende no hover */
-  .project-card {
-    background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.012));
-    border: 1px solid rgb(255 255 255 / 0.07);
-    box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 20px 40px -24px rgb(0 0 0 / 0.8);
-    transition: border-color 0.3s, box-shadow 0.3s;
-  }
-
-  .group:hover .project-card,
-  .group:focus-visible .project-card {
-    border-color: color-mix(in srgb, var(--color-accent) 28%, transparent);
-    box-shadow: 0 1px 0 var(--color-hairline-subtle) inset, 0 24px 48px -20px color-mix(in srgb, var(--color-accent) 18%, transparent);
-  }
-
-  /* Fundo da capa mobile: brilho que sai de trás do aparelho + grade pontilhada */
-  .project-cover-mobile {
-    background-image:
-      radial-gradient(ellipse 55% 70% at 50% 85%, color-mix(in srgb, var(--color-accent) 16%, transparent), transparent 70%),
-      radial-gradient(var(--color-hairline-subtle) 1px, transparent 1px);
-    background-size: 100% 100%, 16px 16px;
   }
 
   /* Bloco base da home: card neutro com borda fina */
@@ -352,8 +330,9 @@
     }
   }
 
+  /* Texto corrido nos tons neutros do novo visual: mais claro que o cinza antigo para leitura longa */
   .markdown-content {
-    color: #94a3b8;
+    color: var(--color-home-body);
     line-height: 1.75;
   }
 
@@ -362,9 +341,10 @@
   }
 
   .markdown-content h2 {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: #f1f5f9;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-home-ink);
   }
 
   /* Links do índice param abaixo do header fixo */
@@ -392,7 +372,8 @@
   .markdown-content h3 {
     font-size: 1.125rem;
     font-weight: 600;
-    color: #f1f5f9;
+    letter-spacing: -0.01em;
+    color: var(--color-home-ink);
   }
 
   .markdown-content ul,
@@ -413,32 +394,38 @@
   }
 
   .markdown-content blockquote {
-    border-left: 3px solid rgb(34 211 238 / 0.35);
-    color: #94a3b8;
+    border-left: 3px solid color-mix(in srgb, var(--color-brand) 55%, transparent);
+    color: var(--color-home-muted);
     padding-left: 0.875rem;
   }
 
   .markdown-content a {
-    color: #22d3ee;
+    color: var(--color-brand);
     text-decoration: underline;
-    text-underline-offset: 2px;
+    text-decoration-color: color-mix(in srgb, var(--color-brand) 45%, transparent);
+    text-underline-offset: 3px;
+  }
+
+  .markdown-content a:hover {
+    text-decoration-color: var(--color-brand);
   }
 
   .markdown-content strong {
-    color: #f1f5f9;
+    color: var(--color-home-ink);
     font-weight: 600;
   }
 
   .markdown-content h1 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #f1f5f9;
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-home-ink);
   }
 
   .markdown-table-wrap {
     overflow-x: auto;
     margin: 1rem 0;
-    border: 1px solid rgb(255 255 255 / 0.08);
+    border: 1px solid var(--color-home-line);
     border-radius: 0.75rem;
   }
 
@@ -457,15 +444,15 @@
 
   .markdown-content th,
   .markdown-content td {
-    border-bottom: 1px solid rgb(255 255 255 / 0.08);
+    border-bottom: 1px solid var(--color-home-line);
     padding: 0.65rem 0.85rem;
     text-align: left;
     vertical-align: top;
   }
 
   .markdown-content th {
-    background: rgb(255 255 255 / 0.03);
-    color: #f1f5f9;
+    background: var(--color-home-inset);
+    color: var(--color-home-ink);
     font-weight: 600;
   }
 

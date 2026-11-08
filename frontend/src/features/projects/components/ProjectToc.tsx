@@ -96,11 +96,9 @@ export function ProjectToc({
   return (
     <nav aria-label="Nesta página">
       {showTitle && (
-        <p className="mb-3 font-mono text-[11px] uppercase tracking-wider text-text-subtle">
-          Nesta página
-        </p>
+        <p className="mb-3 text-sm font-semibold text-home-ink">Nesta página</p>
       )}
-      <ul className="space-y-0.5 border-l border-hairline">
+      <ul className="space-y-0.5 border-l border-home-line">
         {headings.map((heading) => {
           const isActive = heading.id === activeId;
 
@@ -114,8 +112,8 @@ export function ProjectToc({
                   "-ml-px block border-l py-1.5 text-[13px] leading-snug transition-colors lg:py-1",
                   heading.level === 3 ? "pl-6" : "pl-3",
                   isActive
-                    ? "border-accent text-accent"
-                    : "border-transparent text-text-muted hover:text-text",
+                    ? "border-brand text-home-ink"
+                    : "border-transparent text-home-muted hover:text-home-ink",
                 )}
               >
                 {heading.text}
