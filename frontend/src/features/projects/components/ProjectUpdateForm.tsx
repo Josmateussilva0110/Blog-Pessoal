@@ -42,7 +42,7 @@ export function ProjectUpdateForm({ update, isSaving, onSubmit, onCancel }: Proj
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-4 rounded-xl border border-border-subtle bg-surface-raised p-4"
+      className="space-y-4 rounded-2xl border border-home-line p-4 sm:p-5"
       noValidate
     >
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_140px_170px]">

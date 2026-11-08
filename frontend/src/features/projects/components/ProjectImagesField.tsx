@@ -56,13 +56,13 @@ export function ProjectImagesField({ images, onAdd, onRemove, onMove }: ProjectI
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {images.map((image, index) => (
             <div key={image.id} className="relative group">
-              <span className="absolute top-2 left-2 z-10 rounded-md bg-black/65 px-2 py-0.5 font-mono text-[10px] text-white">
+              <span className="absolute left-2 top-2 z-10 rounded-md bg-black/65 px-2 py-0.5 font-mono text-[11px] text-white">
                 #{index + 1}
               </span>
               <img
                 src={image.url}
                 alt={`Imagem ${index + 1} do projeto`}
-                className="w-full aspect-video object-cover rounded-xl border border-hairline-strong"
+                className="aspect-video w-full rounded-xl border border-home-line object-cover"
               />
               <div className="absolute bottom-2 left-2 flex gap-1">
                 <button

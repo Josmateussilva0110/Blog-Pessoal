@@ -36,12 +36,12 @@ function WebFrame({
     <div className={cn("mx-auto w-full", className)}>
       <div
         className={cn(
-          "overflow-hidden rounded-lg border border-border bg-[#0a0a12] shadow-lg",
+          "overflow-hidden rounded-lg border border-border bg-home-device shadow-lg",
           compact ? "rounded-md" : "rounded-lg sm:rounded-xl",
         )}
       >
         <BrowserChrome compact={compact} />
-        <div className={cn("bg-[#06060c]", compact ? "min-h-0" : "")}>{children}</div>
+        <div className={cn("bg-home-device", compact ? "min-h-0" : "")}>{children}</div>
       </div>
       {!compact && (
         <div className="mt-2 flex flex-col items-center" aria-hidden>
@@ -68,20 +68,20 @@ function MobileFrame({
     >
       <div
         className={cn(
-          "relative border-2 border-border bg-[#0a0a12] shadow-lg",
+          "relative border-2 border-border bg-home-device shadow-lg",
           compact ? "rounded-[1rem] p-1" : "rounded-[2rem] p-2 sm:rounded-[2.25rem] sm:p-2.5",
         )}
       >
         <div
           className={cn(
-            "absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-[#0a0a12]",
+            "absolute left-1/2 z-10 -translate-x-1/2 rounded-full bg-home-device",
             compact ? "top-1.5 h-2.5 w-10" : "top-2.5 h-5 w-24 sm:top-3 sm:h-5 sm:w-28",
           )}
           aria-hidden
         />
         <div
           className={cn(
-            "overflow-hidden bg-[#06060c]",
+            "overflow-hidden bg-home-device",
             compact ? "rounded-[0.65rem]" : "rounded-[1.35rem] sm:rounded-[1.5rem]",
           )}
         >

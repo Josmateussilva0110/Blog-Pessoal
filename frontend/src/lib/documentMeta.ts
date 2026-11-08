@@ -7,15 +7,15 @@ export const ADMIN_FAVICON = "/admin-favicon.svg";
 let titleOverride: string | null = null;
 
 function getAdminPageTitle(pathname: string): string {
-  if (pathname === "/admin/login") return "login";
-  if (pathname === "/admin/new-password") return "new password";
-  if (pathname === "/admin") return "dashboard";
-  if (pathname === "/admin/projects") return "projects";
-  if (pathname === "/admin/projects/new") return "new project";
-  if (/^\/admin\/projects\/[^/]+\/edit$/.test(pathname)) return "edit project";
-  if (pathname === "/admin/settings") return "settings";
-  if (pathname === "/admin/links") return "links";
-  return "admin";
+  if (pathname === "/admin/login") return "Login";
+  if (pathname === "/admin/new-password") return "Nova senha";
+  if (pathname === "/admin") return "Painel";
+  if (pathname === "/admin/projects") return "Projetos";
+  if (pathname === "/admin/projects/new") return "Novo projeto";
+  if (/^\/admin\/projects\/[^/]+\/edit$/.test(pathname)) return "Editar projeto";
+  if (pathname === "/admin/settings") return "Configurações";
+  if (pathname === "/admin/links") return "Links";
+  return "Admin";
 }
 
 export function resolveDocumentMeta(pathname: string) {
@@ -30,7 +30,7 @@ export function resolveDocumentMeta(pathname: string) {
 
   if (admin) {
     return {
-      title: `${getAdminPageTitle(pathname)} — admin`,
+      title: `${getAdminPageTitle(pathname)} — Admin · ${SITE.name}`,
       favicon: ADMIN_FAVICON,
     };
   }

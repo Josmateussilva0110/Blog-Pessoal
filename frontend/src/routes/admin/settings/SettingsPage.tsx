@@ -15,24 +15,21 @@ export default function SettingsPage() {
         description="Gerencie a foto do portfólio, estatísticas da home e a segurança da sua conta."
       />
 
-      <section className="admin-card p-5 sm:p-6 mb-4 sm:mb-6">
-        <p className="code-comment mb-3">// hero stats</p>
-        <h2 className="text-sm font-semibold text-text mb-4">Estatísticas da home</h2>
+      <section className="admin-card mb-3 p-5 sm:p-7">
+        <h2 className="mb-5 text-lg font-semibold tracking-[-0.02em] text-home-ink">Estatísticas da home</h2>
         <HeroStatsForm />
       </section>
 
-      <section className="admin-card p-5 sm:p-6 mb-4 sm:mb-6">
-        <p className="code-comment mb-3">// profile image</p>
-        <h2 className="text-sm font-semibold text-text mb-4">Foto de perfil</h2>
+      <section className="admin-card mb-3 p-5 sm:p-7">
+        <h2 className="mb-5 text-lg font-semibold tracking-[-0.02em] text-home-ink">Foto de perfil</h2>
         <ProfileImageForm />
       </section>
 
-      <section className="admin-card p-5 sm:p-6">
-        <p className="code-comment mb-3">// security</p>
-        <h2 className="text-sm font-semibold text-text mb-1">Alterar senha</h2>
+      <section className="admin-card p-5 sm:p-7">
+        <h2 className="mb-1 text-lg font-semibold tracking-[-0.02em] text-home-ink">Alterar senha</h2>
         {user?.email && (
-          <p className="font-mono text-xs text-text-subtle mb-6">
-            user: <span className="text-accent">{user.email}</span>
+          <p className="mb-6 text-sm text-home-muted">
+            Conta: <span className="text-home-ink">{user.email}</span>
           </p>
         )}
         <UpdatePasswordForm />

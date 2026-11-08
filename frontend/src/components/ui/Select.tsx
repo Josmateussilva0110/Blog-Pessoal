@@ -1,4 +1,5 @@
 import { cn } from "@/lib/format";
+import { FIELD_CLASS, FIELD_ERROR_CLASS, FIELD_ERROR_TEXT_CLASS, LABEL_CLASS } from "./fieldStyles";
 import type { SelectHTMLAttributes } from "react";
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
@@ -12,24 +13,22 @@ export function Select({ label, error, className, id, children, ...props }: Sele
   return (
     <div className="flex flex-col gap-2">
       {label && (
-        <label htmlFor={selectId} className="text-sm text-text-muted">
+        <label htmlFor={selectId} className={LABEL_CLASS}>
           {label}
         </label>
       )}
       <select
         id={selectId}
         className={cn(
-          "glass rounded-xl px-3 py-2 text-sm text-text",
-          "focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/20",
-          "transition-all duration-200",
-          error && "border-danger/40",
+          FIELD_CLASS,
+          error && FIELD_ERROR_CLASS,
           className,
         )}
         {...props}
       >
         {children}
       </select>
-      {error && <span className="text-xs text-danger-text">{error}</span>}
+      {error && <span className={FIELD_ERROR_TEXT_CLASS}>{error}</span>}
     </div>
   );
 }

@@ -46,7 +46,7 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
             key={toast.id}
             role="status"
             className={cn(
-              "glass-strong rounded-2xl border p-4 shadow-lg shadow-blue-950/30 toast-enter",
+              "glass-strong rounded-2xl border p-4 shadow-lg shadow-black/40 toast-enter",
               styles.container,
             )}
           >

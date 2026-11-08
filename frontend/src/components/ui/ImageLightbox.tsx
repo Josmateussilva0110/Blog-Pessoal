@@ -190,7 +190,7 @@ export function ImageLightbox({
       )}
 
       <div
-        className="relative z-10 flex max-h-[min(92dvh,56rem)] w-full max-w-4xl flex-col gap-2 overflow-hidden rounded-xl border border-white/15 bg-[#101018] p-3 shadow-2xl sm:gap-3 sm:p-4"
+        className="relative z-10 flex max-h-[min(92dvh,56rem)] w-full max-w-4xl flex-col gap-2 overflow-hidden rounded-xl border border-home-line bg-home-card p-3 shadow-2xl sm:gap-3 sm:p-4"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">

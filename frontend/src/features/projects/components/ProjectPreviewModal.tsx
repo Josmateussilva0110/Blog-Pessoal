@@ -4,6 +4,7 @@ import type { ProjectStatus } from "@blog/shared";
 import { Button } from "@/components/ui/Button";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
 import { StatusBadge } from "@/features/projects/components/StatusBadge";
+import { TechIconChip } from "@/features/projects/components/TechIconChip";
 
 export type ProjectPreviewData = {
   title: string;
@@ -64,43 +65,30 @@ export function ProjectPreviewModal({ open, onClose, data }: ProjectPreviewModal
       >
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <p className="code-comment mb-1">// preview</p>
-            <p className="text-sm text-text-muted">
-              Assim o projeto aparecerá na página pública.
-            </p>
+            <p className="text-lg font-semibold tracking-[-0.02em] text-home-ink">Pré-visualização</p>
+            <p className="text-sm text-home-muted">Assim o projeto aparecerá na página pública.</p>
           </div>
-          <Button type="button" variant="ghost" size="sm" className="font-mono" onClick={onClose}>
+          <Button type="button" variant="secondary" size="sm" onClick={onClose}>
             <X className="size-4" aria-hidden />
-            close()
+            Fechar
           </Button>
         </div>
 
-        <article className="terminal-card overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-2 border-b border-border-subtle bg-surface-raised">
-            <span className="h-2 w-2 rounded-full bg-danger/80" />
-            <span className="h-2 w-2 rounded-full bg-warning/80" />
-            <span className="h-2 w-2 rounded-full bg-terminal/80" />
-            <span className="font-mono text-[10px] ml-1 text-text-subtle">
-              $ preview --project
-            </span>
-          </div>
-
+        <article className="overflow-hidden rounded-3xl border border-home-line bg-home-card">
           <div className="p-6 sm:p-8 md:p-10">
-            <header className="mb-8 border-b border-border-subtle pb-8">
+            <header className="mb-8 border-b border-home-line pb-8">
               <div className="mb-4 flex items-center gap-3">
                 <StatusBadge status={data.status} />
-                <span className="font-mono text-[10px] text-text-subtle">
-                  // draft — not published
-                </span>
+                <span className="text-xs text-home-muted">Rascunho, ainda não publicado</span>
               </div>
               <h1
                 id="project-preview-title"
-                className="text-3xl font-bold text-text md:text-4xl"
+                className="text-4xl font-semibold tracking-[-0.04em] text-home-ink md:text-5xl"
               >
                 {title}
               </h1>
               {summary && (
-                <p className="mt-3 text-sm leading-relaxed text-text-muted">
+                <p className="mt-3 text-base leading-relaxed text-home-body">
                   {summary}
                 </p>
               )}
@@ -109,21 +97,21 @@ export function ProjectPreviewModal({ open, onClose, data }: ProjectPreviewModal
             {hasContent ? (
               <MarkdownContent content={data.contentMarkdown} className="mb-8" />
             ) : (
-              <p className="mb-8 font-mono text-sm italic text-text-muted">
-                // adicione uma descrição para ver o conteúdo formatado
+              <p className="mb-8 text-sm text-home-muted">
+                Adicione uma descrição para ver o conteúdo formatado.
               </p>
             )}
 
             {data.images.length > 0 && (
               <div className="mb-8">
-                <p className="code-comment mb-3">// images</p>
+                <p className="mb-3 text-sm font-semibold text-home-ink">Imagens</p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {data.images.map((image) => (
                     <img
                       key={image}
                       src={image}
                       alt={`Captura de ${title}`}
-                      className="w-full rounded-lg border border-border-subtle object-cover"
+                      className="w-full rounded-xl border border-home-line object-cover"
                     />
                   ))}
                 </div>
@@ -132,24 +120,19 @@ export function ProjectPreviewModal({ open, onClose, data }: ProjectPreviewModal
 
             {data.techStack.length > 0 && (
               <div className="mb-8">
-                <p className="code-comment mb-3">// stack</p>
-                <div className="flex flex-wrap gap-2">
+                <p className="mb-3 text-sm font-semibold text-home-ink">Stack</p>
+                <ul className="flex flex-wrap gap-1.5">
                   {data.techStack.map((tech) => (
-                    <span
-                      key={tech}
-                      className="font-mono text-[10px] text-accent/80 bg-accent-soft border border-accent/20 px-2 py-0.5 rounded"
-                    >
-                      --{tech.toLowerCase()}
-                    </span>
+                    <TechIconChip key={tech} name={tech} />
                   ))}
-                </div>
+                </ul>
               </div>
             )}
 
             {data.repoUrl && (
               <div className="flex flex-wrap gap-3">
-                <Button variant="secondary" type="button" disabled className="font-mono">
-                  github
+                <Button variant="secondary" type="button" disabled>
+                  Ver código
                 </Button>
               </div>
             )}

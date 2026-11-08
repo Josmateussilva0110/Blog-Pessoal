@@ -99,7 +99,7 @@ export function ChartLightbox({ open, title, onClose, children }: ChartLightboxP
       </button>
 
       <div
-        className="relative z-10 flex max-h-[min(92dvh,56rem)] w-full max-w-6xl flex-col gap-3 overflow-hidden rounded-xl border border-white/15 bg-[#101018] p-3 shadow-2xl sm:gap-4 sm:p-5"
+        className="relative z-10 flex max-h-[min(92dvh,56rem)] w-full max-w-6xl flex-col gap-3 overflow-hidden rounded-xl border border-home-line bg-home-card p-3 shadow-2xl sm:gap-4 sm:p-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex flex-wrap items-center justify-between gap-3 shrink-0">

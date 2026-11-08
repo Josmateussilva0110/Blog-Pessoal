@@ -13,7 +13,7 @@ export function PublicLayout() {
   return (
     <ProjectTransitionProvider>
       <div className="min-h-dvh flex flex-col relative">
-        {/* Fundo liso do novo visual; login e admin seguem com a grade (BackgroundOrbs) */}
+        {/* Fundo liso do novo visual */}
         <div className="fixed inset-0 -z-10 bg-home-bg" aria-hidden />
         <Header />
         <main className={cn("flex-1 mx-auto w-full px-4 sm:px-6 ios-nav-main", pageWidth)}>

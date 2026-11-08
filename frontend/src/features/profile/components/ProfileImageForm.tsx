@@ -99,12 +99,11 @@ export function ProfileImageForm() {
         variant="profile"
         size="3xl"
         frame
-        glow
         wrapperClassName="mx-auto sm:mx-0"
       />
 
       <div className="flex flex-col gap-3 flex-1 w-full">
-        <p className="text-sm text-text-muted leading-relaxed">
+        <p className="text-sm leading-relaxed text-home-muted">
           Esta foto aparece na página inicial do portfólio. Formatos aceitos:
           JPEG, PNG e WebP (máx. 2 MB).
         </p>
@@ -136,7 +135,7 @@ export function ProfileImageForm() {
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="secondary"
               className="w-full sm:w-auto"
               disabled={isUploading || isRemoving}
               onClick={handleRemove}

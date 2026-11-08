@@ -121,7 +121,6 @@ export interface ImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, "s
   fit?: ImageFit;
   rounded?: ImageRadius;
   frame?: boolean;
-  glow?: boolean;
   wrapperClassName?: string;
 }
 
@@ -136,7 +135,6 @@ export function Image({
   fit,
   rounded,
   frame = false,
-  glow = false,
   wrapperClassName,
   className,
   style,
@@ -168,7 +166,7 @@ export function Image({
       loading={loading}
       style={{ ...dimensions.style, ...style }}
       className={cn(
-        "bg-surface-overlay",
+        "bg-surface-muted",
         !hasExplicitDimensions && preset.img,
         dimensions.className,
         radiusStyles[resolvedRounded],
@@ -190,18 +188,9 @@ export function Image({
 
   return (
     <div className={cn("relative shrink-0", wrapperClassName)}>
-      {glow && (
-        <div
-          className={cn(
-            "absolute -inset-1 bg-gradient-to-br from-blue-500/40 via-sky-400/20 to-blue-600/30 blur-md",
-            radiusStyles[resolvedRounded === "full" ? "full" : "3xl"],
-          )}
-          aria-hidden
-        />
-      )}
       <div
         className={cn(
-          "relative glass p-1.5",
+          "relative border border-home-line bg-home-inset p-1.5",
           radiusStyles[resolvedRounded === "full" ? "full" : "3xl"],
         )}
       >

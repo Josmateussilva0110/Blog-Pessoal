@@ -24,41 +24,32 @@ export default function ProjectFormPage() {
       />
 
       {isEditing && isLoading && (
-        <p className="font-mono text-sm text-text-subtle animate-pulse">
-          <span className="text-terminal">$ </span>
-          loading project...
+        <p role="status" className="animate-pulse text-sm text-home-muted">
+          Carregando projeto…
         </p>
       )}
 
       {isEditing && error && (
-        <div className="admin-card p-4 font-mono text-sm text-danger-text">
-          <span className="text-terminal">error: </span>
+        <div role="alert" className="admin-card p-5 text-sm text-danger-text">
           Não foi possível carregar o projeto.
-          <Link to="/admin/projects" className="block mt-3 text-accent hover:underline">
-            ← voltar para a lista
+          <Link
+            to="/admin/projects"
+            className="mt-3 block text-brand underline decoration-brand/40 underline-offset-[3px] hover:decoration-brand"
+          >
+            Voltar para a lista
           </Link>
         </div>
       )}
 
       {(!isEditing || project) && (
-        <div className="admin-card overflow-hidden">
-          <div className="flex items-center gap-2 px-4 py-2 border-b border-border-subtle bg-surface-raised">
-            <span className="h-2 w-2 rounded-full bg-danger/80" />
-            <span className="h-2 w-2 rounded-full bg-warning/80" />
-            <span className="h-2 w-2 rounded-full bg-terminal/80" />
-            <span className="font-mono text-[10px] ml-1 text-text-subtle">
-              $ vim {isEditing ? project?.slug : "new-project"}.md
-            </span>
-          </div>
-          <div className="p-4 sm:p-5 lg:p-6">
-            <ProjectForm project={project ?? undefined} />
-          </div>
+        <div className="admin-card p-4 sm:p-6 lg:p-8">
+          <ProjectForm project={project ?? undefined} />
         </div>
       )}
 
       {/* Atualizações dependem do projeto já existir */}
       {isEditing && project && (
-        <div className="admin-card mt-6 p-4 sm:p-5 lg:p-6">
+        <div className="admin-card mt-3 p-4 sm:p-6 lg:p-8">
           <ProjectUpdatesManager projectId={project.id} />
         </div>
       )}

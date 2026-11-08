@@ -1,4 +1,5 @@
 import { cn } from "@/lib/format";
+import { FIELD_CLASS, FIELD_ERROR_CLASS, FIELD_ERROR_TEXT_CLASS, LABEL_CLASS } from "./fieldStyles";
 import type { TextareaHTMLAttributes } from "react";
 
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
@@ -18,23 +19,21 @@ export function Textarea({
   return (
     <div className="flex flex-col gap-2">
       {label && (
-        <label htmlFor={textareaId} className="text-sm text-text-muted">
+        <label htmlFor={textareaId} className={LABEL_CLASS}>
           {label}
         </label>
       )}
       <textarea
         id={textareaId}
         className={cn(
-          "glass min-h-32 rounded-xl px-3 py-2 text-sm text-text resize-y",
-          "placeholder:text-text-subtle",
-          "focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/20",
-          "transition-all duration-200",
-          error && "border-danger/40",
+          FIELD_CLASS,
+          "min-h-32 resize-y",
+          error && FIELD_ERROR_CLASS,
           className,
         )}
         {...props}
       />
-      {error && <span className="text-xs text-danger-text">{error}</span>}
+      {error && <span className={FIELD_ERROR_TEXT_CLASS}>{error}</span>}
     </div>
   );
 }

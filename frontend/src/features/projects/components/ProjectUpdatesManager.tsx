@@ -1,7 +1,7 @@
 import type { ProjectUpdate, ProjectUpdateFormValues } from "@blog/shared";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { TerminalConfirmModal } from "@/components/ui/TerminalConfirmModal";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useToast } from "@/components/ui/toast";
 import { ProjectUpdateForm } from "@/features/projects/components/ProjectUpdateForm";
 import { useProjectUpdates } from "@/features/projects/hooks/useProjectUpdates";
@@ -45,8 +45,8 @@ export function ProjectUpdatesManager({ projectId }: { projectId: string }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold text-text">Atualizações</h2>
-          <p className="text-sm text-text-muted">
+          <h2 className="text-lg font-semibold tracking-[-0.02em] text-home-ink">Atualizações</h2>
+          <p className="text-sm text-home-muted">
             Registre o que mudou no projeto. Aparece como linha do tempo na página pública.
           </p>
         </div>
@@ -66,26 +66,25 @@ export function ProjectUpdatesManager({ projectId }: { projectId: string }) {
       )}
 
       {isLoading && (
-        <p className="font-mono text-sm text-text-subtle animate-pulse">
-          <span className="text-terminal">$ </span>
-          loading updates...
+        <p role="status" className="animate-pulse text-sm text-home-muted">
+          Carregando atualizações…
         </p>
       )}
 
       {error && (
-        <p className="font-mono text-sm text-danger-text">
+        <p role="alert" className="text-sm text-danger-text">
           Não foi possível carregar as atualizações.
         </p>
       )}
 
       {!isLoading && !error && updates.length === 0 && editing !== "new" && (
-        <p className="rounded-xl border border-dashed border-border-subtle px-4 py-6 text-center text-sm text-text-subtle">
+        <p className="rounded-2xl border border-dashed border-home-line px-4 py-6 text-center text-sm text-home-muted">
           Nenhuma atualização publicada ainda.
         </p>
       )}
 
       {updates.length > 0 && (
-        <ul className="divide-y divide-border-subtle rounded-xl border border-border-subtle">
+        <ul className="divide-y divide-home-line rounded-2xl border border-home-line">
           {updates.map((update) =>
             editing === update.id ? (
               <li key={update.id} className="p-2">
@@ -102,28 +101,22 @@ export function ProjectUpdatesManager({ projectId }: { projectId: string }) {
                 className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="font-mono text-[11px] uppercase tracking-wider text-text-subtle">
+                  <p className="font-mono text-[11px] uppercase tracking-wider text-home-muted">
                     {formatDate(update.publishedAt)}
-                    {update.version && <span className="ml-2 text-accent">{update.version}</span>}
+                    {update.version && <span className="ml-2 normal-case text-brand">{update.version}</span>}
                   </p>
-                  <p className="truncate text-sm font-medium text-text">{update.title}</p>
+                  <p className="truncate text-sm font-medium text-home-ink">{update.title}</p>
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="font-mono"
-                    onClick={() => setEditing(update.id)}
-                  >
-                    edit()
+                  <Button size="sm" variant="secondary" onClick={() => setEditing(update.id)}>
+                    Editar
                   </Button>
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="font-mono text-danger-text border-danger/30 hover:text-danger-text hover:border-danger/50 hover:bg-danger/10"
+                    variant="danger-ghost"
                     onClick={() => setToDelete(update)}
                   >
-                    rm()
+                    Remover
                   </Button>
                 </div>
               </li>
@@ -132,14 +125,13 @@ export function ProjectUpdatesManager({ projectId }: { projectId: string }) {
         </ul>
       )}
 
-      <TerminalConfirmModal
+      <ConfirmModal
         open={toDelete !== null}
-        path="~/projects/updates/rm.sh"
-        title="rm --force"
+        title="Remover atualização"
         description="Deseja remover esta atualização do projeto?"
         targetLabel={toDelete?.title}
-        confirmLabel="rm()"
-        cancelLabel="abort()"
+        confirmLabel="Remover"
+        loadingLabel="Removendo…"
         isLoading={remove.isPending}
         onConfirm={() => void confirmDelete()}
         onCancel={() => {

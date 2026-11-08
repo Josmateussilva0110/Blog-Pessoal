@@ -92,10 +92,9 @@ export function SiteLinksForm() {
         <Button
           type="submit"
           size="sm"
-          className="font-mono"
           disabled={isLoading || updateSiteLinks.isPending}
         >
-          {updateSiteLinks.isPending ? "Salvando..." : "save_links()"}
+          {updateSiteLinks.isPending ? "Salvando..." : "Salvar links"}
         </Button>
       </div>
     </form>

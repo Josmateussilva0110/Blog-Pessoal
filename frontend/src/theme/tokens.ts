@@ -5,22 +5,22 @@
  * Ao mudar uma cor, atualize os dois lugares.
  */
 export const colors = {
-  surface: "#080810",
-  surfaceRaised: "rgb(34 211 238 / 0.03)",
-  surfaceOverlay: "rgb(34 211 238 / 0.06)",
-  surfaceInset: "#0b0b14",
+  surface: "#09090b",
+  surfaceRaised: "#1e1e23",
+  surfaceOverlay: "#2e2e35",
+  surfaceInset: "#1e1e23",
   surfaceMuted: "rgb(255 255 255 / 0.05)",
 
-  border: "rgb(34 211 238 / 0.12)",
-  borderSubtle: "rgb(34 211 238 / 0.06)",
+  border: "#2e2e35",
+  borderSubtle: "#222227",
   hairline: "rgb(255 255 255 / 0.08)",
   hairlineSubtle: "rgb(255 255 255 / 0.06)",
   hairlineStrong: "rgb(255 255 255 / 0.1)",
   hairlineHover: "rgb(255 255 255 / 0.2)",
 
-  accent: "#22d3ee",
-  accentMuted: "#06b6d4",
-  accentSoft: "rgb(34 211 238 / 0.12)",
+  accent: "#4c8dff",
+  accentMuted: "#3b7bf0",
+  accentSoft: "rgb(76 141 255 / 0.14)",
 
   terminal: "#4ade80",
   terminalMuted: "rgb(74 222 128 / 0.7)",
@@ -31,10 +31,10 @@ export const colors = {
   danger: "#ef4444",
   dangerText: "#fca5a5",
 
-  text: "#f1f5f9",
-  textMuted: "#94a3b8",
-  textSubtle: "#64748b",
-  textInverse: "#0f172a",
+  text: "#f2f2f4",
+  textMuted: "#9a9da8",
+  textSubtle: "#82858f",
+  textInverse: "#0b0b0d",
 
   homeBg: "#09090b",
   homeCard: "#141417",

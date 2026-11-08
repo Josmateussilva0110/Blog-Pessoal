@@ -39,10 +39,9 @@ const ProjectFormPage = lazy(
 
 function AdminFallback() {
   return (
-    <div className="admin-shell flex min-h-dvh items-center justify-center grid-bg">
-      <span className="font-mono text-sm text-text-subtle animate-pulse">
-        <span className="text-terminal">$ </span>
-        loading...
+    <div className="admin-shell flex min-h-dvh items-center justify-center bg-home-bg">
+      <span role="status" className="animate-pulse text-sm text-home-muted">
+        Carregando…
       </span>
     </div>
   );
@@ -51,9 +50,8 @@ function AdminFallback() {
 function PublicFallback() {
   return (
     <div className="flex min-h-[50vh] items-center justify-center">
-      <span className="font-mono text-sm text-text-subtle animate-pulse">
-        <span className="text-terminal">$ </span>
-        loading...
+      <span role="status" className="animate-pulse text-sm text-home-muted">
+        Carregando…
       </span>
     </div>
   );

@@ -223,15 +223,15 @@ export function ProjectForm({ project }: ProjectFormProps) {
       </div>
 
       <div className="space-y-1">
-        <label className="flex items-center gap-3 text-sm text-text-muted">
+        <label className="flex min-h-11 items-center gap-3 text-sm text-home-body">
           <input
             type="checkbox"
-            className="size-4 rounded border-hairline-hover bg-transparent"
+            className="size-4 rounded accent-brand"
             {...register("featured")}
           />
           Destacar na home
         </label>
-        <p className="text-xs text-text-subtle">
+        <p className="text-xs text-home-muted">
           Exibe somente os projetos marcados nos cards principais da home — pode ser 1, 2 ou mais,
           sem preencher com outros projetos.
         </p>

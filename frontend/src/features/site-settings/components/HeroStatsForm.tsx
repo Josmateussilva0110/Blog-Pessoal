@@ -54,10 +54,9 @@ export function HeroStatsForm() {
         <Button
           type="submit"
           size="sm"
-          className="font-mono"
           disabled={isLoading || updateHeroStats.isPending}
         >
-          {updateHeroStats.isPending ? "Salvando..." : "save_stats()"}
+          {updateHeroStats.isPending ? "Salvando..." : "Salvar estatísticas"}
         </Button>
       </div>
     </form>
