@@ -9,6 +9,7 @@ export const SITE = {
   profileImageAlt: "Foto de perfil",
   role: "full-stack",
   author: "José Mateus",
+  githubUrl: "https://github.com/Josmateussilva0110",
 } as const;
 
 /** Textos do bloco de apresentação da home */
@@ -24,5 +25,5 @@ export const NAV_LINKS = [
   { label: "home", href: ROUTES.home },
   { label: "projects", href: ROUTES.projectsSection },
   { label: "about", href: ROUTES.aboutSection },
-  { label: "github", href: "https://github.com", external: true },
+  { label: "github", href: SITE.githubUrl, external: true },
 ] as const;

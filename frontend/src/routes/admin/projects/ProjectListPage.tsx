@@ -5,14 +5,17 @@ import { AdminPageHeader } from "@/components/layout/AdminPageHeader";
 import { Plus } from "lucide-react";
 import { Button, buttonClassName } from "@/components/ui/Button";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { ROUTES } from "@/config/routes";
 import { useToast } from "@/components/ui/toast";
 import { deleteProject } from "@/features/projects/api/projects.api";
-import { useAdminProjects, projectKeys } from "@/features/projects/hooks/useProjects";
+import { useAdminProjects } from "@/features/projects/hooks/useProjects";
+import { projectKeys } from "@/features/projects/lib/queryKeys";
 import { StatusBadge } from "@/features/projects/components/StatusBadge";
 import { PlatformBadge } from "@/features/projects/components/PlatformBadge";
 import type { Project } from "@blog/shared";
 import { getTechMeta } from "@/lib/skillicons";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 /** Primeiras tecnologias com a grafia padronizada ("TypeScript · React Native") */
 function stackSummary(project: Project) {
@@ -20,7 +23,7 @@ function stackSummary(project: Project) {
 }
 
 export default function ProjectListPage() {
-  const { data: projects, isLoading, error } = useAdminProjects();
+  const { data: projects, isLoading, error, isRefetching, refetch } = useAdminProjects();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -49,7 +52,7 @@ export default function ProjectListPage() {
     return (
       <div className={cn("flex gap-2", !fullWidth && "justify-end")}>
         <Link
-          to={`/admin/projects/${project.id}/edit`}
+          to={ROUTES.adminProjectEdit(project.id)}
           className={buttonClassName({ size: "sm", variant: "secondary", className: cn(fullWidth && "flex-1") })}
         >
           Editar
@@ -74,7 +77,7 @@ export default function ProjectListPage() {
         title="Projetos"
         description="Cadastre, edite e organize os projetos exibidos no portfólio."
         action={
-          <Link to="/admin/projects/new" className={buttonClassName()}>
+          <Link to={ROUTES.adminProjectNew} className={buttonClassName()}>
             <Plus className="size-4" aria-hidden />
             Novo projeto
           </Link>
@@ -86,13 +89,16 @@ export default function ProjectListPage() {
           Carregando projetos…
         </p>
       ) : error ? (
-        <div role="alert" className="admin-card p-6 text-sm text-danger-text">
-          Não foi possível carregar os projetos.
-        </div>
+        <ErrorState
+          className="admin-card p-6"
+          message="Não foi possível carregar os projetos."
+          onRetry={() => void refetch()}
+          isRetrying={isRefetching}
+        />
       ) : projects?.length === 0 ? (
         <div className="admin-card p-10 text-center">
           <p className="text-sm text-home-muted">Nenhum projeto cadastrado ainda.</p>
-          <Link to="/admin/projects/new" className={buttonClassName({ className: "mt-4" })}>
+          <Link to={ROUTES.adminProjectNew} className={buttonClassName({ className: "mt-4" })}>
             Cadastrar o primeiro
           </Link>
         </div>
@@ -103,7 +109,7 @@ export default function ProjectListPage() {
               <article key={project.id} className="admin-card space-y-3 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <Link
-                    to={`/admin/projects/${project.id}/edit`}
+                    to={ROUTES.adminProjectEdit(project.id)}
                     className="font-medium leading-snug text-home-ink transition-colors hover:text-brand"
                   >
                     {project.title}
@@ -138,7 +144,7 @@ export default function ProjectListPage() {
                   >
                     <td className="px-5 py-3.5">
                       <Link
-                        to={`/admin/projects/${project.id}/edit`}
+                        to={ROUTES.adminProjectEdit(project.id)}
                         className="font-medium text-home-ink transition-colors hover:text-brand"
                       >
                         {project.title}

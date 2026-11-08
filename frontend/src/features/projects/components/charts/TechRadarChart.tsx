@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import type { TechUsage } from "@/features/projects/lib/projectStats";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { EASE_OUT, inViewRepeat } from "@/lib/motion";
 
 /** Mais eixos que isso vira um polígono ilegível */
@@ -48,7 +48,7 @@ export function TechRadarChart({ data, total }: TechRadarChartProps) {
   return (
     <figure className="home-card m-0 flex min-w-0 flex-col gap-4 p-5 sm:p-7">
       <figcaption>
-        <span className="block text-xl font-semibold tracking-[-0.02em] text-home-ink">
+        <span className="block text-xl font-semibold tracking-heading text-home-ink">
           Radar de habilidades
         </span>
         <span className="text-sm text-home-muted">As {axes.length} tecnologias mais presentes nos projetos.</span>
@@ -124,7 +124,7 @@ export function TechRadarChart({ data, total }: TechRadarChartProps) {
               textAnchor={anchor}
               dominantBaseline="middle"
               className={cn(
-                "text-[13px] transition-colors",
+                "text-caption transition-colors",
                 index === activeIndex ? "fill-home-ink font-medium" : "fill-home-muted",
               )}
               onMouseEnter={() => setActiveIndex(index)}

@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ComponentType } from "react";
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import { DocumentMeta } from "@/components/layout/DocumentMeta";
+import { FullPageStatus } from "@/components/ui/FullPageStatus";
 import { ToastScope } from "@/components/ui/toast";
 import { AuthScope } from "@/features/auth/components/AuthScope";
 import { PublicLayout } from "@/components/layout/PublicLayout";
@@ -10,6 +11,8 @@ import { GuestRoute } from "@/features/auth/components/GuestRoute";
 import { RequirePasswordUpdated } from "@/features/auth/components/RequirePasswordUpdated";
 import { RequireForcedPasswordChange } from "@/features/auth/components/RequireForcedPasswordChange";
 import { HomePage } from "@/routes/public/home/HomePage";
+import { RouteErrorPage } from "@/components/layout/RouteErrorPage";
+import { ROUTES } from "@/config/routes";
 
 const ProjectDetailPage = lazy(() =>
   import("@/routes/public/project/ProjectDetailPage").then((module) => ({
@@ -37,16 +40,6 @@ const ProjectFormPage = lazy(
   () => import("@/routes/admin/projects/ProjectFormPage"),
 );
 
-function AdminFallback() {
-  return (
-    <div className="admin-shell flex min-h-dvh items-center justify-center bg-home-bg">
-      <span role="status" className="animate-pulse text-sm text-home-muted">
-        Carregando…
-      </span>
-    </div>
-  );
-}
-
 function PublicFallback() {
   return (
     <div className="flex min-h-[50vh] items-center justify-center">
@@ -58,7 +51,7 @@ function PublicFallback() {
 }
 
 function withSuspense(Component: ComponentType, fallback: "admin" | "public" = "admin") {
-  const Fallback = fallback === "public" ? PublicFallback : AdminFallback;
+  const Fallback = fallback === "public" ? PublicFallback : FullPageStatus;
 
   return (
     <Suspense fallback={<Fallback />}>
@@ -77,78 +70,67 @@ export const router = createBrowserRouter([
         <Outlet />
       </>
     ),
-    children: [
-  {
-    element: <PublicLayout />,
-    children: [
-      { index: true, element: <HomePage /> },
-      { path: "projects/:slug", element: withSuspense(ProjectDetailPage, "public") },
-      {
-        path: "projects/:slug/atualizacoes/:updateId",
-        element: withSuspense(ProjectUpdatePage, "public"),
-      },
-    ],
-  },
-  {
-    element: <GuestRoute />,
+    errorElement: <RouteErrorPage fullPage />,
     children: [
       {
-        path: "admin/login",
-        element: withSuspense(LoginPage),
-      },
-    ],
-  },
-  {
-    path: "admin",
-    element: <ProtectedRoute />,
-    children: [
-      {
-        path: "new-password",
-        element: <RequireForcedPasswordChange />,
+        element: <PublicLayout />,
         children: [
           {
-            index: true,
-            element: withSuspense(ChangePasswordPage),
-          },
-        ],
-      },
-      {
-        element: <RequirePasswordUpdated />,
-        children: [
-          {
-            element: <AdminLayout />,
+            // Rota sem caminho só para o erro aparecer dentro do layout (cabeçalho e rodapé ficam)
+            errorElement: <RouteErrorPage />,
             children: [
-              { index: true, element: withSuspense(DashboardPage) },
+              { index: true, element: <HomePage /> },
+              { path: "projects/:slug", element: withSuspense(ProjectDetailPage, "public") },
               {
-                path: "projects",
-                element: withSuspense(ProjectListPage),
-              },
-              {
-                path: "projects/new",
-                element: withSuspense(ProjectFormPage),
-              },
-              {
-                path: "projects/:id/edit",
-                element: withSuspense(ProjectFormPage),
-              },
-              {
-                path: "settings",
-                element: withSuspense(SettingsPage),
-              },
-              {
-                path: "links",
-                element: withSuspense(LinksPage),
+                path: "projects/:slug/atualizacoes/:updateId",
+                element: withSuspense(ProjectUpdatePage, "public"),
               },
             ],
           },
         ],
       },
-    ],
-  },
-  {
-    path: "*",
-    element: <Navigate to="/" replace />,
-  },
+      {
+        element: <GuestRoute />,
+        errorElement: <RouteErrorPage fullPage />,
+        children: [{ path: "admin/login", element: withSuspense(LoginPage) }],
+      },
+      {
+        path: "admin",
+        element: <ProtectedRoute />,
+        errorElement: <RouteErrorPage fullPage />,
+        children: [
+          {
+            path: "new-password",
+            element: <RequireForcedPasswordChange />,
+            children: [{ index: true, element: withSuspense(ChangePasswordPage) }],
+          },
+          {
+            element: <RequirePasswordUpdated />,
+            children: [
+              {
+                element: <AdminLayout />,
+                children: [
+                  {
+                    errorElement: <RouteErrorPage />,
+                    children: [
+                      { index: true, element: withSuspense(DashboardPage) },
+                      { path: "projects", element: withSuspense(ProjectListPage) },
+                      { path: "projects/new", element: withSuspense(ProjectFormPage) },
+                      { path: "projects/:id/edit", element: withSuspense(ProjectFormPage) },
+                      { path: "settings", element: withSuspense(SettingsPage) },
+                      { path: "links", element: withSuspense(LinksPage) },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "*",
+        element: <Navigate to={ROUTES.home} replace />,
+      },
     ],
   },
 ]);

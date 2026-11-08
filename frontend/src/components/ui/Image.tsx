@@ -1,4 +1,4 @@
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import {
   useEffect,
   useState,
@@ -166,7 +166,7 @@ export function Image({
       loading={loading}
       style={{ ...dimensions.style, ...style }}
       className={cn(
-        "bg-surface-muted",
+        "bg-home-inset",
         !hasExplicitDimensions && preset.img,
         dimensions.className,
         radiusStyles[resolvedRounded],

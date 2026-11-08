@@ -2,11 +2,9 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useToast } from "@/components/ui/toast";
+import { ROUTES } from "@/config/routes";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import {
-  loginSchema,
-  type LoginFormValues,
-} from "@/features/auth/schemas/login.schema";
+import { loginSchema, type LoginInput } from "@blog/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +18,7 @@ export function LoginForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormValues>({
+  } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -28,12 +26,12 @@ export function LoginForm() {
     },
   });
 
-  async function onSubmit(values: LoginFormValues) {
+  async function onSubmit(values: LoginInput) {
     try {
       const loggedUser = await login(values);
       toast.success("Login realizado com sucesso.");
       navigate(
-        loggedUser.mustChangePassword ? "/admin/new-password" : "/admin",
+        loggedUser.mustChangePassword ? ROUTES.adminNewPassword : ROUTES.admin,
         { replace: true },
       );
     } catch (error) {
@@ -66,7 +64,7 @@ export function LoginForm() {
         {isSubmitting ? "Entrando…" : "Entrar"}
       </Button>
 
-      <p className="text-sm text-text-muted text-center">
+      <p className="text-sm text-home-muted text-center">
         Acesso restrito ao administrador.
       </p>
     </form>

@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 import { ArrowDown } from "lucide-react";
+import { buttonClassName } from "@/components/ui/Button";
 import { Image, DEFAULT_IMAGE_FALLBACK } from "@/components/ui/Image";
 import { HOME_HERO, SITE } from "@/config/constants";
 import { RevealText } from "@/components/ui/RevealText";
@@ -33,7 +34,7 @@ export function HeroSection() {
             to={ROUTES.projectsSection}
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.97 }}
-            className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-home-ink px-5.5 font-medium text-home-device transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            className={buttonClassName({ size: "cta" })}
           >
             Explorar projetos
             <ArrowDown className="size-4" aria-hidden />

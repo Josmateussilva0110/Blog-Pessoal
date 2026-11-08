@@ -1,11 +1,10 @@
 import type { Project } from "@blog/shared";
-import { useRef, type MouseEvent } from "react";
+import type { MouseEvent } from "react";
 import { useProjectTransition } from "@/features/projects/context/ProjectTransitionProvider";
 
 /** Clique simples abre o projeto com a transição; cliques com modificador seguem o link normal. */
 export function useProjectCardLink(project: Project) {
   const { openProject } = useProjectTransition();
-  const cardRef = useRef<HTMLElement>(null);
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     if (
@@ -18,11 +17,9 @@ export function useProjectCardLink(project: Project) {
       return;
     }
 
-    if (!cardRef.current) return;
-
     event.preventDefault();
-    openProject(project, cardRef.current);
+    openProject(project);
   }
 
-  return { cardRef, handleClick };
+  return { handleClick };
 }

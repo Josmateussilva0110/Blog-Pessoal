@@ -18,7 +18,7 @@ function SectionFallback() {
 }
 
 export function HomePage() {
-  const { data: home, isLoading } = useHomeProjects();
+  const { data: home, isPending, isError, isRefetching, refetch } = useHomeProjects();
   // Lista completa para os gráficos e a contagem das ferramentas (destaque + restante)
   const projects = useMemo(() => (home ? [...home.spotlight, ...home.others] : []), [home]);
   useRestoreProjectsScroll();
@@ -31,11 +31,17 @@ export function HomePage() {
       </ScrollReveal>
       {/* Sem saída: o palco tem TiltCard, e 3D dentro do painel girando gera artefatos no Chrome */}
       <ScrollReveal exit={false}>
-        <ProjectsSection home={home} isLoading={isLoading} />
+        <ProjectsSection
+          home={home}
+          isLoading={isPending}
+          isError={isError}
+          isRetrying={isRefetching}
+          onRetry={() => void refetch()}
+        />
       </ScrollReveal>
       <ScrollReveal>
         <Suspense fallback={<SectionFallback />}>
-          <StackAnalyticsSection projects={projects} isLoading={isLoading} />
+          <StackAnalyticsSection projects={projects} isLoading={isPending} />
         </Suspense>
       </ScrollReveal>
       {/* Contato no mesmo painel das ferramentas: sozinho no fim da página, o

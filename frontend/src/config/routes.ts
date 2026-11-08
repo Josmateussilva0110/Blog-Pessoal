@@ -17,8 +17,14 @@ export const ROUTES = {
   project: (slug: string) => `${PROJECT_PATH_PREFIX}${slug}`,
   projectUpdate: (slug: string, updateId: string) =>
     `${PROJECT_PATH_PREFIX}${slug}/atualizacoes/${updateId}`,
+  admin: "/admin",
+  adminLogin: "/admin/login",
+  adminNewPassword: "/admin/new-password",
   adminProjects: "/admin/projects",
+  adminProjectNew: "/admin/projects/new",
   adminProjectEdit: (id: Project["id"]) => `/admin/projects/${id}/edit`,
+  adminLinks: "/admin/links",
+  adminSettings: "/admin/settings",
 } as const;
 
 /** Página de detalhe de um projeto (layout mais largo, transição de slide) */

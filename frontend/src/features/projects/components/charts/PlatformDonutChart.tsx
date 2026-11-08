@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import type { ProjectPlatform } from "@blog/shared";
 import type { PlatformUsage } from "@/features/projects/lib/projectStats";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { EASE_OUT, inViewRepeat } from "@/lib/motion";
 
 const SIZE = 200;
@@ -38,7 +38,7 @@ export function PlatformDonutChart({ data, total }: { data: PlatformUsage[]; tot
   return (
     <figure className="home-card m-0 flex min-w-0 flex-col gap-4 p-5 sm:p-7">
       <figcaption>
-        <span className="block text-xl font-semibold tracking-[-0.02em] text-home-ink">
+        <span className="block text-xl font-semibold tracking-heading text-home-ink">
           Distribuição por plataforma
         </span>
         <span className="text-sm text-home-muted">Quantos projetos são apps mobile e quantos são web.</span>

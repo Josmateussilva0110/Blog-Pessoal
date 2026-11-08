@@ -1,5 +1,7 @@
-import { useEffect, useId } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Button } from "@/components/ui/Button";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 type ConfirmModalProps = {
   open: boolean;
@@ -30,6 +32,11 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   const titleId = useId();
   const descriptionId = useId();
+  // Foco inicial no Cancelar: um Enter sem querer não dispara a ação destrutiva
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  const containerRef = useFocusTrap<HTMLDivElement>(open, cancelRef);
+  useBodyScrollLock(open);
+
   useEffect(() => {
     if (!open) return;
 
@@ -39,23 +46,23 @@ export function ConfirmModal({
       }
     }
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, isLoading, onCancel]);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      ref={containerRef}
+      tabIndex={-1}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 outline-none"
+    >
+      {/* Fundo só para o mouse/toque; pelo teclado o Esc e o Cancelar fazem o mesmo */}
       <button
         type="button"
-        className="fixed inset-0 bg-black/70 backdrop-blur-[2px]"
+        tabIndex={-1}
+        className="fixed inset-0 bg-scrim/70 backdrop-blur-[2px]"
         aria-label="Fechar confirmação"
         disabled={isLoading}
         onClick={onCancel}
@@ -66,9 +73,9 @@ export function ConfirmModal({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={descriptionId}
-        className="relative w-full max-w-md rounded-3xl border border-home-line bg-home-card p-6 shadow-2xl shadow-black/50"
+        className="relative w-full max-w-md rounded-3xl border border-home-line bg-home-card p-6 shadow-2xl shadow-scrim/50"
       >
-        <h2 id={titleId} className="text-lg font-semibold tracking-[-0.02em] text-home-ink">
+        <h2 id={titleId} className="text-lg font-semibold tracking-heading text-home-ink">
           {title}
         </h2>
         <p id={descriptionId} className="mt-2 text-sm leading-relaxed text-home-muted">
@@ -82,10 +89,23 @@ export function ConfirmModal({
         <p className="mt-3 text-xs text-home-muted">Essa ação não pode ser desfeita.</p>
 
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="secondary" className="w-full sm:w-auto" onClick={onCancel} disabled={isLoading}>
+          <Button
+            ref={cancelRef}
+            type="button"
+            variant="secondary"
+            className="w-full sm:w-auto"
+            onClick={onCancel}
+            disabled={isLoading}
+          >
             {cancelLabel}
           </Button>
-          <Button type="button" variant="danger" className="w-full sm:w-auto" onClick={onConfirm} disabled={isLoading}>
+          <Button
+            type="button"
+            variant="danger"
+            className="w-full sm:w-auto"
+            onClick={onConfirm}
+            disabled={isLoading}
+          >
             {isLoading ? loadingLabel : confirmLabel}
           </Button>
         </div>

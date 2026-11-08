@@ -12,6 +12,8 @@ import { notFound } from "./middleware/notFound"
 import router from "./routes/routes"
 import { noStoreByDefault } from "./utils/http/httpCache"
 import { isAllowedCorsOrigin } from "./utils/http/corsOrigins"
+import { csrfProtection } from "./middleware/csrfProtection"
+import { CSRF_HEADER_NAME } from "@blog/shared"
 
 function healthPayload() {
     if (env.NODE_ENV === "production") {
@@ -41,7 +43,7 @@ app.use(cors({
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", CSRF_HEADER_NAME],
 }))
 
 // Atualizações de projeto levam markdown: o corpo (até 100kb) é lido na própria
@@ -64,6 +66,9 @@ app.get("/health", healthRateLimiter, sendHealth)
 app.get("/api/health", healthRateLimiter, sendHealth)
 
 app.use(rateLimiter)
+
+// Antes de ler o corpo: requisição forjada por outro site é recusada sem processar nada
+app.use("/api", csrfProtection)
 
 // API JSON-only — urlencoded desabilitado (superfície de Prototype Pollution via qs)
 app.use(express.json({ limit: "10kb", type: isGlobalJsonRequest }))

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { motion } from "motion/react";
 import type { Project } from "@blog/shared";
 import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
-import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
+import { usePublicSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 import { countTechUsage } from "@/features/projects/lib/projectStats";
 import { Image } from "@/components/ui/Image";
 import { RevealText } from "@/components/ui/RevealText";
@@ -22,9 +22,9 @@ function SkillTile({ name, icon, href, usage }: { name: string; icon: string; hr
   const content = (
     <>
       <Image src={getSkillIconUrl(icon)} alt="" variant="icon" loading="lazy" className="size-11 rounded-[0.625rem]" />
-      <span className="text-center text-[13px] font-medium text-home-ink">{name}</span>
+      <span className="text-center text-caption font-medium text-home-ink">{name}</span>
       {/* Altura fixa: tiles sem uso não ficam mais baixos que os outros */}
-      <span className="min-h-4 font-mono text-[11px] leading-4 text-home-muted">{usage}</span>
+      <span className="min-h-4 font-mono text-2xs leading-4 text-home-muted">{usage}</span>
     </>
   );
 
@@ -40,7 +40,7 @@ function SkillTile({ name, icon, href, usage }: { name: string; icon: string; hr
 }
 
 export function SkillsIconSection({ projects }: { projects: Project[] }) {
-  const { data: siteLinks } = useSiteLinks();
+  const { data: siteLinks } = usePublicSiteLinks();
   const skills = siteLinks?.skill ?? DEFAULT_SITE_LINKS.skill;
   // Quantos projetos usam cada ferramenta, pelo nome padronizado
   const usage = useMemo(
@@ -53,7 +53,7 @@ export function SkillsIconSection({ projects }: { projects: Project[] }) {
       <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <RevealText
           text="Ferramentas"
-          className="text-xl font-semibold tracking-[-0.02em] text-home-ink"
+          className="text-xl font-semibold tracking-heading text-home-ink"
         />
         <p className="text-sm text-home-muted">Linguagens, frameworks e serviços que uso no dia a dia</p>
       </div>

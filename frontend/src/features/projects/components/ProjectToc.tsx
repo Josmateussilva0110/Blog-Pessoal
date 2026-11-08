@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { MarkdownHeading } from "@/lib/markdownHeadings";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 /** Linha de leitura: fração da altura da tela a partir do topo */
 const READING_LINE = 0.35;
@@ -109,7 +109,7 @@ export function ProjectToc({
                 onClick={(event) => handleClick(event, heading.id)}
                 aria-current={isActive ? "location" : undefined}
                 className={cn(
-                  "-ml-px block border-l py-1.5 text-[13px] leading-snug transition-colors lg:py-1",
+                  "-ml-px block border-l py-1.5 text-caption leading-snug transition-colors lg:py-1",
                   heading.level === 3 ? "pl-6" : "pl-3",
                   isActive
                     ? "border-brand text-home-ink"

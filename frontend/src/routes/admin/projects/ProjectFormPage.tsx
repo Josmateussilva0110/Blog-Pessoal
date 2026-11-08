@@ -1,26 +1,24 @@
 import { Link, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { AdminPageHeader } from "@/components/layout/AdminPageHeader";
 import { ProjectForm } from "@/features/projects/components/ProjectForm";
 import { ProjectUpdatesManager } from "@/features/projects/components/ProjectUpdatesManager";
-import { fetchProjectById } from "@/features/projects/api/projects.api";
+import { useAdminProject } from "@/features/projects/hooks/useProjects";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { INLINE_LINK_CLASS } from "@/components/ui/linkStyles";
+import { ROUTES } from "@/config/routes";
 
 export default function ProjectFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEditing = Boolean(id);
 
-  const { data: project, isLoading, error } = useQuery({
-    queryKey: ["admin-project", id],
-    queryFn: () => fetchProjectById(id!),
-    enabled: isEditing,
-  });
+  const { data: project, isLoading, error, isRefetching, refetch } = useAdminProject(id);
 
   return (
     <div className="w-full">
       <AdminPageHeader
         eyebrow="Projetos"
         title={isEditing ? "Editar projeto" : "Novo projeto"}
-        description="Descreva o projeto, envie imagens do sistema e anexe arquivos `.md`."
+        description="Descreva o projeto, envie imagens do sistema e anexe arquivos .md."
       />
 
       {isEditing && isLoading && (
@@ -30,12 +28,13 @@ export default function ProjectFormPage() {
       )}
 
       {isEditing && error && (
-        <div role="alert" className="admin-card p-5 text-sm text-danger-text">
-          Não foi possível carregar o projeto.
-          <Link
-            to="/admin/projects"
-            className="mt-3 block text-brand underline decoration-brand/40 underline-offset-[3px] hover:decoration-brand"
-          >
+        <div className="admin-card space-y-4 p-5">
+          <ErrorState
+            message="Não foi possível carregar o projeto."
+            onRetry={() => void refetch()}
+            isRetrying={isRefetching}
+          />
+          <Link to={ROUTES.adminProjects} className={INLINE_LINK_CLASS}>
             Voltar para a lista
           </Link>
         </div>

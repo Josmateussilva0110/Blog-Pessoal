@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import type { MonthUsage } from "@/features/projects/lib/projectStats";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { EASE_OUT, inViewRepeat } from "@/lib/motion";
 
 /** Altura da coluna mais alta, em px */
@@ -19,7 +19,7 @@ export function ProjectsByMonthChart({ data }: { data: MonthUsage[] }) {
   return (
     <figure className="home-card m-0 flex min-w-0 flex-col gap-5 p-5 sm:p-7">
       <figcaption>
-        <span className="block text-xl font-semibold tracking-[-0.02em] text-home-ink">
+        <span className="block text-xl font-semibold tracking-heading text-home-ink">
           Projetos por mês
         </span>
         <span className="text-sm text-home-muted">Pela data de cadastro no portfólio.</span>
@@ -43,7 +43,7 @@ export function ProjectsByMonthChart({ data }: { data: MonthUsage[] }) {
                 onFocus={select}
                 className="flex h-full flex-1 flex-col items-center justify-end gap-1.5 rounded-t-md focus-visible:outline-2 focus-visible:outline-brand"
               >
-                <span className="font-mono text-[13px] text-home-ink">{count}</span>
+                <span className="font-mono text-caption text-home-ink">{count}</span>
                 <motion.span
                   className={cn(
                     "block w-full max-w-14 origin-bottom rounded-t transition-colors",
@@ -61,7 +61,7 @@ export function ProjectsByMonthChart({ data }: { data: MonthUsage[] }) {
         </div>
         <div className="flex gap-3 pt-2" aria-hidden>
           {data.map((month) => (
-            <span key={month.key} className="flex-1 text-center text-[13px] text-home-muted">
+            <span key={month.key} className="flex-1 text-center text-caption text-home-muted">
               {month.label}
             </span>
           ))}

@@ -1,4 +1,5 @@
 import type { Project } from "@blog/shared";
+import { buttonClassName } from "@/components/ui/Button";
 import { ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { TiltCard } from "@/components/ui/TiltCard";
@@ -11,7 +12,7 @@ import { ROUTES } from "@/config/routes";
 
 /** Detalhe do projeto selecionado no explorador da home */
 export function ProjectSpotlight({ project }: { project: Project }) {
-  const { cardRef, handleClick } = useProjectCardLink(project);
+  const { handleClick } = useProjectCardLink(project);
   const platform = normalizeProjectPlatform(project.platform);
   const year = new Date(project.createdAt).getFullYear();
   // "node.js" e "nodejs" viram o mesmo chip
@@ -19,7 +20,7 @@ export function ProjectSpotlight({ project }: { project: Project }) {
   const projectUrl = ROUTES.project(project.slug);
 
   return (
-    <article ref={cardRef} className="flex min-w-0 flex-col gap-5">
+    <article className="flex min-w-0 flex-col gap-5">
       {/* O palco também abre o projeto; fora da ordem de tabulação, o botão "Ver projeto" já cobre */}
       <Link to={projectUrl} onClick={handleClick} tabIndex={-1} aria-hidden className="block">
         <TiltCard max={4}>
@@ -51,7 +52,7 @@ export function ProjectSpotlight({ project }: { project: Project }) {
           <Link
             to={projectUrl}
             onClick={handleClick}
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl px-4.5 text-[15px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand bg-home-ink text-home-device hover:bg-white"
+            className={buttonClassName({ size: "cta" })}
           >
             Ver projeto
             <ArrowUpRight className="size-4" aria-hidden />

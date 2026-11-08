@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { HomeProjects, Project } from "@blog/shared";
 import { AnimatePresence, motion } from "motion/react";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { RevealText } from "@/components/ui/RevealText";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { ProjectCardItem, ProjectSelectItem } from "@/features/projects/components/ProjectListItem";
@@ -10,7 +11,7 @@ import {
   filterProjects,
   type ProjectFilterId,
 } from "@/features/projects/lib/projectFilters";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { EASE_OUT, fadeUp, staggerContainer, useInViewReveal } from "@/lib/motion";
 import { SECTION_IDS } from "@/config/routes";
 import { DESKTOP_MEDIA_QUERY } from "@/config/constants";
@@ -18,6 +19,9 @@ import { DESKTOP_MEDIA_QUERY } from "@/config/constants";
 interface ProjectsSectionProps {
   home?: HomeProjects;
   isLoading: boolean;
+  isError: boolean;
+  isRetrying: boolean;
+  onRetry: () => void;
 }
 
 function ProjectsSkeleton() {
@@ -79,7 +83,13 @@ function ProjectList({ projects, selectedSlug, selectable, onSelect }: ProjectLi
   );
 }
 
-export function ProjectsSection({ home, isLoading }: ProjectsSectionProps) {
+export function ProjectsSection({
+  home,
+  isLoading,
+  isError,
+  isRetrying,
+  onRetry,
+}: ProjectsSectionProps) {
   // No celular não há painel de detalhe: cada linha abre o projeto
   const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
   const [filter, setFilter] = useState<ProjectFilterId>("spotlight");
@@ -125,7 +135,7 @@ export function ProjectsSection({ home, isLoading }: ProjectsSectionProps) {
                   onClick={() => setFilter(item.id)}
                   className={cn(
                     "inline-flex min-h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[0.5625rem] px-3 text-sm sm:px-3.5 font-medium text-home-ink transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand",
-                    active ? "bg-home-raised shadow-[0_1px_2px_rgb(0_0_0/0.4)]" : "hover:bg-home-raised/50",
+                    active ? "bg-home-raised shadow-control" : "hover:bg-home-raised/50",
                   )}
                 >
                   {item.label}
@@ -139,6 +149,12 @@ export function ProjectsSection({ home, isLoading }: ProjectsSectionProps) {
 
       {isLoading ? (
         <ProjectsSkeleton />
+      ) : isError && !home ? (
+        <ErrorState
+          message="Não foi possível carregar os projetos."
+          onRetry={onRetry}
+          isRetrying={isRetrying}
+        />
       ) : visible.length === 0 ? (
         <p className="text-sm text-home-muted">Nenhum projeto publicado ainda.</p>
       ) : (

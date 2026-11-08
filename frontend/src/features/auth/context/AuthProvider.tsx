@@ -6,7 +6,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { AuthUser, ChangePasswordPayload, LoginCredentials } from "@/service";
+import { useQueryClient } from "@tanstack/react-query";
+import { FRESH_DETAIL, projectKeys } from "@/features/projects/lib/queryKeys";
+import type { AuthUser, ChangePasswordInput, LoginInput } from "@/service";
+import { isAdminRoute } from "@/lib/isAdminRoute";
 import * as authApi from "../api/auth.api";
 import {
   PASSWORD_CHANGE_REQUIRED_EVENT,
@@ -17,19 +20,31 @@ export type AuthContextValue = {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<AuthUser>;
+  login: (credentials: LoginInput) => Promise<AuthUser>;
   logout: () => Promise<void>;
-  changePassword: (payload: ChangePasswordPayload) => Promise<AuthUser>;
+  changePassword: (payload: ChangePasswordInput) => Promise<AuthUser>;
   refreshUser: () => Promise<AuthUser | null>;
   bootstrapAuth: () => Promise<void>;
-  clearAuthSession: () => void;
 };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  // Abrindo direto uma rota do admin, a sessão ainda vai ser restaurada pelo AuthScope:
+  // sem isso o guard redireciona para o login antes e o link direto se perde
+  const [isLoading, setIsLoading] = useState(() => isAdminRoute(window.location.pathname));
+  const queryClient = useQueryClient();
+
+  // Fim da sessão: dados que só o admin vê não ficam no cache do navegador
+  const clearAdminCache = useCallback(() => {
+    queryClient.removeQueries({ queryKey: projectKeys.admin() });
+    // Detalhes buscados como admin podem trazer dados que a API só entrega logado
+    queryClient.removeQueries({
+      queryKey: projectKeys.details(),
+      predicate: (query) => query.queryKey.includes(FRESH_DETAIL),
+    });
+  }, [queryClient]);
 
   const refreshUser = useCallback(async () => {
     const currentUser = await authApi.getCurrentUser();
@@ -48,14 +63,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const clearAuthSession = useCallback(() => {
-    setUser(null);
-    setIsLoading(false);
-  }, []);
-
   useEffect(() => {
     function handleSessionExpired() {
       setUser(null);
+      clearAdminCache();
     }
 
     function handlePasswordChangeRequired() {
@@ -75,9 +86,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         handlePasswordChangeRequired,
       );
     };
-  }, [refreshUser]);
+  }, [refreshUser, clearAdminCache]);
 
-  const login = useCallback(async (credentials: LoginCredentials) => {
+  const login = useCallback(async (credentials: LoginInput) => {
     const { user: loggedUser } = await authApi.login(credentials);
     setUser(loggedUser);
     return loggedUser;
@@ -86,9 +97,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await authApi.logout();
     setUser(null);
-  }, []);
+    clearAdminCache();
+  }, [clearAdminCache]);
 
-  const changePassword = useCallback(async (payload: ChangePasswordPayload) => {
+  const changePassword = useCallback(async (payload: ChangePasswordInput) => {
     const updatedUser = await authApi.changePassword(payload);
     setUser(updatedUser);
     return updatedUser;
@@ -104,7 +116,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       changePassword,
       refreshUser,
       bootstrapAuth,
-      clearAuthSession,
     }),
     [
       user,
@@ -114,7 +125,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       changePassword,
       refreshUser,
       bootstrapAuth,
-      clearAuthSession,
     ],
   );
 

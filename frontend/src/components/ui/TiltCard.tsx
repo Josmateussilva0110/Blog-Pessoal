@@ -6,7 +6,7 @@ import {
   useTransform,
 } from "motion/react";
 import { useRef, type PointerEvent, type ReactNode } from "react";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useRestingTransform } from "@/lib/transform3d";
 

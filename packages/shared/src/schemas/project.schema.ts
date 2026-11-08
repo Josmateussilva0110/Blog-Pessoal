@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  PROJECT_DESCRIPTION_MAX_LENGTH,
+  PROJECT_SLUG_MAX_LENGTH,
+  PROJECT_TITLE_MAX_LENGTH,
+} from "../constants/project.constants";
 import { projectUpdateSchema } from "./projectUpdate.schema";
 
 export const projectStatusSchema = z.enum(["planned", "completed", "wip"]);
@@ -6,15 +11,15 @@ export const projectStatusSchema = z.enum(["planned", "completed", "wip"]);
 export const projectPlatformSchema = z.enum(["mobile", "web"]);
 
 export const markdownFileSchema = z.object({
-  id: z.string().uuid().optional(),
+  id: z.uuid().optional(),
   title: z.string().min(1),
   path: z.string().min(1),
-  url: z.string().url(),
+  url: z.url(),
   sortOrder: z.number().int().min(0),
 });
 
 export const projectSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   slug: z.string().min(1),
   title: z.string().min(1),
   description: z.string().default(""),
@@ -22,15 +27,15 @@ export const projectSchema = z.object({
   status: projectStatusSchema,
   platform: projectPlatformSchema.default("web"),
   techStack: z.array(z.string()),
-  repoUrl: z.string().url().optional(),
-  coverImage: z.string().url().optional(),
-  images: z.array(z.string().url()).default([]),
+  repoUrl: z.url().optional(),
+  coverImage: z.url().optional(),
+  images: z.array(z.url()).default([]),
   markdownFiles: z.array(markdownFileSchema).default([]),
   featured: z.boolean().default(false),
   /** Só vem preenchido no detalhe do projeto (listas não carregam atualizações) */
   updates: z.array(projectUpdateSchema).default([]),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
 });
 
 export type ProjectStatus = z.infer<typeof projectStatusSchema>;
@@ -53,7 +58,6 @@ export type HomeProjects = {
  * XSS ou rastreamento quando renderizados em href/src.
  */
 const httpUrl = z
-  .string()
   .url("URL inválida.")
   .refine((value) => /^https?:\/\//i.test(value), "Use um endereço http(s).");
 
@@ -69,19 +73,22 @@ const optionalUrl = httpUrl
   .transform((value) => (value === "" ? undefined : value));
 
 export const projectFormSchema = z.object({
-  title: z.string().trim().min(1, "Título obrigatório.").max(120),
+  title: z.string().trim().min(1, "Título obrigatório.").max(PROJECT_TITLE_MAX_LENGTH),
   slug: z
     .string()
     .trim()
     .min(1, "Slug obrigatório.")
-    .max(120)
+    .max(PROJECT_SLUG_MAX_LENGTH)
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use apenas letras minúsculas, números e hífens."),
   contentMarkdown: z.string().trim().min(1, "Descreva o projeto."),
   description: z
     .string()
     .trim()
     .min(1, "Resumo obrigatório.")
-    .max(500, "O resumo deve ter no máximo 500 caracteres."),
+    .max(
+      PROJECT_DESCRIPTION_MAX_LENGTH,
+      `O resumo deve ter no máximo ${PROJECT_DESCRIPTION_MAX_LENGTH} caracteres.`,
+    ),
   status: projectStatusSchema,
   platform: projectPlatformSchema,
   techStack: z.array(z.string()),
@@ -93,7 +100,7 @@ export const projectFormSchema = z.object({
     .string()
     .optional()
     .refine((value) => !value || !Number.isNaN(Date.parse(value)), {
-      message: "Data de atualização inválida.",
+      error: "Data de atualização inválida.",
     }),
 });
 

@@ -21,7 +21,7 @@ Use Bash apenas para comandos de leitura (`git diff`, `git log`, `git status`, `
 - `frontend/src/features/<feature>/{components,hooks,api,lib,schemas}` — código por feature
 - `frontend/src/components/ui` — componentes genéricos reutilizáveis; `components/layout` — layout
 - `frontend/src/routes` — páginas (públicas e `admin/`)
-- `frontend/src/styles/tailwind.css` — tokens de tema (`@theme`) e classes utilitárias; `frontend/src/theme/tokens.ts` espelha os tokens para uso em TS
+- `frontend/src/styles/tailwind.css` — tokens de tema (`@theme`) e classes utilitárias; é a única fonte das cores
 - `frontend/src/service` — cliente HTTP
 - `packages/shared/src/schemas` — schemas Zod e tipos compartilhados
 
@@ -43,10 +43,10 @@ Para cada regra, procure violações concretas. Exemplos do que buscar estão en
 - Reporte: comentários em inglês, comentários que só repetem o código, blocos longos, código comentado esquecido, `TODO` sem contexto.
 
 ### 4. Teoria das cores e tema central
-- Cores vêm dos tokens do tema (`@theme` em `tailwind.css`: `home-*`, `brand`, `text`, `text-muted`, estados `success`/`warning`/`danger`...) e não de valores soltos (`#4c8dff`, `rgb(...)`, `text-sky-400`) espalhados pelos componentes.
+- Cores vêm dos tokens do tema (`@theme` em `tailwind.css`: `home-*`, `brand`, `scrim`/`on-scrim`, estados `success`/`warning`/`danger`...) e não de valores soltos (`#4c8dff`, `rgb(...)`, `text-sky-400`) espalhados pelos componentes.
 - Reporte também valores arbitrários do Tailwind (`text-[#4c8dff]`, `bg-[rgb(...)]`, `w-[537px]`) e cores em `style={{ ... }}` inline.
 - Paleta coerente: acento usado com moderação para destaque/ação, estados (sucesso/aviso/erro) com cores semânticas consistentes, contraste de texto adequado (WCAG AA ≈ 4.5:1 para texto normal).
-- Tokens de `tailwind.css` e `theme/tokens.ts` precisam continuar iguais; reporte divergência ou componente que ignora o tema.
+- Uma só família de tokens (`home-*` + `brand`); reporte aliases duplicados ou componente que ignora o tema.
 
 ### 5. Nada em hardcode
 - URLs, limites, tamanhos máximos e textos de configuração vêm de `config/`, constantes ou variáveis de ambiente.

@@ -1,7 +1,7 @@
 import type { Project } from "@blog/shared";
 import { Image } from "@/components/ui/Image";
 import { getProjectCover } from "@/features/projects/lib/projectCover";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { normalizeProjectPlatform, PLATFORM_KIND_LABELS } from "@/lib/projectPlatform";
 
 interface ProjectStageProps {
@@ -28,7 +28,7 @@ export function ProjectStage({ project, compact = false }: ProjectStageProps) {
       )}
     >
       {!compact && (
-        <div className="absolute inset-x-6 top-5 flex items-center justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.08em] text-white/60">
+        <div className="absolute inset-x-6 top-5 flex items-center justify-between gap-3 font-mono text-2xs uppercase tracking-eyebrow text-on-scrim/60">
           <span className="truncate">{project.title}</span>
           <span className="shrink-0">{PLATFORM_KIND_LABELS[platform]}</span>
         </div>
@@ -41,7 +41,7 @@ export function ProjectStage({ project, compact = false }: ProjectStageProps) {
       ) : platform === "mobile" ? (
         <div
           className={cn(
-            "border border-b-0 border-white/15 bg-home-device shadow-[0_40px_90px_rgb(0_0_0/0.55)]",
+            "border border-b-0 border-on-scrim/15 bg-home-device shadow-stage",
             compact
               ? "w-[8.5rem] rounded-t-[1.75rem] px-1.5 pt-1.5"
               : "w-[14.75rem] rounded-t-[2.625rem] px-[9px] pt-[9px]",
@@ -64,7 +64,7 @@ export function ProjectStage({ project, compact = false }: ProjectStageProps) {
         </div>
       ) : (
         // Sem barra de navegador desenhada: os prints web já costumam trazer a do próprio navegador
-        <div className="w-full max-w-[47.5rem] overflow-hidden rounded-t-[0.875rem] border border-b-0 border-white/12 bg-home-device shadow-[0_40px_90px_rgb(0_0_0/0.55)]">
+        <div className="w-full max-w-[47.5rem] overflow-hidden rounded-t-[0.875rem] border border-b-0 border-on-scrim/12 bg-home-device shadow-stage">
           <Image
             src={cover.thumb}
             srcSet={cover.srcSet}

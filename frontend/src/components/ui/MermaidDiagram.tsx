@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { ExpandableChart } from "@/components/ui/ExpandableChart";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 type MermaidDiagramProps = {
   chart: string;
@@ -74,7 +74,7 @@ function MermaidSvgDisplay({ svg, className }: { svg: string; className?: string
   return (
     <div
       className={cn(
-        "mermaid-diagram overflow-x-auto rounded-xl border border-white/[0.08] bg-white/[0.02] p-4",
+        "mermaid-diagram overflow-x-auto rounded-xl border border-home-line bg-home-inset/30 p-4",
         className,
       )}
       dangerouslySetInnerHTML={{ __html: svg }}
@@ -106,7 +106,7 @@ export function MermaidDiagram({ chart, className }: MermaidDiagramProps) {
     return (
       <div
         className={cn(
-          "rounded-lg border border-border-subtle bg-surface-raised p-6 font-mono text-sm text-text-subtle animate-pulse",
+          "rounded-lg border border-home-line bg-home-inset p-6 font-mono text-sm text-home-subtle animate-pulse",
           className,
         )}
       >

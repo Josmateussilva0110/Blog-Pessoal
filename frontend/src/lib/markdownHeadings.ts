@@ -26,7 +26,7 @@ export function createHeadingSlugger() {
 }
 
 /** Subconjunto da árvore hast que o plugin precisa ler */
-type HastNode = {
+export type HastNode = {
   type: string;
   tagName?: string;
   value?: string;
@@ -35,7 +35,7 @@ type HastNode = {
 };
 
 /** Texto puro de um nó (títulos podem ter <strong>, <code>…) */
-function hastText(node: HastNode): string {
+export function hastText(node: HastNode): string {
   if (node.type === "text") return node.value ?? "";
   return (node.children ?? []).map(hastText).join("");
 }

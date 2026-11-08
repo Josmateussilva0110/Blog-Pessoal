@@ -1,20 +1,23 @@
 import type { ProjectUpdate } from "@blog/shared";
-import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
+import { Button } from "@/components/ui/Button";
+import { MessageCard } from "@/components/ui/MessageCard";
+import { BACK_LINK_CLASS, INLINE_LINK_CLASS } from "@/components/ui/linkStyles";
 import { DESKTOP_MEDIA_QUERY, SITE } from "@/config/constants";
 import { ROUTES } from "@/config/routes";
 import { ProjectToc } from "@/features/projects/components/ProjectToc";
+import { ProjectMobileToc } from "@/features/projects/components/ProjectMobileToc";
 import { ProjectUpdateMeta } from "@/features/projects/components/ProjectUpdates";
 import { useProject } from "@/features/projects/hooks/useProjects";
-import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { usePageMeta } from "@/hooks/usePageMeta";
+import { getProjectCover } from "@/features/projects/lib/projectCover";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { extractHeadings } from "@/lib/markdownHeadings";
 import { scrollToPageTop } from "@/lib/viewTransition";
-
-/** Breakpoint lg: a partir dele o índice fica na coluna lateral */
 
 type UpdateNavLinkProps = {
   slug: string;
@@ -35,7 +38,7 @@ function UpdateNavLink({ slug, update, direction }: UpdateNavLinkProps) {
     >
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-home-muted",
+          "inline-flex items-center gap-1.5 font-mono text-2xs uppercase tracking-wider text-home-muted",
           isNewer && "sm:justify-end",
         )}
       >
@@ -54,7 +57,8 @@ function UpdateNavLink({ slug, update, direction }: UpdateNavLinkProps) {
 /** Página própria de uma atualização longa, com índice dos seus títulos */
 export function ProjectUpdatePage() {
   const { slug = "", updateId = "" } = useParams<{ slug: string; updateId: string }>();
-  const { data: project, isLoading, isPlaceholderData } = useProject(slug);
+  const { data: project, isPending, isError, isPlaceholderData, isRefetching, refetch } =
+    useProject(slug);
   const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
 
   // Lista vem da mais recente para a mais antiga
@@ -70,14 +74,22 @@ export function ProjectUpdatePage() {
   );
   const hasToc = headings.length > 1;
 
-  useDocumentTitle(update && project ? `${update.title} — ${project.title} — ${SITE.name}` : null);
+  usePageMeta(
+    update && project
+      ? {
+          title: `${update.title} — ${project.title} — ${SITE.name}`,
+          description: `Atualização de ${project.title}${update.version ? ` (${update.version})` : ""}.`,
+          image: getProjectCover(project)?.original,
+        }
+      : null,
+  );
 
   useEffect(() => {
     scrollToPageTop("instant");
   }, [updateId]);
 
   // Dados vindos da home ainda não têm as atualizações: espera a resposta do detalhe
-  if (isLoading || (isPlaceholderData && !update)) {
+  if (isPending || (isPlaceholderData && !update)) {
     return (
       <div className="flex flex-col gap-3 pt-4 sm:pt-6">
         <span role="status" className="sr-only">
@@ -97,19 +109,26 @@ export function ProjectUpdatePage() {
     );
   }
 
+  if (isError && !project) {
+    return (
+      <MessageCard tone="error" message="Não foi possível carregar a atualização.">
+        <Button variant="secondary" size="sm" onClick={() => void refetch()} disabled={isRefetching}>
+          Tentar novamente
+        </Button>
+        <Link to={ROUTES.home} className={INLINE_LINK_CLASS}>
+          Voltar ao início
+        </Link>
+      </MessageCard>
+    );
+  }
+
   if (!project || !update) {
     return (
-      <div className="pt-4 sm:pt-6">
-        <div className="home-card px-6 py-20 text-center">
-          <p className="text-home-muted">Atualização não encontrada.</p>
-          <Link
-            to={project ? ROUTES.project(project.slug) : ROUTES.home}
-            className="mt-4 inline-block text-sm text-brand underline decoration-brand/40 underline-offset-[3px] hover:decoration-brand"
-          >
-            {project ? "Voltar ao projeto" : "Voltar ao início"}
-          </Link>
-        </div>
-      </div>
+      <MessageCard message="Atualização não encontrada.">
+        <Link to={project ? ROUTES.project(project.slug) : ROUTES.home} className={INLINE_LINK_CLASS}>
+          {project ? "Voltar ao projeto" : "Voltar ao início"}
+        </Link>
+      </MessageCard>
     );
   }
 
@@ -118,14 +137,14 @@ export function ProjectUpdatePage() {
       <header className="home-card flex flex-col gap-8 p-6 sm:p-10">
         <Link
           to={ROUTES.project(project.slug)}
-          className="group inline-flex min-h-10 items-center gap-1.5 self-start rounded-xl bg-home-inset px-3.5 text-sm text-home-muted transition-colors hover:bg-home-raised hover:text-home-ink focus-visible:outline-2 focus-visible:outline-brand"
+          className={BACK_LINK_CLASS}
         >
           <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
           Voltar a {project.title}
         </Link>
 
         <div>
-          <p className="mb-3 font-mono text-xs uppercase tracking-[0.08em] text-home-muted">
+          <p className="mb-3 font-mono text-xs uppercase tracking-eyebrow text-home-muted">
             Atualização do projeto
           </p>
           <ProjectUpdateMeta update={update} />
@@ -137,23 +156,7 @@ export function ProjectUpdatePage() {
 
       <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="home-card min-w-0 p-5 sm:p-8 lg:p-10">
-          {hasToc && !isDesktop && (
-            <details className="group mb-8 rounded-xl bg-home-inset">
-              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between px-4 text-sm text-home-ink [&::-webkit-details-marker]:hidden">
-                <span>
-                  Nesta página
-                  <span className="ml-2 font-mono text-xs text-home-muted">{headings.length}</span>
-                </span>
-                <ChevronDown
-                  className="size-4 text-home-muted transition-transform group-open:rotate-180"
-                  aria-hidden
-                />
-              </summary>
-              <div className="border-t border-home-line px-4 py-3">
-                <ProjectToc headings={headings} showTitle={false} />
-              </div>
-            </details>
-          )}
+          {hasToc && !isDesktop && <ProjectMobileToc headings={headings} />}
 
           <MarkdownContent content={update.contentMarkdown} className="project-docs" />
 

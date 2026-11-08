@@ -5,14 +5,15 @@ import { Link } from "react-router-dom";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
 import { ROUTES } from "@/config/routes";
 import { getUpdateExcerpt, isLongUpdate } from "@/features/projects/lib/projectUpdateContent";
-import { cn, formatDate } from "@/lib/format";
+import { cn } from "@/lib/cn";
+import { formatDate } from "@/lib/format";
 
 export const PROJECT_UPDATES_SECTION_ID = "atualizacoes";
 
 /** Data e versão da atualização (timeline e página própria) */
 export function ProjectUpdateMeta({ update }: { update: ProjectUpdate }) {
   return (
-    <p className="flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-home-muted">
+    <p className="flex flex-wrap items-center gap-2 font-mono text-2xs uppercase tracking-wider text-home-muted">
       <time dateTime={update.publishedAt}>{formatDate(update.publishedAt)}</time>
       {update.version && (
         <span className="rounded-full bg-brand/15 px-2 py-0.5 normal-case tracking-normal text-brand">
@@ -58,7 +59,7 @@ function ProjectUpdateItem({ update, projectSlug, latest }: ProjectUpdateItemPro
 
       <ProjectUpdateMeta update={update} />
 
-      <h3 className="mt-2 text-lg font-semibold tracking-[-0.01em] text-home-ink">
+      <h3 className="mt-2 text-lg font-semibold tracking-logo text-home-ink">
         {isLong ? (
           <Link to={href} className="transition-colors hover:text-brand">
             {update.title}
@@ -112,7 +113,7 @@ export function ProjectUpdates({ updates, projectSlug }: ProjectUpdatesProps) {
     >
       <h2
         id={PROJECT_UPDATES_SECTION_ID}
-        className="mb-7 flex items-baseline gap-2 text-xl font-semibold tracking-[-0.02em] text-home-ink"
+        className="mb-7 flex items-baseline gap-2 text-xl font-semibold tracking-heading text-home-ink"
       >
         Atualizações
         <span className="font-mono text-xs font-normal text-home-muted">{updates.length}</span>

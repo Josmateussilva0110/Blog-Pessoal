@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Maximize2 } from "lucide-react";
 import { ChartLightbox } from "@/components/ui/ChartLightbox";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 type ExpandableChartProps = {
   title: string;
@@ -29,9 +29,9 @@ export function ExpandableChart({
           <button
             type="button"
             className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 rounded-md border border-accent/35 bg-accent-soft px-2.5 py-1 font-mono text-[10px] text-accent transition-colors",
-              "hover:border-accent/50 hover:bg-accent/15",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
+              "inline-flex shrink-0 items-center gap-1.5 rounded-md border border-brand/35 bg-brand/10 px-2.5 py-1 font-mono text-3xs text-brand transition-colors",
+              "hover:border-brand/50 hover:bg-brand/20",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40",
             )}
             onClick={openFullscreen}
           >

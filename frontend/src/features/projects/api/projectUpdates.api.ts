@@ -1,13 +1,5 @@
 import type { ProjectUpdate, ProjectUpdateFormValues } from "@blog/shared";
-import { projectUpdatesService } from "@/service";
-import type { ApiResponse } from "@/service/types";
-
-function unwrap<T>(result: ApiResponse<T>): T {
-  if (!result.success) {
-    throw new Error(result.message);
-  }
-  return result.data;
-}
+import { projectUpdatesService, unwrap } from "@/service";
 
 export async function fetchProjectUpdates(projectId: string): Promise<ProjectUpdate[]> {
   return unwrap(await projectUpdatesService.list(projectId));

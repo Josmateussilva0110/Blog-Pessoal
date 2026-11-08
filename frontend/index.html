@@ -4,8 +4,22 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Blog pessoal — projetos de programação, apps e sites." />
     <title>mateus.dev</title>
+    <!-- Padrão para crawlers que não executam JS; manter igual a SITE em src/config/constants.ts.
+         Por página, lib/documentMeta.ts troca description, og:* e canonical em tempo de execução -->
+    <meta
+      name="description"
+      content="Um espaço para documentar cada projeto — da ideia ao deploy. Apps, sites e experimentos com código real."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="mateus.dev" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content="mateus.dev" />
+    <meta
+      property="og:description"
+      content="Um espaço para documentar cada projeto — da ideia ao deploy. Apps, sites e experimentos com código real."
+    />
+    <meta name="twitter:card" content="summary" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://skillicons.dev" />

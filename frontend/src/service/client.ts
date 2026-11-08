@@ -1,18 +1,14 @@
+import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from "@blog/shared/constants";
 import { getApiBaseUrl } from "./apiBaseUrl";
 import type { ApiResponse } from "./types";
 import { tryRefreshSession } from "@/features/auth/lib/refreshSession";
 import { dispatchSessionExpired, dispatchPasswordChangeRequired } from "@/features/auth/lib/sessionEvents";
 
-export class HttpError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public code?: string,
-  ) {
-    super(message);
-    this.name = "HttpError";
-  }
-}
+/** JSON e o header exigido pela API em requisições que alteram dados (CSRF) */
+const MUTATION_HEADERS = {
+  "Content-Type": "application/json",
+  [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE,
+};
 
 type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -41,7 +37,8 @@ function buildUrl(endpoint: string, params?: RequestOptions["params"]): string {
   return url.toString();
 }
 
-async function parseResponse<T>(response: Response): Promise<ApiResponse<T>> {
+/** Converte qualquer resposta da API (JSON, multipart) no formato ApiResponse */
+export async function parseJsonResponse<T>(response: Response): Promise<ApiResponse<T>> {
   const payload = (await response.json().catch(() => null)) as
     | ApiResponse<T>
     | { message?: string; code?: string }
@@ -79,9 +76,8 @@ export async function request<T>(
     const response = await fetch(buildUrl(endpoint, params), {
       method,
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      // Headers só onde precisa: em GET eles forçariam um preflight em toda leitura pública
+      headers: method === "GET" ? undefined : MUTATION_HEADERS,
       body: body !== undefined ? JSON.stringify(body) : undefined,
       signal,
       cache,
@@ -104,7 +100,7 @@ export async function request<T>(
       dispatchSessionExpired();
     }
 
-    return parseResponse<T>(response);
+    return parseJsonResponse<T>(response);
   } catch {
     return {
       success: false,

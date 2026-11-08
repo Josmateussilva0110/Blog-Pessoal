@@ -1,10 +1,18 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 export const MIN_ZOOM = 0.5;
 export const MAX_ZOOM = 3;
 export const ZOOM_STEP = 0.25;
+
+/** Botões de zoom sobre a mídia (fundo escurecido) */
+const ZOOM_BUTTON_CLASS = cn(
+  "inline-flex size-8 items-center justify-center rounded-md text-on-scrim/80 transition-colors",
+  "hover:bg-on-scrim/10 hover:text-on-scrim",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40",
+  "disabled:pointer-events-none disabled:opacity-35",
+);
 
 export function clampZoom(value: number) {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value));
@@ -24,15 +32,10 @@ export function ZoomControls({
   const zoomLabel = `${Math.round(zoom * 100)}%`;
 
   return (
-    <div className="flex items-center gap-1 rounded-lg border border-white/15 bg-black/40 p-1">
+    <div className="flex items-center gap-1 rounded-lg border border-on-scrim/15 bg-scrim/40 p-1">
       <button
         type="button"
-        className={cn(
-          "inline-flex size-8 items-center justify-center rounded-md text-white/80 transition-colors",
-          "hover:bg-white/10 hover:text-white",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
-          "disabled:pointer-events-none disabled:opacity-35",
-        )}
+        className={ZOOM_BUTTON_CLASS}
         aria-label="Diminuir zoom"
         disabled={zoom <= MIN_ZOOM}
         onClick={onZoomOut}
@@ -40,18 +43,13 @@ export function ZoomControls({
         <ZoomOut className="size-4" aria-hidden />
       </button>
 
-      <span className="min-w-[3rem] text-center font-mono text-[10px] tabular-nums text-white/70">
+      <span className="min-w-[3rem] text-center font-mono text-3xs tabular-nums text-on-scrim/70">
         {zoomLabel}
       </span>
 
       <button
         type="button"
-        className={cn(
-          "inline-flex size-8 items-center justify-center rounded-md text-white/80 transition-colors",
-          "hover:bg-white/10 hover:text-white",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
-          "disabled:pointer-events-none disabled:opacity-35",
-        )}
+        className={ZOOM_BUTTON_CLASS}
         aria-label="Aumentar zoom"
         disabled={zoom >= MAX_ZOOM}
         onClick={onZoomIn}
@@ -61,12 +59,7 @@ export function ZoomControls({
 
       <button
         type="button"
-        className={cn(
-          "inline-flex size-8 items-center justify-center rounded-md text-white/80 transition-colors",
-          "hover:bg-white/10 hover:text-white",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
-          "disabled:pointer-events-none disabled:opacity-35",
-        )}
+        className={ZOOM_BUTTON_CLASS}
         aria-label="Resetar zoom"
         disabled={zoom === 1}
         onClick={onReset}

@@ -45,7 +45,7 @@ export function ProjectUpdatesManager({ projectId }: { projectId: string }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-[-0.02em] text-home-ink">Atualizações</h2>
+          <h2 className="text-lg font-semibold tracking-heading text-home-ink">Atualizações</h2>
           <p className="text-sm text-home-muted">
             Registre o que mudou no projeto. Aparece como linha do tempo na página pública.
           </p>
@@ -101,7 +101,7 @@ export function ProjectUpdatesManager({ projectId }: { projectId: string }) {
                 className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="font-mono text-[11px] uppercase tracking-wider text-home-muted">
+                  <p className="font-mono text-2xs uppercase tracking-wider text-home-muted">
                     {formatDate(update.publishedAt)}
                     {update.version && <span className="ml-2 normal-case text-brand">{update.version}</span>}
                   </p>

@@ -1,5 +1,5 @@
 import type { ProjectPlatform } from "@blog/shared";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import type { ReactNode } from "react";
 
 interface DeviceFrameProps {
@@ -14,7 +14,7 @@ function BrowserChrome({ compact }: { compact?: boolean }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 border-b border-border-subtle bg-surface-raised",
+        "flex items-center gap-2 border-b border-home-line bg-home-inset",
         compact ? "px-2 py-1" : "px-3 py-2 sm:px-4",
       )}
     >
@@ -36,7 +36,7 @@ function WebFrame({
     <div className={cn("mx-auto w-full", className)}>
       <div
         className={cn(
-          "overflow-hidden rounded-lg border border-border bg-home-device shadow-lg",
+          "overflow-hidden rounded-lg border border-home-raised bg-home-device shadow-lg",
           compact ? "rounded-md" : "rounded-lg sm:rounded-xl",
         )}
       >
@@ -45,8 +45,8 @@ function WebFrame({
       </div>
       {!compact && (
         <div className="mt-2 flex flex-col items-center" aria-hidden>
-          <div className="h-2 w-14 rounded-b-sm border border-t-0 border-border-subtle bg-surface-raised sm:w-16" />
-          <div className="h-1 w-20 rounded-b bg-border-subtle sm:w-24" />
+          <div className="h-2 w-14 rounded-b-sm border border-t-0 border-home-line bg-home-inset sm:w-16" />
+          <div className="h-1 w-20 rounded-b bg-home-line sm:w-24" />
         </div>
       )}
     </div>
@@ -68,7 +68,7 @@ function MobileFrame({
     >
       <div
         className={cn(
-          "relative border-2 border-border bg-home-device shadow-lg",
+          "relative border-2 border-home-raised bg-home-device shadow-lg",
           compact ? "rounded-[1rem] p-1" : "rounded-[2rem] p-2 sm:rounded-[2.25rem] sm:p-2.5",
         )}
       >
@@ -89,7 +89,7 @@ function MobileFrame({
         </div>
         {!compact && (
           <div
-            className="mx-auto mt-2 h-1 w-20 rounded-full bg-border sm:mt-2.5 sm:w-24"
+            className="mx-auto mt-2 h-1 w-20 rounded-full bg-home-raised sm:mt-2.5 sm:w-24"
             aria-hidden
           />
         )}

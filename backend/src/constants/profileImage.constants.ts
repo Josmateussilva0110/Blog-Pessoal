@@ -1,9 +1,6 @@
-export const PROFILE_IMAGE_MAX_BYTES = 2 * 1024 * 1024
-
-export const PROFILE_IMAGE_MIME_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-] as const
-
-export type ProfileImageMimeType = (typeof PROFILE_IMAGE_MIME_TYPES)[number]
+// Limite e formatos vêm do shared: o frontend mostra e filtra com os mesmos valores
+export {
+  PROFILE_IMAGE_MAX_BYTES,
+  PROFILE_IMAGE_MIME_TYPES,
+  type ProfileImageMimeType,
+} from "@blog/shared"

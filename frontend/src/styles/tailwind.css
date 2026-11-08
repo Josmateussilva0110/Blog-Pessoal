@@ -4,28 +4,6 @@
   --font-sans: "Geist", system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
 
-  /* Tokens base apontam para a paleta neutra do novo visual (sem o tom ciano antigo),
-     assim admin, login e componentes compartilhados acompanham sem reescrever cada tela */
-  --color-surface: #09090b;
-  --color-surface-raised: #1e1e23;
-  --color-surface-overlay: #2e2e35;
-  /* Fundo por trás de imagens e capas */
-  --color-surface-inset: #1e1e23;
-  /* Preenchimento neutro discreto (chips, skeletons) */
-  --color-surface-muted: rgb(255 255 255 / 0.05);
-  --color-border: #2e2e35;
-  --color-border-subtle: #222227;
-  /* Divisórias neutras */
-  --color-hairline: rgb(255 255 255 / 0.08);
-  --color-hairline-subtle: rgb(255 255 255 / 0.06);
-  --color-hairline-strong: rgb(255 255 255 / 0.1);
-  --color-hairline-hover: rgb(255 255 255 / 0.2);
-
-  /* Acento único: o mesmo azul de --color-brand */
-  --color-accent: #4c8dff;
-  --color-accent-muted: #3b7bf0;
-  --color-accent-soft: rgb(76 141 255 / 0.14);
-
   --color-terminal: #4ade80;
   --color-terminal-muted: rgb(74 222 128 / 0.7);
   /* Estados: base (fundos/bordas com opacidade) e -text (legível sobre o fundo escuro) */
@@ -35,14 +13,11 @@
   --color-warning-text: #fcd34d;
   --color-danger: #ef4444;
   --color-danger-text: #fca5a5;
+  /* Fundo de botão destrutivo com texto branco: 4.8:1 (o --color-danger dá só 3.8:1) */
+  --color-danger-solid: #dc2626;
+  --color-danger-solid-hover: #b91c1c;
 
-  /* Contraste mínimo 4.5:1 sobre fundo, card e área interna (subtle: 4.5 a 5.4) */
-  --color-text: #f2f2f4;
-  --color-text-muted: #9a9da8;
-  --color-text-subtle: #82858f;
-  --color-text-inverse: #0b0b0d;
-
-  /* Novo visual da home: superfícies neutras (sem o tom ciano) e um único acento azul.
+  /* Paleta única do site e do admin: superfícies neutras e um único acento azul.
      Contraste: muted sobre card 6.9:1, texto escuro sobre brand 6.1:1 */
   --color-home-bg: #09090b;
   --color-home-card: #141417;
@@ -53,7 +28,33 @@
   --color-home-body: #c4c6ce;
   --color-home-muted: #9a9da8;
   --color-home-device: #0b0b0d;
+  /* Texto terciário (legendas em skeletons): 4.5 a 5.4:1 sobre fundo, card e área interna */
+  --color-home-subtle: #82858f;
+  /* Branco puro: hover do botão claro e do logo, texto sobre o botão destrutivo */
+  --color-home-ink-strong: #ffffff;
+  /* Acento único (links, foco, destaques) */
   --color-brand: #4c8dff;
+
+  /* Escurecimento de modais e controles sobre mídia; on-scrim é o texto/ícone por cima */
+  --color-scrim: #000000;
+  --color-on-scrim: #ffffff;
+
+  /* Escala tipográfica abaixo do text-xs e o 13px das legendas */
+  --text-3xs: 0.625rem;
+  --text-2xs: 0.6875rem;
+  --text-caption: 0.8125rem;
+  /* Botões de chamada principal (CTA) */
+  --text-cta: 0.9375rem;
+
+  /* Espaçamento de letras: logo, títulos de card e rótulos em caixa alta */
+  --tracking-logo: -0.01em;
+  --tracking-heading: -0.02em;
+  --tracking-eyebrow: 0.08em;
+
+  /* Sombras: botão ativo, miniatura de celular e palco do projeto */
+  --shadow-control: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-media: 0 30px 70px rgb(0 0 0 / 0.55);
+  --shadow-stage: 0 40px 90px rgb(0 0 0 / 0.55);
 }
 
 @layer base {
@@ -70,7 +71,7 @@
   }
 
   body {
-    @apply bg-surface font-sans text-text antialiased;
+    @apply bg-home-bg font-sans text-home-ink antialiased;
     min-height: 100dvh;
   }
 

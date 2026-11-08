@@ -3,7 +3,7 @@ import { Maximize2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Image } from "@/components/ui/Image";
 import { ImageLightbox } from "@/components/ui/ImageLightbox";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { getThumbnailUrl } from "@/lib/imageUrl";
 
 interface ProjectImageGalleryProps {
@@ -79,7 +79,7 @@ export function ProjectImageGallery({
         </button>
 
         {images.length > 1 && (
-          <span className="pointer-events-none absolute left-3 top-3 rounded-full border border-home-line bg-home-card/85 px-2.5 py-1 font-mono text-[11px] text-home-muted backdrop-blur-sm">
+          <span className="pointer-events-none absolute left-3 top-3 rounded-full border border-home-line bg-home-card/85 px-2.5 py-1 font-mono text-2xs text-home-muted backdrop-blur-sm">
             {padIndex(activeIndex)} / {padIndex(images.length - 1)}
           </span>
         )}
@@ -178,9 +178,8 @@ function PhoneGallery({
   }
 
   function scrollToPhone(index: number) {
-    scrollerRef.current
-      ?.querySelectorAll<HTMLElement>("[data-phone]")
-      [index]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    const phones = scrollerRef.current?.querySelectorAll<HTMLElement>("[data-phone]");
+    phones?.[index]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }
 
   return (
@@ -200,7 +199,7 @@ function PhoneGallery({
               <button
                 type="button"
                 onClick={() => onOpen(index)}
-                className="block w-[62vw] max-w-[240px] cursor-zoom-in overflow-hidden rounded-[1.75rem] border border-white/15 bg-home-device p-1.5 shadow-[0_30px_70px_rgb(0_0_0/0.55)] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand sm:w-[210px] lg:w-[230px]"
+                className="block w-[62vw] max-w-[240px] cursor-zoom-in overflow-hidden rounded-[1.75rem] border border-on-scrim/15 bg-home-device p-1.5 shadow-media transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand sm:w-[210px] lg:w-[230px]"
                 aria-label={`Ampliar imagem ${index + 1} de ${projectTitle}`}
               >
                 {/* Aparelho tem no máximo 240px: a miniatura basta; o original fica para o lightbox */}

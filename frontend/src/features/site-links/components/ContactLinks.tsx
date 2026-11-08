@@ -1,10 +1,10 @@
 import { ArrowUpRight } from "lucide-react";
 import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
-import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
+import { usePublicSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 
 /** Faixa de contato no fim da home, com os links sociais cadastrados no admin */
 export function ContactLinks() {
-  const { data: siteLinks } = useSiteLinks();
+  const { data: siteLinks } = usePublicSiteLinks();
   const socialLinks = siteLinks?.social ?? DEFAULT_SITE_LINKS.social;
 
   if (socialLinks.length === 0) return null;

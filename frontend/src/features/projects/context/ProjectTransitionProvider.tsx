@@ -24,7 +24,7 @@ import { ROUTES } from "@/config/routes";
 type SlidePhase = "idle" | "exit" | "enter";
 
 type ProjectTransitionContextValue = {
-  openProject: (project: Project, element: HTMLElement) => void;
+  openProject: (project: Project) => void;
   closeProject: (project: Project, onNavigate: () => void) => void;
   slideDirection: SlideDirection | null;
   slidePhase: SlidePhase;
@@ -81,11 +81,9 @@ export function ProjectTransitionProvider({ children }: { children: ReactNode })
   }, []);
 
   const openProject = useCallback(
-    (_project: Project, _element: HTMLElement) => {
-      void _element;
-
+    (project: Project) => {
       if (prefersReducedMotion()) {
-        navigate(ROUTES.project(_project.slug));
+        navigate(ROUTES.project(project.slug));
         scrollToPageTop("instant");
         return;
       }
@@ -96,7 +94,7 @@ export function ProjectTransitionProvider({ children }: { children: ReactNode })
       setSlidePhase("enter");
 
       void runViewTransition(() => {
-        navigate(ROUTES.project(_project.slug));
+        navigate(ROUTES.project(project.slug));
         scrollToPageTop("instant");
       }, "push").finally(finishTransition);
     },

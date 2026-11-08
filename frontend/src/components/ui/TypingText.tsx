@@ -1,6 +1,6 @@
 import { useInView, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 interface TypewriterOptions {
   speed: number;

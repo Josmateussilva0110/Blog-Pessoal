@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { getProjectCover } from "@/features/projects/lib/projectCover";
 import { useProjectCardLink } from "@/features/projects/hooks/useProjectCardLink";
 import { ProjectStage } from "@/features/projects/components/ProjectStage";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { normalizeProjectPlatform, PLATFORM_KIND_LABELS } from "@/lib/projectPlatform";
 import { ROUTES } from "@/config/routes";
 
@@ -40,7 +40,7 @@ function RowText({ project, detail }: { project: Project; detail: string }) {
   return (
     <span className="flex min-w-0 flex-1 flex-col">
       <span className="font-semibold">{project.title}</span>
-      <span className="truncate text-[13px] text-home-muted">{detail}</span>
+      <span className="truncate text-caption text-home-muted">{detail}</span>
     </span>
   );
 }
@@ -94,7 +94,7 @@ export function ProjectSelectItem({ project, selected, onSelect }: ProjectSelect
 
 /** Card do carrossel no celular: sem painel de detalhe, abre o projeto direto */
 export function ProjectCardItem({ project }: { project: Project }) {
-  const { cardRef, handleClick } = useProjectCardLink(project);
+  const { handleClick } = useProjectCardLink(project);
   const platform = normalizeProjectPlatform(project.platform);
   const year = new Date(project.createdAt).getFullYear();
 
@@ -104,18 +104,16 @@ export function ProjectCardItem({ project }: { project: Project }) {
       onClick={handleClick}
       className="group flex h-full flex-col gap-3 rounded-[1.25rem] bg-home-inset p-2 pb-4 text-home-ink transition-colors hover:bg-home-raised focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
-      <span ref={cardRef} className="contents">
-        <ProjectStage project={project} compact />
-        <span className="flex flex-col gap-1 px-2">
-          <span className="flex items-center justify-between gap-2">
-            <span className="truncate text-lg font-semibold tracking-[-0.02em]">{project.title}</span>
-            <ArrowUpRight className="size-4 shrink-0 text-home-muted" aria-hidden />
-          </span>
-          <span className="font-mono text-xs text-home-muted">
-            {PLATFORM_KIND_LABELS[platform]} · {year}
-          </span>
-          <span className="mt-1 line-clamp-2 text-sm leading-relaxed text-home-body">{project.description}</span>
+      <ProjectStage project={project} compact />
+      <span className="flex flex-col gap-1 px-2">
+        <span className="flex items-center justify-between gap-2">
+          <span className="truncate text-lg font-semibold tracking-heading">{project.title}</span>
+          <ArrowUpRight className="size-4 shrink-0 text-home-muted" aria-hidden />
         </span>
+        <span className="font-mono text-xs text-home-muted">
+          {PLATFORM_KIND_LABELS[platform]} · {year}
+        </span>
+        <span className="mt-1 line-clamp-2 text-sm leading-relaxed text-home-body">{project.description}</span>
       </span>
     </Link>
   );

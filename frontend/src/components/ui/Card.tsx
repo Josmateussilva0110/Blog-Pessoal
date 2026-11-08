@@ -1,4 +1,4 @@
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import type { HTMLAttributes } from "react";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {

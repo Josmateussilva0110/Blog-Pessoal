@@ -14,19 +14,24 @@ import {
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Image } from "@/components/ui/Image";
+import { DESKTOP_MEDIA_QUERY, SITE } from "@/config/constants";
+import { ROUTES } from "@/config/routes";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { resolveProfileImageUrl } from "@/lib/profileImageUrl";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 const SIDEBAR_STORAGE_KEY = "admin-sidebar-collapsed";
 const SIDEBAR_WIDTH_EXPANDED = "15.5rem";
 const SIDEBAR_WIDTH_COLLAPSED = "4.75rem";
 
 const adminNav = [
-  { to: "/admin", label: "Painel", end: true, icon: LayoutDashboard },
-  { to: "/admin/projects", label: "Projetos", end: false, icon: FolderKanban },
-  { to: "/admin/links", label: "Links", end: false, icon: Link2 },
-  { to: "/admin/settings", label: "Configurações", end: false, icon: Settings },
+  { to: ROUTES.admin, label: "Painel", end: true, icon: LayoutDashboard },
+  { to: ROUTES.adminProjects, label: "Projetos", end: false, icon: FolderKanban },
+  { to: ROUTES.adminLinks, label: "Links", end: false, icon: Link2 },
+  { to: ROUTES.adminSettings, label: "Configurações", end: false, icon: Settings },
 ];
 
 /** Linha do menu lateral: ícone + rótulo; recolhida mostra só o ícone */
@@ -52,33 +57,39 @@ export function AdminLayout() {
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed);
+  const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
+  // Abaixo do lg a barra lateral vira gaveta: aberta funciona como modal, fechada sai do Tab
+  const drawerOpen = mobileNavOpen && !isDesktop;
+  const drawerHidden = !mobileNavOpen && !isDesktop;
+  const sidebarRef = useFocusTrap<HTMLElement>(drawerOpen);
+  useBodyScrollLock(drawerOpen);
 
   useEffect(() => {
     setMobileNavOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!mobileNavOpen) return;
+    if (!drawerOpen) return;
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setMobileNavOpen(false);
+    }
 
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [mobileNavOpen]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [drawerOpen]);
 
   useEffect(() => {
     try {
       localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarCollapsed));
     } catch {
-      // ignore storage errors
+      // Armazenamento bloqueado (modo privado): a preferência só não persiste
     }
   }, [sidebarCollapsed]);
 
   async function handleLogout() {
     await logout();
-    navigate("/admin/login", { replace: true });
+    navigate(ROUTES.adminLogin, { replace: true });
   }
 
   function toggleSidebar() {
@@ -90,13 +101,17 @@ export function AdminLayout() {
       {mobileNavOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-[2px] lg:hidden"
+          className="fixed inset-0 z-40 bg-scrim/70 backdrop-blur-[2px] lg:hidden"
           aria-label="Fechar menu"
           onClick={() => setMobileNavOpen(false)}
         />
       )}
 
       <aside
+        ref={sidebarRef}
+        tabIndex={-1}
+        inert={drawerHidden}
+        aria-label="Menu do painel"
         style={
           {
             "--admin-sidebar-width": sidebarCollapsed
@@ -105,7 +120,7 @@ export function AdminLayout() {
           } as CSSProperties
         }
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[var(--admin-sidebar-width)] flex-col overflow-hidden border-r border-home-line bg-home-card",
+          "fixed inset-y-0 left-0 z-50 flex w-[var(--admin-sidebar-width)] flex-col overflow-hidden border-r border-home-line bg-home-card outline-none",
           // Desktop: fixa na altura da tela, sem esticar junto com o conteúdo da página
           "transition-[width,transform] duration-200 ease-out lg:sticky lg:top-0 lg:h-dvh lg:shrink-0 lg:translate-x-0",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
@@ -119,7 +134,7 @@ export function AdminLayout() {
         >
           {!sidebarCollapsed && (
             <div className="min-w-0">
-              <p className="truncate font-semibold tracking-[-0.01em] text-home-ink">mateus.dev</p>
+              <p className="truncate font-semibold tracking-logo text-home-ink">{SITE.name}</p>
               <p className="text-xs text-home-muted">Painel admin</p>
             </div>
           )}
@@ -180,7 +195,7 @@ export function AdminLayout() {
 
         <div className={cn("space-y-2 border-t border-home-line", sidebarCollapsed ? "p-2" : "p-3")}>
           <a
-            href="/"
+            href={ROUTES.home}
             target="_blank"
             rel="noopener noreferrer"
             title={sidebarCollapsed ? "Ver site" : undefined}
@@ -242,7 +257,7 @@ export function AdminLayout() {
             <Menu className="size-5" aria-hidden />
           </button>
           <p className="truncate text-sm font-semibold text-home-ink">
-            mateus.dev <span className="font-normal text-home-muted">· Admin</span>
+            {SITE.name} <span className="font-normal text-home-muted">· Admin</span>
           </p>
         </header>
 

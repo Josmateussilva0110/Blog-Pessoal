@@ -7,7 +7,7 @@ import {
   type MotionValue,
 } from "motion/react";
 import { useEffect, useRef, type ReactNode } from "react";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { useSkipEntrance } from "@/lib/motion";
 import { useRestingTransform } from "@/lib/transform3d";
 

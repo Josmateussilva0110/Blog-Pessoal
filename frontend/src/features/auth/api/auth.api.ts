@@ -1,13 +1,13 @@
 import { authService } from "@/service";
 import type {
   AuthUser,
-  ChangePasswordPayload,
-  LoginCredentials,
+  ChangePasswordInput,
+  LoginInput,
 } from "@/service";
 import { mapAuthUser } from "../lib/mapAuthUser";
 import { restoreSession as restoreAuthSession } from "../lib/restoreSession";
 
-export async function login(credentials: LoginCredentials) {
+export async function login(credentials: LoginInput) {
   const result = await authService.login(credentials);
 
   if (!result.success) {
@@ -44,7 +44,7 @@ export async function restoreSession(): Promise<AuthUser | null> {
   return restoreAuthSession();
 }
 
-export async function changePassword(payload: ChangePasswordPayload) {
+export async function changePassword(payload: ChangePasswordInput) {
   const result = await authService.changePassword(payload);
 
   if (!result.success) {

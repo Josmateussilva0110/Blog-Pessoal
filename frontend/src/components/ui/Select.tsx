@@ -1,34 +1,33 @@
-import { cn } from "@/lib/format";
-import { FIELD_CLASS, FIELD_ERROR_CLASS, FIELD_ERROR_TEXT_CLASS, LABEL_CLASS } from "./fieldStyles";
-import type { SelectHTMLAttributes } from "react";
+import type { ComponentProps } from "react";
+import { cn } from "@/lib/cn";
+import { FIELD_CLASS, FIELD_ERROR_CLASS } from "./fieldStyles";
+import { FormField, useFieldIds } from "./FormField";
 
-interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectProps extends ComponentProps<"select"> {
   label?: string;
   error?: string;
 }
 
-export function Select({ label, error, className, id, children, ...props }: SelectProps) {
-  const selectId = id ?? label?.toLowerCase().replace(/\s/g, "-");
+export function Select({
+  label,
+  error,
+  className,
+  id,
+  "aria-describedby": describedBy,
+  children,
+  ...props
+}: SelectProps) {
+  const { fieldId, errorId, controlProps } = useFieldIds(id, error, describedBy);
 
   return (
-    <div className="flex flex-col gap-2">
-      {label && (
-        <label htmlFor={selectId} className={LABEL_CLASS}>
-          {label}
-        </label>
-      )}
+    <FormField label={label} fieldId={fieldId} error={error} errorId={errorId}>
       <select
-        id={selectId}
-        className={cn(
-          FIELD_CLASS,
-          error && FIELD_ERROR_CLASS,
-          className,
-        )}
+        className={cn(FIELD_CLASS, error && FIELD_ERROR_CLASS, className)}
+        {...controlProps}
         {...props}
       >
         {children}
       </select>
-      {error && <span className={FIELD_ERROR_TEXT_CLASS}>{error}</span>}
-    </div>
+    </FormField>
   );
 }

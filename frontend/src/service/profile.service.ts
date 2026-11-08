@@ -1,33 +1,9 @@
-import { getApiBaseUrl } from "./apiBaseUrl";
-import type { ApiResponse, UserProfile } from "./types";
+import type { ProfileImageMeta } from "@/lib/profileImageUrl";
+import { parseJsonResponse, request } from "./client";
 import { fetchMultipartWithAuth } from "./fetchMultipart";
+import type { ApiResponse, UserProfile } from "./types";
 
-async function parseJsonResponse<T>(response: Response): Promise<ApiResponse<T>> {
-  const payload = (await response.json().catch(() => null)) as
-    | ApiResponse<T>
-    | { message?: string; code?: string }
-    | null;
-
-  if (!response.ok) {
-    const errorBody = payload && "message" in payload ? payload : undefined;
-
-    return {
-      success: false,
-      message: errorBody?.message ?? `Erro ${response.status}`,
-      code: errorBody?.code,
-    };
-  }
-
-  if (payload && "success" in payload) {
-    return payload as ApiResponse<T>;
-  }
-
-  return { success: true, data: payload as T };
-}
-
-export async function uploadProfileImage(
-  file: File,
-): Promise<ApiResponse<UserProfile>> {
+export async function uploadProfileImage(file: File): Promise<ApiResponse<UserProfile>> {
   const response = await fetchMultipartWithAuth({
     method: "PUT",
     endpoint: "/profile/image",
@@ -41,14 +17,11 @@ export async function uploadProfileImage(
   return parseJsonResponse<UserProfile>(response);
 }
 
-export async function deleteProfileImage(): Promise<ApiResponse<UserProfile>> {
-  const response = await fetch(`${getApiBaseUrl()}/profile/image`, {
-    method: "DELETE",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+export function deleteProfileImage() {
+  return request<UserProfile>("/profile/image", { method: "DELETE" });
+}
 
-  return parseJsonResponse<UserProfile>(response);
+/** Rota pública: sem renovar sessão em 401 */
+export function getPublicProfileImageMeta() {
+  return request<ProfileImageMeta>("/public/profile-image/meta", { skipAuthRefresh: true });
 }

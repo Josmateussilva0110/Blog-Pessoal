@@ -1,6 +1,6 @@
 import { motion, type Variants } from "motion/react";
 import { Fragment } from "react";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { EASE_OUT, useInViewReveal } from "@/lib/motion";
 
 type RevealTag = "h1" | "h2" | "h3" | "p";
@@ -64,7 +64,7 @@ export function RevealText({
       <StaticTag className={className}>
         {words.map((value, index) => (
           <Fragment key={`${value}-${index}`}>
-            {isAccent(value) ? <span className="text-accent">{value}</span> : value}
+            {isAccent(value) ? <span className="text-brand">{value}</span> : value}
             {index < words.length - 1 && " "}
           </Fragment>
         ))}
@@ -91,7 +91,7 @@ export function RevealText({
             variants={word}
             className={cn(
               "inline-block",
-              isAccent(value) && "text-accent",
+              isAccent(value) && "text-brand",
             )}
           >
             {value}

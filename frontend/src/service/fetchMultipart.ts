@@ -1,3 +1,4 @@
+import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from "@blog/shared/constants";
 import { getApiBaseUrl } from "./apiBaseUrl";
 import { authService } from "./auth.service";
 import { tryRefreshSession } from "@/features/auth/lib/refreshSession";
@@ -44,6 +45,8 @@ export async function fetchMultipartWithAuth({
     fetch(`${getApiBaseUrl()}${endpoint}`, {
       method,
       credentials: "include",
+      // Sem ele a API recusa (CSRF); também força o preflight, que um form multipart não teria
+      headers: { [CSRF_HEADER_NAME]: CSRF_HEADER_VALUE },
       body: buildFormData(),
     });
 

@@ -11,11 +11,6 @@ export const PLATFORM_KIND_LABELS: Record<ProjectPlatform, string> = {
   web: "Sistema web",
 };
 
-export const PLATFORM_TERMINAL_LABELS: Record<ProjectPlatform, string> = {
-  mobile: "--mobile",
-  web: "--web",
-};
-
 export function normalizeProjectPlatform(value: unknown): ProjectPlatform {
   return value === "mobile" ? "mobile" : "web";
 }

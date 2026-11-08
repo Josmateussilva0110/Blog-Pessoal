@@ -1,9 +1,4 @@
-import { z } from "zod"
-import { loginPasswordField } from "./passwordSchema"
+import { loginSchema } from "@blog/shared"
 
-export const LoginSchema = z
-  .object({
-    email: z.string().trim().toLowerCase().email("Email inválido."),
-    password: loginPasswordField,
-  })
-  .strict()
+// Mesmo schema do formulário de login; strict recusa campos extras na API
+export const LoginSchema = loginSchema.strict()

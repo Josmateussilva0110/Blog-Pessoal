@@ -1,8 +1,10 @@
 import { useState, type ReactNode } from "react";
 import { Eye, FileCode2, Columns2 } from "lucide-react";
+import { FIELD_ERROR_TEXT_CLASS } from "@/components/ui/fieldStyles";
+import { useFieldIds } from "@/components/ui/FormField";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 type MarkdownViewMode = "edit" | "preview" | "split";
 
@@ -12,6 +14,10 @@ type MarkdownEditorProps = {
   placeholder?: string;
   error?: string;
   className?: string;
+  /** Id do textarea, para um <label htmlFor> externo; sem ele usa um aria-label genérico */
+  id?: string;
+  /** Ids de textos de ajuda ligados ao campo */
+  describedBy?: string;
 };
 
 type ViewButtonProps = {
@@ -44,7 +50,10 @@ export function MarkdownEditor({
   placeholder = "Escreva em markdown…",
   error,
   className,
+  id,
+  describedBy,
 }: MarkdownEditorProps) {
+  const { errorId, controlProps } = useFieldIds(id, error, describedBy);
   const isWide = useMediaQuery("(min-width: 768px)");
   const [viewMode, setViewMode] = useState<MarkdownViewMode>("split");
 
@@ -102,24 +111,25 @@ export function MarkdownEditor({
             editorVisible && previewVisible && "md:grid-cols-2",
           )}
         >
-          {editorVisible && (
-            <div
-              className={cn(
-                "flex min-h-[min(52dvh,28rem)] flex-col border-home-line sm:min-h-[min(60dvh,32rem)] lg:min-h-[36rem]",
-                previewVisible && "md:border-r",
-              )}
-            >
-              <div className="border-b border-home-line px-3 py-1.5 text-xs text-home-muted">Editor</div>
-              <textarea
-                aria-label="Conteúdo em markdown"
-                value={value}
-                onChange={(event) => onChange(event.target.value)}
-                placeholder={placeholder}
-                spellCheck={false}
-                className="markdown-editor-textarea min-h-[min(48dvh,24rem)] w-full flex-1 resize-y bg-home-device px-3 py-3 font-mono text-xs leading-relaxed text-home-ink placeholder:text-home-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand/40 sm:px-4 sm:text-sm lg:min-h-[34rem]"
-              />
-            </div>
-          )}
+          {/* Sempre montado, só escondido: o <label htmlFor> externo continua apontando para ele */}
+          <div
+            hidden={!editorVisible}
+            className={cn(
+              "flex min-h-[min(52dvh,28rem)] flex-col border-home-line sm:min-h-[min(60dvh,32rem)] lg:min-h-[36rem]",
+              previewVisible && "md:border-r",
+            )}
+          >
+            <div className="border-b border-home-line px-3 py-1.5 text-xs text-home-muted">Editor</div>
+            <textarea
+              {...controlProps}
+              aria-label={id ? undefined : "Conteúdo em markdown"}
+              value={value}
+              onChange={(event) => onChange(event.target.value)}
+              placeholder={placeholder}
+              spellCheck={false}
+              className="markdown-editor-textarea min-h-[min(48dvh,24rem)] w-full flex-1 resize-y bg-home-device px-3 py-3 font-mono text-xs leading-relaxed text-home-ink placeholder:text-home-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand/40 sm:px-4 sm:text-sm lg:min-h-[34rem]"
+            />
+          </div>
 
           {previewVisible && (
             <div className="flex min-h-[min(52dvh,28rem)] flex-col bg-home-card sm:min-h-[min(60dvh,32rem)] lg:min-h-[36rem]">
@@ -136,7 +146,11 @@ export function MarkdownEditor({
         </div>
       </div>
 
-      {error && <span className="text-xs text-danger-text">{error}</span>}
+      {error && (
+        <span id={errorId} className={FIELD_ERROR_TEXT_CLASS}>
+          {error}
+        </span>
+      )}
     </div>
   );
 }

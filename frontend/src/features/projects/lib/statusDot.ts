@@ -4,5 +4,5 @@ import type { ProjectStatus } from "@blog/shared";
 export const STATUS_DOT_CLASS: Record<ProjectStatus, string> = {
   planned: "bg-warning",
   wip: "bg-terminal",
-  completed: "bg-accent",
+  completed: "bg-brand",
 };

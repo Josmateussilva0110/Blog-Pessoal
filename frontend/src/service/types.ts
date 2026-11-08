@@ -1,3 +1,5 @@
+import type { UserProfile } from "@blog/shared";
+
 export type ApiSuccess<T> = {
   success: true;
   data: T;
@@ -11,6 +13,10 @@ export type ApiFailure = {
 
 export type ApiResponse<T> = ApiSuccess<T> | ApiFailure;
 
+// Tipos de entrada e do perfil vêm do shared (os mesmos que o backend valida)
+export type { ChangePasswordInput, LoginInput, UserProfile } from "@blog/shared";
+
+/** Usuário logado no formato do frontend (camelCase), montado a partir do UserProfile da API */
 export type AuthUser = {
   id: string;
   email: string;
@@ -21,31 +27,10 @@ export type AuthUser = {
   profileImagePublicUrl: string | null;
 };
 
-export type LoginCredentials = {
-  email: string;
-  password: string;
-};
-
 export type LoginResponse = {
   user: UserProfile | null;
 };
 
 export type SessionResponse = {
   user: UserProfile | null;
-};
-
-export type ChangePasswordPayload = {
-  new_password: string;
-  confirm_password: string;
-  current_password?: string;
-};
-
-export type UserProfile = {
-  id: string;
-  username: string;
-  email: string;
-  must_change_password: boolean;
-  has_profile_image: boolean;
-  profile_image_updated_at: string | null;
-  profile_image_public_url: string | null;
 };

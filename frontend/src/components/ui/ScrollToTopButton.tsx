@@ -1,4 +1,4 @@
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { useScrollThreshold } from "@/hooks/useScrollThreshold";
 import { ChevronUp } from "lucide-react";
 

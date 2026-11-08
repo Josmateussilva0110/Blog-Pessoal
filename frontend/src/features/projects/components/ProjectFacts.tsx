@@ -5,12 +5,12 @@ import { PROJECT_UPDATES_SECTION_ID } from "@/features/projects/components/Proje
 import { formatDate } from "@/lib/format";
 import { normalizeProjectPlatform, PLATFORM_LABELS } from "@/lib/projectPlatform";
 import { normalizeProjectStatus } from "@/lib/projectStatus";
-import { getStatusLabel } from "@/lib/utils";
+import { getStatusLabel } from "@/lib/projectStatus";
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="bg-home-card px-5 py-4">
-      <dt className="text-[13px] text-home-muted">{label}</dt>
+      <dt className="text-caption text-home-muted">{label}</dt>
       <dd className="mt-1 font-medium text-home-ink">{children}</dd>
     </div>
   );

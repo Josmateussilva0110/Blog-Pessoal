@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import type { TechUsage } from "@/features/projects/lib/projectStats";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { getSkillIconUrl } from "@/lib/skillicons";
 import { EASE_OUT, inViewRepeat } from "@/lib/motion";
 
@@ -25,7 +25,7 @@ export function TechUsageChart({ data, total }: TechUsageChartProps) {
   return (
     <figure className="home-card m-0 flex min-w-0 flex-col gap-5 p-5 sm:p-7">
       <figcaption>
-        <span className="block text-xl font-semibold tracking-[-0.02em] text-home-ink">
+        <span className="block text-xl font-semibold tracking-heading text-home-ink">
           Tecnologias mais usadas
         </span>
         <span className="text-sm text-home-muted">
@@ -79,7 +79,7 @@ export function TechUsageChart({ data, total }: TechUsageChartProps) {
                     transition={{ duration: 0.8, ease: EASE_OUT, delay: index * 0.04 }}
                   />
                 </span>
-                <span className="w-7 shrink-0 text-right font-mono text-[13px]">{count}</span>
+                <span className="w-7 shrink-0 text-right font-mono text-caption">{count}</span>
               </button>
             </li>
           );

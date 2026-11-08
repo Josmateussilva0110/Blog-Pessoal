@@ -1,11 +1,9 @@
 import { Button } from "@/components/ui/Button";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useToast } from "@/components/ui/toast";
+import { ROUTES } from "@/config/routes";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import {
-  forcedChangePasswordSchema,
-  type ForcedChangePasswordFormValues,
-} from "@/features/auth/schemas/changePassword.schema";
+import { forcedChangePasswordSchema, type ForcedChangePasswordInput } from "@blog/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +17,7 @@ export function ChangePasswordForm() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<ForcedChangePasswordFormValues>({
+  } = useForm<ForcedChangePasswordInput>({
     resolver: zodResolver(forcedChangePasswordSchema),
     defaultValues: {
       new_password: "",
@@ -27,11 +25,11 @@ export function ChangePasswordForm() {
     },
   });
 
-  async function onSubmit(values: ForcedChangePasswordFormValues) {
+  async function onSubmit(values: ForcedChangePasswordInput) {
     try {
       await changePassword(values);
       toast.success("Senha atualizada com sucesso.");
-      navigate("/admin", { replace: true });
+      navigate(ROUTES.admin, { replace: true });
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -59,7 +57,7 @@ export function ChangePasswordForm() {
         {...register("confirm_password")}
       />
 
-      <p className="text-[11px] text-text-muted leading-relaxed">
+      <p className="text-2xs text-home-muted leading-relaxed">
         Mínimo 8 caracteres, com maiúscula, número e caractere especial.
       </p>
 
