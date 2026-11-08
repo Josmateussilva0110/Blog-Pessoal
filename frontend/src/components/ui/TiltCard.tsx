@@ -17,7 +17,7 @@ interface TiltCardProps {
   max?: number;
 }
 
-const SPRING = { stiffness: 260, damping: 22, mass: 0.5 };
+const SPRING = { stiffness: 170, damping: 24, mass: 0.6 };
 
 /**
  * Inclina o conteúdo em 3D seguindo o ponteiro, com uma sombra no "chão"
@@ -35,8 +35,8 @@ export function TiltCard({ children, className, max = 12 }: TiltCardProps) {
 
   const rotateX = useSpring(useTransform(pointerY, [0, 1], [max, -max]), SPRING);
   const rotateY = useSpring(useTransform(pointerX, [0, 1], [-max, max]), SPRING);
-  const scale = useTransform(hover, [0, 1], [1, 1.04]);
-  const lift = useTransform(hover, [0, 1], [0, -8]);
+  const scale = useTransform(hover, [0, 1], [1, 1.015]);
+  const lift = useTransform(hover, [0, 1], [0, -4]);
 
   const transform = useRestingTransform({ perspective: 900, y: lift, scale, rotateX, rotateY });
   const shadowX = useTransform(rotateY, (v) => v * -1.6);

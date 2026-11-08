@@ -20,7 +20,8 @@ type ScrollRevealProps = {
   exit?: boolean;
 };
 
-const SMOOTH = { stiffness: 140, damping: 26, mass: 0.35 };
+// Mola mais lenta e sem quique: os cards deslizam em vez de "pular" para a posição
+const SMOOTH = { stiffness: 90, damping: 26, mass: 0.6 };
 
 function mix(from: number, to: number, progress: MotionValue<number>) {
   return from + (to - from) * progress.get();
@@ -55,14 +56,14 @@ export function ScrollReveal({
   const entered = (from: number, to: number) => (enterEnabled ? mix(from, to, enter) : to);
 
   const rotateX = useTransform(
-    () => entered(18, 0) + mix(0, -14, leave) * leaveAmount,
+    () => entered(7, 0) + mix(0, -5, leave) * leaveAmount,
   );
   const scale = useTransform(
-    () => entered(0.88, 1) - mix(0, 0.08, leave) * leaveAmount,
+    () => entered(0.96, 1) - mix(0, 0.03, leave) * leaveAmount,
   );
-  const y = useTransform(() => entered(90, 0));
+  const y = useTransform(() => entered(40, 0));
   const opacity = useTransform(
-    () => entered(0.15, 1) - mix(0, 0.7, leave) * leaveAmount,
+    () => entered(0.3, 1) - mix(0, 0.45, leave) * leaveAmount,
   );
 
   const transform = useRestingTransform({ perspective: 1400, y, scale, rotateX });
@@ -90,7 +91,7 @@ export function ScrollReveal({
               opacity,
               transformOrigin: "50% 50%",
               // Sem will-change: com ele o Chrome congela a resolução do desenho
-              // na escala de entrada (0.88) e o conteúdo fica sem foco em escala 1
+              // na escala de entrada (0.96) e o conteúdo fica sem foco em escala 1
             }
           : undefined
       }

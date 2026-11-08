@@ -4,6 +4,8 @@ import type { Project } from "@blog/shared";
 export const SECTION_IDS = {
   projects: "projetos",
   about: "sobre",
+  stack: "stack",
+  skills: "skills",
 } as const;
 
 const PROJECT_PATH_PREFIX = "/projects/";

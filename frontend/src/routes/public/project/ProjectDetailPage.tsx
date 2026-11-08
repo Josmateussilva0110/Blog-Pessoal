@@ -11,7 +11,7 @@ import { ProjectToc } from "@/features/projects/components/ProjectToc";
 import { ProjectUpdates } from "@/features/projects/components/ProjectUpdates";
 import { StatusDot } from "@/features/projects/components/StatusDot";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
-import { SITE } from "@/config/constants";
+import { DESKTOP_MEDIA_QUERY, SITE } from "@/config/constants";
 import { ROUTES, SECTION_IDS } from "@/config/routes";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -26,7 +26,6 @@ const actionClass =
   "inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors";
 
 /** Breakpoint lg: a partir dele o índice fica na coluna lateral */
-const DESKTOP_QUERY = "(min-width: 1024px)";
 
 export function ProjectDetailPage() {
   const { slug = "" } = useParams<{ slug: string }>();
@@ -34,7 +33,7 @@ export function ProjectDetailPage() {
   const { data: project, isLoading } = useProject(slug);
   const { isAuthenticated } = useAuth();
   const { closeProject } = useProjectTransition();
-  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
 
   const headings = useMemo(
     () => extractHeadings(project?.contentMarkdown ?? ""),

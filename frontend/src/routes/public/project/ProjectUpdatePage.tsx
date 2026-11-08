@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
-import { SITE } from "@/config/constants";
+import { DESKTOP_MEDIA_QUERY, SITE } from "@/config/constants";
 import { ROUTES } from "@/config/routes";
 import { ProjectToc } from "@/features/projects/components/ProjectToc";
 import { ProjectUpdateMeta } from "@/features/projects/components/ProjectUpdates";
@@ -15,7 +15,6 @@ import { extractHeadings } from "@/lib/markdownHeadings";
 import { scrollToPageTop } from "@/lib/viewTransition";
 
 /** Breakpoint lg: a partir dele o índice fica na coluna lateral */
-const DESKTOP_QUERY = "(min-width: 1024px)";
 
 type UpdateNavLinkProps = {
   slug: string;
@@ -56,7 +55,7 @@ function UpdateNavLink({ slug, update, direction }: UpdateNavLinkProps) {
 export function ProjectUpdatePage() {
   const { slug = "", updateId = "" } = useParams<{ slug: string; updateId: string }>();
   const { data: project, isLoading, isPlaceholderData } = useProject(slug);
-  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
 
   // Lista vem da mais recente para a mais antiga
   const updates = project?.updates ?? [];

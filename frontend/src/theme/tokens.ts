@@ -35,6 +35,17 @@ export const colors = {
   textMuted: "#94a3b8",
   textSubtle: "#64748b",
   textInverse: "#0f172a",
+
+  homeBg: "#09090b",
+  homeCard: "#141417",
+  homeLine: "#222227",
+  homeInset: "#1e1e23",
+  homeRaised: "#2e2e35",
+  homeInk: "#f2f2f4",
+  homeBody: "#c4c6ce",
+  homeMuted: "#9a9da8",
+  homeDevice: "#0b0b0d",
+  brand: "#4c8dff",
 } as const;
 
 export type ThemeColors = typeof colors;
