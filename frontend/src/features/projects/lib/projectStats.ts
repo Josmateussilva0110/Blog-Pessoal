@@ -1,5 +1,6 @@
-import type { Project } from "@blog/shared";
+import type { Project, ProjectPlatform } from "@blog/shared";
 import { getTechMeta } from "@/lib/skillicons";
+import { normalizeProjectPlatform, PLATFORM_LABELS } from "@/lib/projectPlatform";
 
 export type TechUsage = {
   label: string;
@@ -61,4 +62,26 @@ export function countProjectsByMonth(projects: Project[]): MonthUsage[] {
   return [...byMonth.values()]
     .sort((a, b) => a.key.localeCompare(b.key))
     .slice(-MAX_MONTHS);
+}
+
+export type PlatformUsage = {
+  platform: ProjectPlatform;
+  label: string;
+  count: number;
+  percent: number;
+};
+
+/** Projetos por plataforma, com percentual arredondado; plataformas sem projeto ficam de fora */
+export function countByPlatform(projects: Project[]): PlatformUsage[] {
+  const counts: Record<ProjectPlatform, number> = { mobile: 0, web: 0 };
+  for (const project of projects) counts[normalizeProjectPlatform(project.platform)] += 1;
+
+  return (["mobile", "web"] as const)
+    .map((platform) => ({
+      platform,
+      label: PLATFORM_LABELS[platform],
+      count: counts[platform],
+      percent: projects.length > 0 ? Math.round((counts[platform] / projects.length) * 100) : 0,
+    }))
+    .filter((item) => item.count > 0);
 }
