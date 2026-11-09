@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { ExpandableChart } from "@/components/ui/ExpandableChart";
+import { useNearViewport } from "@/hooks/useNearViewport";
 import { cn } from "@/lib/cn";
 
 type MermaidDiagramProps = {
@@ -24,7 +25,8 @@ async function renderMermaidChart(id: string, chart: string) {
       startOnLoad: false,
       theme: "dark",
       securityLevel: "strict",
-      fontFamily: "Geist, system-ui, sans-serif",
+      // Mesma fonte do tema (--font-sans), sem repetir o nome aqui
+      fontFamily: getComputedStyle(document.documentElement).getPropertyValue("--font-sans").trim(),
     });
     mermaidInitialized = true;
   }
@@ -32,11 +34,12 @@ async function renderMermaidChart(id: string, chart: string) {
   return mermaid.render(id, chart);
 }
 
-function useMermaidSvg(chart: string, renderId: string) {
+function useMermaidSvg(chart: string, renderId: string, enabled: boolean) {
   const [svg, setSvg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
 
     async function render() {
@@ -65,7 +68,7 @@ function useMermaidSvg(chart: string, renderId: string) {
     return () => {
       cancelled = true;
     };
-  }, [chart, renderId]);
+  }, [chart, renderId, enabled]);
 
   return { svg, error, loading: !svg && !error };
 }
@@ -84,7 +87,9 @@ function MermaidSvgDisplay({ svg, className }: { svg: string; className?: string
 
 export function MermaidDiagram({ chart, className }: MermaidDiagramProps) {
   const baseId = useId().replace(/:/g, "");
-  const { svg, error, loading } = useMermaidSvg(chart, `mermaid-${baseId}`);
+  // O mermaid (e o cytoscape) só baixam quando o diagrama chega perto da tela
+  const { ref, isNear } = useNearViewport<HTMLDivElement>();
+  const { svg, error, loading } = useMermaidSvg(chart, `mermaid-${baseId}`, isNear);
 
   if (error) {
     return (
@@ -105,6 +110,7 @@ export function MermaidDiagram({ chart, className }: MermaidDiagramProps) {
   if (loading || !svg) {
     return (
       <div
+        ref={ref}
         className={cn(
           "rounded-lg border border-home-line bg-home-inset p-6 font-mono text-sm text-home-subtle animate-pulse",
           className,

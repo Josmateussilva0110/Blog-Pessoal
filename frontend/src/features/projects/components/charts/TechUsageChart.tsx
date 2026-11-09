@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import type { TechUsage } from "@/features/projects/lib/projectStats";
 import { cn } from "@/lib/cn";
 import { getSkillIconUrl } from "@/lib/skillicons";
@@ -67,7 +67,7 @@ export function TechUsageChart({ data, total }: TechUsageChartProps) {
                   <span className="truncate">{tech.label}</span>
                 </span>
                 <span className="flex h-3.5 flex-1 items-center">
-                  <motion.span
+                  <m.span
                     className={cn(
                       "block h-3 origin-left rounded-r transition-colors",
                       active ? "bg-brand" : "bg-home-ink",

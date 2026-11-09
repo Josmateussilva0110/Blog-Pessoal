@@ -1,4 +1,4 @@
-import { motion, type Variants } from "motion/react";
+import { m, type Variants } from "motion/react";
 import { Fragment } from "react";
 import { cn } from "@/lib/cn";
 import { EASE_OUT, useInViewReveal } from "@/lib/motion";
@@ -34,10 +34,10 @@ const word: Variants = {
 const STATIC_TAGS = { h1: "h1", h2: "h2", h3: "h3", p: "p" } as const;
 
 const MOTION_TAGS = {
-  h1: motion.h1,
-  h2: motion.h2,
-  h3: motion.h3,
-  p: motion.p,
+  h1: m.h1,
+  h2: m.h2,
+  h3: m.h3,
+  p: m.p,
 };
 
 function stripPunctuation(value: string) {
@@ -86,7 +86,7 @@ export function RevealText({
     >
       {words.map((value, index) => (
         <Fragment key={`${value}-${index}`}>
-          <motion.span
+          <m.span
             aria-hidden
             variants={word}
             className={cn(
@@ -95,7 +95,7 @@ export function RevealText({
             )}
           >
             {value}
-          </motion.span>
+          </m.span>
           {index < words.length - 1 && " "}
         </Fragment>
       ))}

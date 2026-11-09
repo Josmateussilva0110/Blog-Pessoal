@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Geist", system-ui, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-sans: "Geist Variable", system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
 
   --color-terminal: #4ade80;
   --color-terminal-muted: rgb(74 222 128 / 0.7);
@@ -164,6 +164,13 @@
 
   .ios-nav-page {
     min-height: 100%;
+  }
+
+  /* Camada própria só durante o slide manual: permanente, a página inteira ocuparia
+     memória de GPU o tempo todo */
+  .ios-page-enter-right,
+  .ios-page-exit-right,
+  .ios-page-enter-left {
     will-change: transform;
     backface-visibility: hidden;
   }

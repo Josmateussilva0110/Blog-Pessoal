@@ -1,5 +1,5 @@
 import {
-  motion,
+  m,
   useMotionValue,
   useReducedMotion,
   useSpring,
@@ -50,6 +50,15 @@ export function TiltCard({ children, className, max = 12 }: TiltCardProps) {
 
   function handleMove(event: PointerEvent<HTMLDivElement>) {
     if (!enabled || !ref.current) return;
+
+    // Painel do ScrollReveal ainda entrando (com transform 3D): inclinar junto aninha 3D,
+    // o que gera artefatos no Chrome. Lê o style inline do motion, sem forçar recálculo
+    const panel = ref.current.closest<HTMLElement>(".scroll-panel");
+    if (panel && panel.style.transform && panel.style.transform !== "none") {
+      reset();
+      return;
+    }
+
     const rect = ref.current.getBoundingClientRect();
     pointerX.set((event.clientX - rect.left) / rect.width);
     pointerY.set((event.clientY - rect.top) / rect.height);
@@ -74,17 +83,17 @@ export function TiltCard({ children, className, max = 12 }: TiltCardProps) {
       onPointerLeave={reset}
       onClickCapture={flatten}
     >
-      <motion.div
+      <m.div
         aria-hidden
         className="tilt-shadow"
         style={{ x: shadowX, scaleX: shadowScale, opacity: hover }}
       />
-      <motion.div
+      <m.div
         className="relative"
         style={{ transform }}
       >
         {children}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

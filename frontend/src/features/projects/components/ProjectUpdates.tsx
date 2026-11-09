@@ -1,6 +1,6 @@
 import type { ProjectUpdate } from "@blog/shared";
 import { ArrowRight } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import { Link } from "react-router-dom";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
 import { ROUTES } from "@/config/routes";
@@ -38,7 +38,7 @@ function ProjectUpdateItem({ update, projectSlug, latest }: ProjectUpdateItemPro
   const href = ROUTES.projectUpdate(projectSlug, update.id);
 
   return (
-    <motion.li
+    <m.li
       id={`update-${update.id}`}
       className="relative scroll-mt-24 pb-10 pl-8 last:pb-0"
       initial={reducedMotion ? false : { opacity: 0, y: 16 }}
@@ -93,7 +93,7 @@ function ProjectUpdateItem({ update, projectSlug, latest }: ProjectUpdateItemPro
           />
         )
       )}
-    </motion.li>
+    </m.li>
   );
 }
 

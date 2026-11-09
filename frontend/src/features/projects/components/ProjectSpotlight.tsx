@@ -12,7 +12,7 @@ import { ROUTES } from "@/config/routes";
 
 /** Detalhe do projeto selecionado no explorador da home */
 export function ProjectSpotlight({ project }: { project: Project }) {
-  const { handleClick } = useProjectCardLink(project);
+  const { handleClick, prefetchProps } = useProjectCardLink(project);
   const platform = normalizeProjectPlatform(project.platform);
   const year = new Date(project.createdAt).getFullYear();
   // "node.js" e "nodejs" viram o mesmo chip
@@ -22,7 +22,7 @@ export function ProjectSpotlight({ project }: { project: Project }) {
   return (
     <article className="flex min-w-0 flex-col gap-5">
       {/* O palco também abre o projeto; fora da ordem de tabulação, o botão "Ver projeto" já cobre */}
-      <Link to={projectUrl} onClick={handleClick} tabIndex={-1} aria-hidden className="block">
+      <Link to={projectUrl} onClick={handleClick} {...prefetchProps} tabIndex={-1} aria-hidden className="block">
         <TiltCard max={4}>
           <ProjectStage project={project} />
         </TiltCard>
@@ -52,6 +52,7 @@ export function ProjectSpotlight({ project }: { project: Project }) {
           <Link
             to={projectUrl}
             onClick={handleClick}
+            {...prefetchProps}
             className={buttonClassName({ size: "cta" })}
           >
             Ver projeto

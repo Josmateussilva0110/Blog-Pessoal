@@ -1,7 +1,8 @@
 import {
-  motion,
+  m,
   useReducedMotion,
   useScroll,
+  useMotionValue,
   useSpring,
   useTransform,
   type MotionValue,
@@ -49,7 +50,10 @@ export function ScrollReveal({
     target: ref,
     offset: ["end 0.5", "end start"],
   });
-  const enter = useSpring(enterRaw, SMOOTH);
+  // Sem entrada (hero), a mola não acompanha o scroll à toa: segue um valor fixo.
+  // `enter` não muda durante a vida do componente, então a fonte da mola também não
+  const enteredValue = useMotionValue(1);
+  const enter = useSpring(enterEnabled ? enterRaw : enteredValue, SMOOTH);
   const leave = useSpring(exitRaw, SMOOTH);
   const leaveAmount = exit ? 1 : 0;
   // Sem entrada, a seção já começa no estado final (sem atrasar o primeiro paint)
@@ -76,12 +80,12 @@ export function ScrollReveal({
   // sem a spring "correr atrás" de um valor antigo
   useEffect(() => {
     if (!animated) return;
-    enter.jump(enterRaw.get());
+    enter.jump(enterEnabled ? enterRaw.get() : 1);
     leave.jump(exitRaw.get());
-  }, [animated, enter, enterRaw, leave, exitRaw]);
+  }, [animated, enterEnabled, enter, enterRaw, leave, exitRaw]);
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       className={cn("scroll-panel", className)}
       style={
@@ -97,6 +101,6 @@ export function ScrollReveal({
       }
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }

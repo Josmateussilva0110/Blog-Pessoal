@@ -1,4 +1,5 @@
 import type { HomeProjects, Project } from "@blog/shared";
+import { API_ENDPOINTS } from "@/config/apiEndpoints";
 import { request } from "./client";
 
 const BASE = "/projects";
@@ -9,7 +10,7 @@ export const projectsService = {
   },
 
   home() {
-    return request<HomeProjects>(`${BASE}/home`);
+    return request<HomeProjects>(API_ENDPOINTS.projectsHome);
   },
 
   /** fresh: revalida no servidor em vez de usar o cache HTTP do navegador */

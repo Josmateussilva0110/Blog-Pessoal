@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import type { ProjectPlatform } from "@blog/shared";
 import type { PlatformUsage } from "@/features/projects/lib/projectStats";
 import { cn } from "@/lib/cn";
@@ -51,7 +51,7 @@ export function PlatformDonutChart({ data, total }: { data: PlatformUsage[]; tot
           role="img"
           aria-label={data.map((item) => `${item.label}: ${item.count} (${item.percent}%)`).join(", ")}
         >
-          <motion.g
+          <m.g
             style={{ transformBox: "view-box", transformOrigin: `${CENTER}px ${CENTER}px` }}
             initial={{ rotate: -70, scale: 0.9, opacity: 0 }}
             whileInView={{ rotate: 0, scale: 1, opacity: 1 }}
@@ -79,7 +79,7 @@ export function PlatformDonutChart({ data, total }: { data: PlatformUsage[]; tot
                 />
               ))}
             </g>
-          </motion.g>
+          </m.g>
         </svg>
 
         {/* Centro: a fatia em foco */}

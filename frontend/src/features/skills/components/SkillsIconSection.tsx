@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import type { Project } from "@blog/shared";
 import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
 import { usePublicSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
@@ -58,7 +58,7 @@ export function SkillsIconSection({ projects }: { projects: Project[] }) {
         <p className="text-sm text-home-muted">Linguagens, frameworks e serviços que uso no dia a dia</p>
       </div>
 
-      <motion.ul
+      <m.ul
         className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-2"
         variants={staggerContainer}
         initial="hidden"
@@ -70,12 +70,12 @@ export function SkillsIconSection({ projects }: { projects: Project[] }) {
           const count = usage.get(getTechMeta(skill.label).label) ?? 0;
 
           return (
-            <motion.li key={`${icon}-${skill.label}`} variants={fadeUp} whileTap={{ scale: 0.95 }}>
+            <m.li key={`${icon}-${skill.label}`} variants={fadeUp} whileTap={{ scale: 0.95 }}>
               <SkillTile name={skill.label} icon={icon} href={skill.href} usage={usageLabel(count)} />
-            </motion.li>
+            </m.li>
           );
         })}
-      </motion.ul>
+      </m.ul>
     </section>
   );
 }

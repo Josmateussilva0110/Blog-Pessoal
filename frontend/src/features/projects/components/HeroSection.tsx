@@ -1,14 +1,17 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { Link } from "react-router-dom";
 import { ArrowDown } from "lucide-react";
 import { buttonClassName } from "@/components/ui/Button";
-import { Image, DEFAULT_IMAGE_FALLBACK } from "@/components/ui/Image";
+import { Image } from "@/components/ui/Image";
 import { HOME_HERO, SITE } from "@/config/constants";
 import { RevealText } from "@/components/ui/RevealText";
 import { usePublicProfileImage } from "@/features/profile/hooks/usePublicProfileImage";
 import { ROUTES, SECTION_IDS } from "@/config/routes";
 
-const MotionLink = motion.create(Link);
+const MotionLink = m.create(Link);
+
+const PROFILE_PHOTO_CLASS =
+  "aspect-[4/3] w-full flex-1 rounded-[1.125rem] bg-home-inset object-[50%_30%] md:aspect-auto md:min-h-[18rem]";
 
 export function HeroSection() {
   const { data: profileImage } = usePublicProfileImage();
@@ -47,22 +50,28 @@ export function HeroSection() {
         id={SECTION_IDS.about}
         className="home-card m-0 flex scroll-mt-24 flex-col p-2 sm:scroll-mt-28"
       >
-        <Image
-          src={profileImage?.url ?? DEFAULT_IMAGE_FALLBACK}
-          fallback={profileImage?.fullUrl ?? DEFAULT_IMAGE_FALLBACK}
-          srcSet={
-            profileImage?.hasImage && profileImage.url !== profileImage.fullUrl
-              ? `${profileImage.url} 320w, ${profileImage.fullUrl} 800w`
-              : undefined
-          }
-          sizes="(min-width: 768px) 30rem, 100vw"
-          fetchPriority="high"
-          alt={SITE.profileImageAlt}
-          fit="cover"
-          rounded="none"
-          loading="eager"
-          className="aspect-[4/3] w-full flex-1 rounded-[1.125rem] bg-home-inset object-[50%_30%] md:aspect-auto md:min-h-[18rem]"
-        />
+        {/* Enquanto os dados da foto chegam, só a área reservada: o SVG provisório seria
+            baixado à toa e viraria candidato a LCP antes de ser trocado */}
+        {profileImage ? (
+          <Image
+            src={profileImage.url}
+            fallback={profileImage.fullUrl}
+            srcSet={
+              profileImage.hasImage && profileImage.url !== profileImage.fullUrl
+                ? `${profileImage.url} 320w, ${profileImage.fullUrl} 800w`
+                : undefined
+            }
+            sizes="(min-width: 768px) 30rem, 100vw"
+            fetchPriority="high"
+            alt={SITE.profileImageAlt}
+            fit="cover"
+            rounded="none"
+            loading="eager"
+            className={PROFILE_PHOTO_CLASS}
+          />
+        ) : (
+          <div className={PROFILE_PHOTO_CLASS} aria-hidden />
+        )}
         <figcaption className="flex items-center justify-between gap-2 px-3 pb-2 pt-3.5">
           <span className="font-semibold text-home-ink">{SITE.author}</span>
           <span className="font-mono text-xs text-home-muted">dev {SITE.role}</span>

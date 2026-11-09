@@ -94,7 +94,7 @@ export function ProjectSelectItem({ project, selected, onSelect }: ProjectSelect
 
 /** Card do carrossel no celular: sem painel de detalhe, abre o projeto direto */
 export function ProjectCardItem({ project }: { project: Project }) {
-  const { handleClick } = useProjectCardLink(project);
+  const { handleClick, prefetchProps } = useProjectCardLink(project);
   const platform = normalizeProjectPlatform(project.platform);
   const year = new Date(project.createdAt).getFullYear();
 
@@ -102,6 +102,7 @@ export function ProjectCardItem({ project }: { project: Project }) {
     <Link
       to={ROUTES.project(project.slug)}
       onClick={handleClick}
+      {...prefetchProps}
       className="group flex h-full flex-col gap-3 rounded-[1.25rem] bg-home-inset p-2 pb-4 text-home-ink transition-colors hover:bg-home-raised focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
       <ProjectStage project={project} compact />

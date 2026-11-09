@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { HomeProjects, Project } from "@blog/shared";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { RevealText } from "@/components/ui/RevealText";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -50,7 +50,7 @@ function ProjectList({ projects, selectedSlug, selectable, onSelect }: ProjectLi
   const reveal = useInViewReveal<HTMLUListElement>();
 
   return (
-    <motion.ul
+    <m.ul
       ref={reveal.ref}
       variants={staggerContainer}
       initial={reveal.initial}
@@ -63,7 +63,7 @@ function ProjectList({ projects, selectedSlug, selectable, onSelect }: ProjectLi
       }
     >
       {projects.map((project) => (
-        <motion.li
+        <m.li
           key={project.id}
           variants={fadeUp}
           className={selectable ? undefined : "w-[78%] max-w-[20rem] shrink-0 snap-start sm:w-[45%]"}
@@ -77,9 +77,9 @@ function ProjectList({ projects, selectedSlug, selectable, onSelect }: ProjectLi
           ) : (
             <ProjectCardItem project={project} />
           )}
-        </motion.li>
+        </m.li>
       ))}
-    </motion.ul>
+    </m.ul>
   );
 }
 
@@ -169,7 +169,7 @@ export function ProjectsSection({
           {isDesktop && selected && (
             <div className="min-w-0 flex-1">
               <AnimatePresence mode="wait" initial={false}>
-                <motion.div
+                <m.div
                   key={selected.slug}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -177,7 +177,7 @@ export function ProjectsSection({
                   transition={{ duration: 0.35, ease: EASE_OUT }}
                 >
                   <ProjectSpotlight project={selected} />
-                </motion.div>
+                </m.div>
               </AnimatePresence>
             </div>
           )}

@@ -7,10 +7,15 @@ import { IosNavPage } from "./IosNavPage";
 import { PAGE_WIDTH_CLASS } from "@/components/layout/pageWidth";
 import { cn } from "@/lib/cn";
 
-export function PublicLayout() {
+type PublicLayoutProps = {
+  /** Pré-carregamento da página de projeto, injetado pelo router */
+  preloadProjectPage?: () => Promise<unknown>;
+};
+
+export function PublicLayout({ preloadProjectPage }: PublicLayoutProps) {
 
   return (
-    <ProjectTransitionProvider>
+    <ProjectTransitionProvider preloadProjectPage={preloadProjectPage}>
       <div className="min-h-dvh flex flex-col relative">
         {/* Fundo liso do novo visual */}
         <div className="fixed inset-0 -z-10 bg-home-bg" aria-hidden />

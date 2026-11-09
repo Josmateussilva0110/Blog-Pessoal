@@ -5,7 +5,6 @@ import { FullPageStatus } from "@/components/ui/FullPageStatus";
 import { ToastScope } from "@/components/ui/toast";
 import { AuthScope } from "@/features/auth/components/AuthScope";
 import { PublicLayout } from "@/components/layout/PublicLayout";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute";
 import { GuestRoute } from "@/features/auth/components/GuestRoute";
 import { RequirePasswordUpdated } from "@/features/auth/components/RequirePasswordUpdated";
@@ -13,12 +12,11 @@ import { RequireForcedPasswordChange } from "@/features/auth/components/RequireF
 import { HomePage } from "@/routes/public/home/HomePage";
 import { RouteErrorPage } from "@/components/layout/RouteErrorPage";
 import { ROUTES } from "@/config/routes";
+import {
+  loadProjectDetailPage,
+  ProjectDetailPageLazy,
+} from "@/routes/public/project/loadProjectDetailPage";
 
-const ProjectDetailPage = lazy(() =>
-  import("@/routes/public/project/ProjectDetailPage").then((module) => ({
-    default: module.ProjectDetailPage,
-  })),
-);
 
 const ProjectUpdatePage = lazy(() =>
   import("@/routes/public/project/ProjectUpdatePage").then((module) => ({
@@ -26,6 +24,10 @@ const ProjectUpdatePage = lazy(() =>
   })),
 );
 
+// Layout do admin (menu, ícones) fora do chunk da home: visitante nunca o usa
+const AdminLayout = lazy(() =>
+  import("@/components/layout/AdminLayout").then((module) => ({ default: module.AdminLayout })),
+);
 const LoginPage = lazy(() => import("@/routes/admin/login/LoginPage"));
 const ChangePasswordPage = lazy(
   () => import("@/routes/admin/change-password/ChangePasswordPage"),
@@ -73,14 +75,14 @@ export const router = createBrowserRouter([
     errorElement: <RouteErrorPage fullPage />,
     children: [
       {
-        element: <PublicLayout />,
+        element: <PublicLayout preloadProjectPage={loadProjectDetailPage} />,
         children: [
           {
             // Rota sem caminho só para o erro aparecer dentro do layout (cabeçalho e rodapé ficam)
             errorElement: <RouteErrorPage />,
             children: [
               { index: true, element: <HomePage /> },
-              { path: "projects/:slug", element: withSuspense(ProjectDetailPage, "public") },
+              { path: "projects/:slug", element: withSuspense(ProjectDetailPageLazy, "public") },
               {
                 path: "projects/:slug/atualizacoes/:updateId",
                 element: withSuspense(ProjectUpdatePage, "public"),
@@ -108,7 +110,7 @@ export const router = createBrowserRouter([
             element: <RequirePasswordUpdated />,
             children: [
               {
-                element: <AdminLayout />,
+                element: withSuspense(AdminLayout),
                 children: [
                   {
                     errorElement: <RouteErrorPage />,

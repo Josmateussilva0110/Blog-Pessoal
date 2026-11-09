@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import type { MonthUsage } from "@/features/projects/lib/projectStats";
 import { cn } from "@/lib/cn";
 import { EASE_OUT, inViewRepeat } from "@/lib/motion";
@@ -44,7 +44,7 @@ export function ProjectsByMonthChart({ data }: { data: MonthUsage[] }) {
                 className="flex h-full flex-1 flex-col items-center justify-end gap-1.5 rounded-t-md focus-visible:outline-2 focus-visible:outline-brand"
               >
                 <span className="font-mono text-caption text-home-ink">{count}</span>
-                <motion.span
+                <m.span
                   className={cn(
                     "block w-full max-w-14 origin-bottom rounded-t transition-colors",
                     active ? "bg-brand" : "bg-home-ink",

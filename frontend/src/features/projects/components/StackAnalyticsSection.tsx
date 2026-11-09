@@ -6,6 +6,7 @@ import { TechRadarChart } from "./charts/TechRadarChart";
 import { PlatformDonutChart } from "./charts/PlatformDonutChart";
 import { countByPlatform, countProjectsByMonth, countTechUsage } from "@/features/projects/lib/projectStats";
 import { SECTION_IDS } from "@/config/routes";
+import { StackAnalyticsSkeleton } from "./StackAnalyticsSkeleton";
 
 interface StackAnalyticsSectionProps {
   projects: Project[];
@@ -18,12 +19,7 @@ export function StackAnalyticsSection({ projects, isLoading }: StackAnalyticsSec
   const byPlatform = useMemo(() => countByPlatform(projects), [projects]);
 
   if (isLoading) {
-    return (
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]" aria-hidden>
-        <div className="home-card h-[30rem] animate-pulse" />
-        <div className="home-card h-[30rem] animate-pulse" />
-      </div>
-    );
+    return <StackAnalyticsSkeleton />;
   }
 
   if (projects.length === 0) return null;

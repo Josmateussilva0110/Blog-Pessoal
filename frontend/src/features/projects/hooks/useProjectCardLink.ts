@@ -4,7 +4,7 @@ import { useProjectTransition } from "@/features/projects/context/ProjectTransit
 
 /** Clique simples abre o projeto com a transição; cliques com modificador seguem o link normal. */
 export function useProjectCardLink(project: Project) {
-  const { openProject } = useProjectTransition();
+  const { openProject, preloadProjectPage } = useProjectTransition();
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     if (
@@ -21,5 +21,11 @@ export function useProjectCardLink(project: Project) {
     openProject(project);
   }
 
-  return { handleClick };
+  // Intenção de abrir (mouse em cima, foco pelo teclado): baixa a página antes do clique
+  const prefetchProps = {
+    onPointerEnter: preloadProjectPage,
+    onFocus: preloadProjectPage,
+  };
+
+  return { handleClick, prefetchProps };
 }

@@ -1,7 +1,8 @@
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
+import { API_ENDPOINTS } from "./src/config/apiEndpoints";
 
 function loadProjectEnv(mode: string) {
   const monorepoRoot = path.resolve(__dirname, "..");
@@ -33,14 +34,46 @@ function requireApiUrl(env: Record<string, string>, nodeEnv: string): string {
   return apiUrl.replace(/\/$/, "");
 }
 
-export default defineConfig(({ mode }) => {
+/** Endpoints que a home busca ao abrir (foto do hero e projetos) */
+const HOME_PRELOAD_PATHS = [API_ENDPOINTS.publicProfileImageMeta, API_ENDPOINTS.projectsHome];
+
+/**
+ * Na home, começa a buscar os dados do hero e dos projetos junto com o JS, em vez de
+ * esperar o app montar (cascata HTML → JS → API → imagem atrasava o LCP). Script inline:
+ * só a home precisa desses dados. crossorigin use-credentials casa com o
+ * credentials: "include" do client.ts, senão o navegador baixaria de novo.
+ */
+function preloadHomeData(apiBase: string): Plugin {
+  const urls = JSON.stringify(HOME_PRELOAD_PATHS.map((endpoint) => `${apiBase}${endpoint}`));
+
+  return {
+    name: "preload-home-data",
+    transformIndexHtml() {
+      return [
+        {
+          tag: "script",
+          injectTo: "head",
+          children: `if (location.pathname === "/") for (const href of ${urls}) { const link = document.createElement("link"); link.rel = "preload"; link.as = "fetch"; link.crossOrigin = "use-credentials"; link.href = href; document.head.appendChild(link); }`,
+        },
+      ];
+    },
+  };
+}
+
+/** Mesma regra do getApiBaseUrl: proxy /api no dev, URL absoluta terminada em /api no build */
+function resolveClientApiBase(command: "build" | "serve", apiUrl: string) {
+  if (command === "serve") return "/api";
+  return apiUrl.endsWith("/api") ? apiUrl : `${apiUrl}/api`;
+}
+
+export default defineConfig(({ command, mode }) => {
   const env = loadProjectEnv(mode);
   const nodeEnv = resolveNodeEnv(mode, env);
   const apiUrl = requireApiUrl(env, nodeEnv);
   const proxyTarget = apiUrl.replace(/\/api$/, "");
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), preloadHomeData(resolveClientApiBase(command, apiUrl))],
     envDir: path.resolve(__dirname, ".."),
     resolve: {
       alias: {

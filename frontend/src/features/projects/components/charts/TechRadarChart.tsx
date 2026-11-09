@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import type { TechUsage } from "@/features/projects/lib/projectStats";
 import { cn } from "@/lib/cn";
 import { EASE_OUT, inViewRepeat } from "@/lib/motion";
@@ -77,7 +77,7 @@ export function TechRadarChart({ data, total }: TechRadarChartProps) {
         })}
 
         {/* Série: cresce a partir do centro quando entra na tela */}
-        <motion.g
+        <m.g
           style={{ transformBox: "view-box", transformOrigin: `${CX}px ${CY}px` }}
           initial={{ scale: 0, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
@@ -110,7 +110,7 @@ export function TechRadarChart({ data, total }: TechRadarChartProps) {
               </g>
             );
           })}
-        </motion.g>
+        </m.g>
 
         {/* Rótulos só com o nome; a quantidade aparece no detalhe abaixo do gráfico */}
         {axes.map((tech, index) => {
