@@ -11,6 +11,7 @@ import { ROUTES } from "@/config/routes";
 import { ProjectToc } from "@/features/projects/components/ProjectToc";
 import { ProjectMobileToc } from "@/features/projects/components/ProjectMobileToc";
 import { ProjectUpdateMeta } from "@/features/projects/components/ProjectUpdates";
+import { ProjectUpdateSkeleton } from "@/features/projects/components/ProjectUpdateSkeleton";
 import { useProject } from "@/features/projects/hooks/useProjects";
 import { usePageMeta } from "@/hooks/usePageMeta";
 import { getProjectCover } from "@/features/projects/lib/projectCover";
@@ -90,23 +91,7 @@ export function ProjectUpdatePage() {
 
   // Dados vindos da home ainda não têm as atualizações: espera a resposta do detalhe
   if (isPending || (isPlaceholderData && !update)) {
-    return (
-      <div className="flex flex-col gap-3 pt-4 sm:pt-6">
-        <span role="status" className="sr-only">
-          Carregando atualização…
-        </span>
-        <div className="home-card animate-pulse space-y-4 p-6 sm:p-10" aria-hidden>
-          <div className="h-9 w-40 rounded-xl bg-home-inset" />
-          <div className="h-3 w-40 rounded bg-home-inset" />
-          <div className="h-10 w-2/3 rounded-lg bg-home-inset" />
-        </div>
-        <div className="home-card animate-pulse space-y-3 p-6 sm:p-10" aria-hidden>
-          <div className="h-4 w-full rounded bg-home-inset" />
-          <div className="h-4 w-5/6 rounded bg-home-inset" />
-          <div className="h-4 w-4/6 rounded bg-home-inset" />
-        </div>
-      </div>
-    );
+    return <ProjectUpdateSkeleton />;
   }
 
   if (isError && !project) {

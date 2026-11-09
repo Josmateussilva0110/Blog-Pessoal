@@ -1,5 +1,5 @@
-import { lazy, Suspense, type ComponentType } from "react";
-import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
+import { lazy, Suspense, type ComponentType, type ReactNode } from "react";
+import { createBrowserRouter, Navigate, Outlet, useParams } from "react-router-dom";
 import { DocumentMeta } from "@/components/layout/DocumentMeta";
 import { FullPageStatus } from "@/components/ui/FullPageStatus";
 import { ToastScope } from "@/components/ui/toast";
@@ -10,13 +10,14 @@ import { GuestRoute } from "@/features/auth/components/GuestRoute";
 import { RequirePasswordUpdated } from "@/features/auth/components/RequirePasswordUpdated";
 import { RequireForcedPasswordChange } from "@/features/auth/components/RequireForcedPasswordChange";
 import { HomePage } from "@/routes/public/home/HomePage";
+import { ProjectDetailSkeleton } from "@/features/projects/components/ProjectDetailSkeleton";
+import { ProjectUpdateSkeleton } from "@/features/projects/components/ProjectUpdateSkeleton";
 import { RouteErrorPage } from "@/components/layout/RouteErrorPage";
 import { ROUTES } from "@/config/routes";
 import {
   loadProjectDetailPage,
   ProjectDetailPageLazy,
 } from "@/routes/public/project/loadProjectDetailPage";
-
 
 const ProjectUpdatePage = lazy(() =>
   import("@/routes/public/project/ProjectUpdatePage").then((module) => ({
@@ -42,21 +43,18 @@ const ProjectFormPage = lazy(
   () => import("@/routes/admin/projects/ProjectFormPage"),
 );
 
-function PublicFallback() {
-  return (
-    <div className="flex min-h-[50vh] items-center justify-center">
-      <span role="status" className="animate-pulse text-sm text-home-muted">
-        Carregando…
-      </span>
-    </div>
-  );
+/**
+ * Enquanto o código da página baixa, esqueleto igual ao da busca dos dados: quem abre o
+ * link direto não vê um "Carregando…" antes dele
+ */
+function ProjectDetailFallback() {
+  const { slug = "" } = useParams();
+  return <ProjectDetailSkeleton slug={slug} />;
 }
 
-function withSuspense(Component: ComponentType, fallback: "admin" | "public" = "admin") {
-  const Fallback = fallback === "public" ? PublicFallback : FullPageStatus;
-
+function withSuspense(Component: ComponentType, fallback: ReactNode = <FullPageStatus />) {
   return (
-    <Suspense fallback={<Fallback />}>
+    <Suspense fallback={fallback}>
       <Component />
     </Suspense>
   );
@@ -82,10 +80,13 @@ export const router = createBrowserRouter([
             errorElement: <RouteErrorPage />,
             children: [
               { index: true, element: <HomePage /> },
-              { path: "projects/:slug", element: withSuspense(ProjectDetailPageLazy, "public") },
               {
-                path: "projects/:slug/atualizacoes/:updateId",
-                element: withSuspense(ProjectUpdatePage, "public"),
+                path: "projects/:slug",
+                element: withSuspense(ProjectDetailPageLazy, <ProjectDetailFallback />),
+              },
+              {
+                path: "projects/:slug/updates/:updateId",
+                element: withSuspense(ProjectUpdatePage, <ProjectUpdateSkeleton />),
               },
             ],
           },

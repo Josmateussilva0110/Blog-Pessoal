@@ -16,7 +16,7 @@ export const ROUTES = {
   aboutSection: `/#${SECTION_IDS.about}`,
   project: (slug: string) => `${PROJECT_PATH_PREFIX}${slug}`,
   projectUpdate: (slug: string, updateId: string) =>
-    `${PROJECT_PATH_PREFIX}${slug}/atualizacoes/${updateId}`,
+    `${PROJECT_PATH_PREFIX}${slug}/updates/${updateId}`,
   admin: "/admin",
   adminLogin: "/admin/login",
   adminNewPassword: "/admin/new-password",
