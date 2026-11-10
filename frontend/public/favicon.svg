@@ -1,12 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="7" fill="#080810"/>
-  <rect x="1" y="1" width="30" height="30" rx="6" stroke="#22d3ee" stroke-opacity="0.22"/>
+  <!-- "m." do mateus.dev: card neutro do novo visual, ponto no acento azul -->
+  <rect width="32" height="32" rx="8" fill="#141417"/>
+  <rect x="0.5" y="0.5" width="31" height="31" rx="7.5" stroke="#2e2e35"/>
   <path
-    d="M11.5 10.5 7 16l4.5 5.5M20.5 10.5 25 16l-4.5 5.5"
-    stroke="#22d3ee"
-    stroke-width="2"
+    d="M6.5 21V11.5M6.5 14.75a3.25 3.25 0 0 1 6.5 0V21M13 14.75a3.25 3.25 0 0 1 6.5 0V21"
+    stroke="#f2f2f4"
+    stroke-width="2.6"
     stroke-linecap="round"
     stroke-linejoin="round"
   />
-  <path d="M17.5 9.5 14.5 22.5" stroke="#06b6d4" stroke-width="1.75" stroke-linecap="round"/>
+  <circle cx="24.25" cy="19.75" r="2" fill="#4c8dff"/>
 </svg>

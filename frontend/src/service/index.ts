@@ -1,5 +1,6 @@
 export { getApiBaseUrl } from "./apiBaseUrl";
-export { request, HttpError } from "./client";
+export { request } from "./client";
+export { unwrap } from "./unwrap";
 export { projectsService } from "./projects.service";
 export { projectUpdatesService } from "./projectUpdates.service";
 export { siteLinksService } from "./siteLinks.service";
@@ -10,8 +11,8 @@ export type {
   ApiSuccess,
   ApiFailure,
   AuthUser,
-  LoginCredentials,
+  LoginInput,
   LoginResponse,
-  ChangePasswordPayload,
+  ChangePasswordInput,
   UserProfile,
 } from "./types";

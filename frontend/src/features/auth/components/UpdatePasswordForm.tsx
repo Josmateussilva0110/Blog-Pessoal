@@ -2,10 +2,7 @@ import { Button } from "@/components/ui/Button";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import {
-  updatePasswordSchema,
-  type UpdatePasswordFormValues,
-} from "@/features/auth/schemas/changePassword.schema";
+import { updatePasswordSchema, type UpdatePasswordInput } from "@blog/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
@@ -18,7 +15,7 @@ export function UpdatePasswordForm() {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<UpdatePasswordFormValues>({
+  } = useForm<UpdatePasswordInput>({
     resolver: zodResolver(updatePasswordSchema),
     defaultValues: {
       current_password: "",
@@ -27,7 +24,7 @@ export function UpdatePasswordForm() {
     },
   });
 
-  async function onSubmit(values: UpdatePasswordFormValues) {
+  async function onSubmit(values: UpdatePasswordInput) {
     try {
       await changePassword(values);
       reset();
@@ -71,7 +68,7 @@ export function UpdatePasswordForm() {
         {...register("confirm_password")}
       />
 
-      <p className="text-[11px] text-text-muted leading-relaxed">
+      <p className="text-2xs text-home-muted leading-relaxed">
         Mínimo 8 caracteres, com maiúscula, número e caractere especial.
       </p>
 

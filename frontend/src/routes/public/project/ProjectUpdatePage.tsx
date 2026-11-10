@@ -1,21 +1,24 @@
 import type { ProjectUpdate } from "@blog/shared";
-import { ArrowLeft, ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
-import { SITE } from "@/config/constants";
+import { Button } from "@/components/ui/Button";
+import { MessageCard } from "@/components/ui/MessageCard";
+import { BACK_LINK_CLASS, INLINE_LINK_CLASS } from "@/components/ui/linkStyles";
+import { DESKTOP_MEDIA_QUERY, SITE } from "@/config/constants";
 import { ROUTES } from "@/config/routes";
 import { ProjectToc } from "@/features/projects/components/ProjectToc";
+import { ProjectMobileToc } from "@/features/projects/components/ProjectMobileToc";
 import { ProjectUpdateMeta } from "@/features/projects/components/ProjectUpdates";
+import { ProjectUpdateSkeleton } from "@/features/projects/components/ProjectUpdateSkeleton";
 import { useProject } from "@/features/projects/hooks/useProjects";
-import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { usePageMeta } from "@/hooks/usePageMeta";
+import { getProjectCover } from "@/features/projects/lib/projectCover";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { extractHeadings } from "@/lib/markdownHeadings";
 import { scrollToPageTop } from "@/lib/viewTransition";
-
-/** Breakpoint lg: a partir dele o índice fica na coluna lateral */
-const DESKTOP_QUERY = "(min-width: 1024px)";
 
 type UpdateNavLinkProps = {
   slug: string;
@@ -30,13 +33,13 @@ function UpdateNavLink({ slug, update, direction }: UpdateNavLinkProps) {
     <Link
       to={ROUTES.projectUpdate(slug, update.id)}
       className={cn(
-        "project-card group flex flex-col gap-1 rounded-xl px-4 py-3 transition-colors hover:border-accent/40",
+        "group flex flex-col gap-1 rounded-xl bg-home-inset px-4 py-3 transition-colors hover:bg-home-raised focus-visible:outline-2 focus-visible:outline-brand",
         isNewer && "sm:col-start-2 sm:text-right",
       )}
     >
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider text-text-subtle",
+          "inline-flex items-center gap-1.5 font-mono text-2xs uppercase tracking-wider text-home-muted",
           isNewer && "sm:justify-end",
         )}
       >
@@ -44,7 +47,7 @@ function UpdateNavLink({ slug, update, direction }: UpdateNavLinkProps) {
         {isNewer ? "Mais recente" : "Mais antiga"}
         {isNewer && <ArrowRight className="size-3.5" aria-hidden />}
       </span>
-      <span className="text-sm font-medium text-text transition-colors group-hover:text-accent">
+      <span className="text-sm font-medium text-home-ink">
         {update.version ? `${update.version} · ` : ""}
         {update.title}
       </span>
@@ -55,8 +58,9 @@ function UpdateNavLink({ slug, update, direction }: UpdateNavLinkProps) {
 /** Página própria de uma atualização longa, com índice dos seus títulos */
 export function ProjectUpdatePage() {
   const { slug = "", updateId = "" } = useParams<{ slug: string; updateId: string }>();
-  const { data: project, isLoading, isPlaceholderData } = useProject(slug);
-  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  const { data: project, isPending, isError, isPlaceholderData, isRefetching, refetch } =
+    useProject(slug);
+  const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
 
   // Lista vem da mais recente para a mais antiga
   const updates = project?.updates ?? [];
@@ -71,90 +75,80 @@ export function ProjectUpdatePage() {
   );
   const hasToc = headings.length > 1;
 
-  useDocumentTitle(update && project ? `${update.title} — ${project.title} — ${SITE.name}` : null);
+  usePageMeta(
+    update && project
+      ? {
+          title: `${update.title} — ${project.title} — ${SITE.name}`,
+          description: `Atualização de ${project.title}${update.version ? ` (${update.version})` : ""}.`,
+          image: getProjectCover(project)?.original,
+        }
+      : null,
+  );
 
   useEffect(() => {
     scrollToPageTop("instant");
   }, [updateId]);
 
   // Dados vindos da home ainda não têm as atualizações: espera a resposta do detalhe
-  if (isLoading || (isPlaceholderData && !update)) {
+  if (isPending || (isPlaceholderData && !update)) {
+    return <ProjectUpdateSkeleton />;
+  }
+
+  if (isError && !project) {
     return (
-      <div className="animate-pulse py-6 sm:py-8">
-        <div className="h-4 w-36 rounded bg-surface-muted" />
-        <div className="mt-8 max-w-3xl space-y-4">
-          <div className="h-3 w-40 rounded bg-surface-muted" />
-          <div className="h-10 w-2/3 rounded bg-surface-muted" />
-        </div>
-        <div className="mt-10 space-y-3">
-          <div className="h-4 w-full rounded bg-surface-muted" />
-          <div className="h-4 w-5/6 rounded bg-surface-muted" />
-          <div className="h-4 w-4/6 rounded bg-surface-muted" />
-        </div>
-      </div>
+      <MessageCard tone="error" message="Não foi possível carregar a atualização.">
+        <Button variant="secondary" size="sm" onClick={() => void refetch()} disabled={isRefetching}>
+          Tentar novamente
+        </Button>
+        <Link to={ROUTES.home} className={INLINE_LINK_CLASS}>
+          Voltar ao início
+        </Link>
+      </MessageCard>
     );
   }
 
   if (!project || !update) {
     return (
-      <div className="py-20 text-center terminal-card">
-        <p className="text-text-muted">Atualização não encontrada.</p>
-        <Link
-          to={project ? ROUTES.project(project.slug) : ROUTES.home}
-          className="text-accent text-sm mt-4 inline-block hover:underline"
-        >
+      <MessageCard message="Atualização não encontrada.">
+        <Link to={project ? ROUTES.project(project.slug) : ROUTES.home} className={INLINE_LINK_CLASS}>
           {project ? "Voltar ao projeto" : "Voltar ao início"}
         </Link>
-      </div>
+      </MessageCard>
     );
   }
 
   return (
-    <article className="py-6 sm:py-8">
-      <Link
-        to={ROUTES.project(project.slug)}
-        className="group inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-accent"
-      >
-        <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
-        Voltar a {project.title}
-      </Link>
+    <article className="flex flex-col gap-3 pt-4 sm:pt-6">
+      <header className="home-card flex flex-col gap-8 p-6 sm:p-10">
+        <Link
+          to={ROUTES.project(project.slug)}
+          className={BACK_LINK_CLASS}
+        >
+          <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden />
+          Voltar a {project.title}
+        </Link>
 
-      <header className="mt-8 mb-8 sm:mb-10 max-w-3xl">
-        <p className="mb-3 font-mono text-[11px] uppercase tracking-wider text-text-subtle">
-          Atualização do projeto
-        </p>
-        <ProjectUpdateMeta update={update} />
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-text sm:text-4xl">
-          {update.title}
-        </h1>
+        <div>
+          <p className="mb-3 font-mono text-xs uppercase tracking-eyebrow text-home-muted">
+            Atualização do projeto
+          </p>
+          <ProjectUpdateMeta update={update} />
+          <h1 className="mt-4 max-w-3xl text-3xl font-semibold leading-tight tracking-[-0.035em] text-home-ink sm:text-5xl">
+            {update.title}
+          </h1>
+        </div>
       </header>
 
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-12 xl:gap-16">
-        <div className="min-w-0">
-          {hasToc && !isDesktop && (
-            <details className="project-card group mb-8 rounded-xl">
-              <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm text-text [&::-webkit-details-marker]:hidden">
-                <span>
-                  Nesta página
-                  <span className="ml-2 font-mono text-xs text-text-subtle">{headings.length}</span>
-                </span>
-                <ChevronDown
-                  className="size-4 text-text-subtle transition-transform group-open:rotate-180"
-                  aria-hidden
-                />
-              </summary>
-              <div className="border-t border-hairline-subtle px-4 py-3">
-                <ProjectToc headings={headings} showTitle={false} />
-              </div>
-            </details>
-          )}
+      <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="home-card min-w-0 p-5 sm:p-8 lg:p-10">
+          {hasToc && !isDesktop && <ProjectMobileToc headings={headings} />}
 
           <MarkdownContent content={update.contentMarkdown} className="project-docs" />
 
           {(older || newer) && (
             <nav
               aria-label="Outras atualizações"
-              className="mt-16 grid gap-3 border-t border-hairline-subtle pt-8 sm:grid-cols-2"
+              className="mt-12 grid gap-3 border-t border-home-line pt-8 sm:grid-cols-2"
             >
               {older && <UpdateNavLink slug={project.slug} update={older} direction="older" />}
               {newer && <UpdateNavLink slug={project.slug} update={newer} direction="newer" />}
@@ -163,7 +157,7 @@ export function ProjectUpdatePage() {
         </div>
 
         {hasToc && isDesktop && (
-          <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain">
+          <aside className="home-card p-5 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain">
             <ProjectToc headings={headings} />
           </aside>
         )}

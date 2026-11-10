@@ -3,7 +3,7 @@ import SiteLinkController from "../controllers/siteLinkController"
 import { authMiddleware } from "../middleware/auth"
 import { rejectIfMustChangePassword } from "../middleware/rejectIfMustChangePassword"
 import { validate } from "../middleware/validate"
-import { updateSiteLinksSchema } from "../schemas/siteLinkSchema"
+import { UpdateSiteLinksSchema } from "../schemas/siteLinks/siteLinks"
 
 const router = Router()
 
@@ -12,7 +12,7 @@ router.put(
   "/",
   authMiddleware,
   rejectIfMustChangePassword,
-  validate(updateSiteLinksSchema),
+  validate({ body: UpdateSiteLinksSchema }),
   SiteLinkController.replaceAll
 )
 

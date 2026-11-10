@@ -1,19 +1,8 @@
 import type { ProjectPlatform } from "@blog/shared";
 import { Badge } from "@/components/ui/Badge";
-import { PLATFORM_LABELS } from "@/lib/projectPlatform";
-import { normalizeProjectPlatform } from "@/lib/projectPlatform";
+import { normalizeProjectPlatform, PLATFORM_LABELS } from "@/lib/projectPlatform";
 
-const platformVariant: Record<ProjectPlatform, "accent" | "success"> = {
-  mobile: "accent",
-  web: "success",
-};
-
+/** Plataforma é categoria, não estado: badge neutro (as cores ficam para o status) */
 export function PlatformBadge({ platform }: { platform: ProjectPlatform | string }) {
-  const normalized = normalizeProjectPlatform(platform);
-
-  return (
-    <Badge variant={platformVariant[normalized]}>
-      {PLATFORM_LABELS[normalized]}
-    </Badge>
-  );
+  return <Badge>{PLATFORM_LABELS[normalizeProjectPlatform(platform)]}</Badge>;
 }

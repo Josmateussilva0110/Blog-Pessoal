@@ -1,6 +1,6 @@
 import type { CookieOptions, Request, Response } from "express"
 import { env } from "../../config/env"
-import type { AuthTokens } from "../../types/auth/auth.types"
+import type { AuthTokens } from "../../types/auth"
 
 export const ACCESS_TOKEN_COOKIE = "blog_at"
 export const REFRESH_TOKEN_COOKIE = "blog_rt"
@@ -62,11 +62,4 @@ export function getAccessTokenFromCookies(request: Request): string | undefined 
 export function getRefreshTokenFromCookies(request: Request): string | undefined {
   const token = request.cookies?.[REFRESH_TOKEN_COOKIE]
   return typeof token === "string" && token.length > 0 ? token : undefined
-}
-
-export function toPublicAuthUser(tokens: AuthTokens) {
-  return {
-    id: tokens.user.id,
-    email: tokens.user.email,
-  }
 }

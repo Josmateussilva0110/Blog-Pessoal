@@ -9,22 +9,8 @@ import { SECTION_IDS } from "@/config/routes";
 export const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE_OUT } },
-};
-
-/**
- * Entrada dos cards: sobem e crescem. Sem rotação 3D, porque já ficam dentro
- * de um painel inclinado e 3D aninhado gera artefatos de renderização no Chrome.
- */
-export const cardRise: Variants = {
-  hidden: { opacity: 0, y: 60, scale: 0.92 },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.9, ease: EASE_OUT },
-  },
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE_OUT } },
 };
 
 export const staggerContainer: Variants = {

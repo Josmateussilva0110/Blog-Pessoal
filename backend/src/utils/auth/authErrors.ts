@@ -1,7 +1,4 @@
-export type AuthProviderError = {
-  message?: string
-  code?: string
-} | null
+import type { AuthProviderError } from "../../types/auth"
 
 export function isRefreshTokenReuseOrRevoked(error: AuthProviderError) {
   if (!error) return false

@@ -1,103 +1,120 @@
-import { motion } from "motion/react";
-import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
-import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
+import { useMemo } from "react";
+import { m } from "motion/react";
+import type { Project } from "@blog/shared";
+import { usePublicSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
+import { countTechUsage } from "@/features/projects/lib/projectStats";
 import { Image } from "@/components/ui/Image";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { TerminalWindow } from "@/components/ui/TerminalWindow";
-import { getSkillIconUrl } from "@/lib/skillicons";
+import { RevealText } from "@/components/ui/RevealText";
+import { createTechResolver, getSkillIconUrl } from "@/lib/skillicons";
 import { fadeUp, inViewRepeat, staggerContainer } from "@/lib/motion";
-import { TypingCommand } from "@/components/ui/TypingText";
+import { SECTION_IDS } from "@/config/routes";
 
-function SkillCard({
-  name,
-  icon,
-  href,
-}: {
-  name: string;
-  icon: string;
-  href?: string;
-}) {
+const GRID_CLASS = "grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-2";
+const TILE_BASE_CLASS = "flex h-full flex-col items-center gap-2.5 rounded-2xl bg-home-inset px-2 pb-3.5 pt-4.5";
+const TILE_CLASS = `group ${TILE_BASE_CLASS} transition-[transform,background-color] duration-300 hover:-translate-y-0.5 hover:bg-home-raised focus-visible:outline-2 focus-visible:outline-brand`;
+const ICON_CLASS = "size-11 rounded-[0.625rem]";
+/** Quantidade de tiles provisórios: perto da lista cadastrada, para a seção não mudar muito de altura */
+const SKELETON_TILE_COUNT = 15;
+
+function usageLabel(count: number) {
+  if (count === 0) return "";
+  return `em ${count} ${count === 1 ? "projeto" : "projetos"}`;
+}
+
+function SkillTile({ name, icon, href, usage }: { name: string; icon: string; href?: string; usage: string }) {
   const content = (
     <>
-      <Image
-        src={getSkillIconUrl(icon)}
-        alt={name}
-        variant="icon"
-        loading="lazy"
-      />
-      <span className="font-mono text-[10px] text-text-muted text-center leading-tight group-hover:text-accent transition-colors">
-        --{name.toLowerCase()}
-      </span>
+      <Image src={getSkillIconUrl(icon)} alt="" variant="icon" loading="lazy" className={ICON_CLASS} />
+      <span className="text-center text-caption font-medium text-home-ink">{name}</span>
+      {/* Altura fixa: tiles sem uso não ficam mais baixos que os outros */}
+      <span className="min-h-4 font-mono text-2xs leading-4 text-home-muted">{usage}</span>
     </>
   );
 
-  const className =
-    "group terminal-card-muted p-2.5 sm:p-3 flex flex-col items-center justify-center gap-1.5 sm:gap-2 min-h-[84px] sm:min-h-[96px] transition-all duration-300 hover:bg-accent-soft hover:border-accent/20 hover:-translate-y-0.5";
-
   if (href) {
     return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={className}
-        title={name}
-      >
+      <a href={href} target="_blank" rel="noopener noreferrer" className={TILE_CLASS}>
         {content}
       </a>
     );
   }
 
+  return <div className={TILE_CLASS}>{content}</div>;
+}
+
+/** Tiles com as mesmas medidas dos reais (ícone, nome e linha de uso) enquanto a lista carrega */
+function SkillsSkeleton() {
   return (
-    <div className={className} title={name}>
-      {content}
-    </div>
+    <>
+      <span role="status" className="sr-only">
+        Carregando ferramentas…
+      </span>
+      <ul className={GRID_CLASS} aria-hidden>
+        {Array.from({ length: SKELETON_TILE_COUNT }, (_, index) => (
+          <li key={index} className={`${TILE_BASE_CLASS} animate-pulse`}>
+            <div className={`${ICON_CLASS} bg-home-raised`} />
+            {/* Mesma altura de linha do nome real (text-caption com line-height 1.5) */}
+            <div className="flex h-[calc(var(--text-caption)*1.5)] items-center">
+              <div className="h-3.5 w-14 rounded bg-home-raised" />
+            </div>
+            <div className="h-4" />
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }
 
-export function SkillsIconSection() {
-  const { data: siteLinks } = useSiteLinks();
-  const skills = siteLinks?.skill ?? DEFAULT_SITE_LINKS.skill;
+export function SkillsIconSection({ projects }: { projects: Project[] }) {
+  const { data: siteLinks, isPending } = usePublicSiteLinks();
+  const skills = siteLinks?.skill;
+  // Mesmo resolvedor do useTechMeta, com as skills que esta seção já buscou
+  const resolveTech = useMemo(() => createTechResolver(skills), [skills]);
+  // Quantos projetos usam cada ferramenta, pelo nome padronizado
+  const usage = useMemo(
+    () => new Map(countTechUsage(projects, resolveTech).map((tech) => [tech.label, tech.projects.length])),
+    [projects, resolveTech],
+  );
+
+  // A lista vem só da API: com erro ou sem ferramentas cadastradas, a seção não aparece
+  if (!isPending && !skills?.length) return null;
 
   return (
-    <section id="skills" className="py-12 sm:py-16 md:py-20 scroll-mt-24 sm:scroll-mt-28">
-      <SectionHeader
-        tag="Tecnologias"
-        title="Linguagens & ferramentas"
-        subtitle="Stack que utilizo no dia a dia."
-      />
-
-      <TerminalWindow path="~/skills" bodyClassName="p-4 sm:p-6 md:p-8">
-        <TypingCommand
-          className="font-mono text-xs text-text-subtle mb-6"
-          command="ls"
-          args=" ./tools"
-          suffix={` · ${skills.length} packages`}
+    <section
+      id={SECTION_IDS.skills}
+      aria-busy={isPending}
+      className="home-card scroll-mt-24 p-5 sm:scroll-mt-28 sm:p-7"
+    >
+      <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <RevealText
+          text="Ferramentas"
+          className="text-xl font-semibold tracking-heading text-home-ink"
         />
+        <p className="text-sm text-home-muted">Linguagens, frameworks e serviços que uso no dia a dia</p>
+      </div>
 
-        <motion.div
-          className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-3 md:gap-4"
+      {isPending ? (
+        <SkillsSkeleton />
+      ) : (
+        <m.ul
+          className={GRID_CLASS}
           variants={staggerContainer}
           initial="hidden"
           whileInView="show"
           viewport={inViewRepeat}
         >
-          {skills.map((skill) => (
-            <motion.div
-              key={`${skill.icon}-${skill.label}`}
-              variants={fadeUp}
-              whileTap={{ scale: 0.95 }}
-              className="grid"
-            >
-              <SkillCard
-                name={skill.label}
-                icon={skill.icon ?? skill.label.toLowerCase()}
-                href={skill.href}
-              />
-            </motion.div>
-          ))}
-        </motion.div>
-      </TerminalWindow>
+          {skills?.map((skill) => {
+            const icon = skill.icon ?? skill.label.toLowerCase();
+            const count = usage.get(resolveTech(skill.label).label) ?? 0;
+
+            return (
+              <m.li key={`${icon}-${skill.label}`} variants={fadeUp} whileTap={{ scale: 0.95 }}>
+                <SkillTile name={skill.label} icon={icon} href={skill.href} usage={usageLabel(count)} />
+              </m.li>
+            );
+          })}
+        </m.ul>
+      )}
     </section>
   );
 }

@@ -42,23 +42,3 @@ export class ShortCache<T> {
     }
   }
 }
-
-export function buildFilterCacheKey(
-  userId: string,
-  parts: Record<string, unknown>
-): string {
-  return `${userId}:${JSON.stringify(parts)}`
-}
-
-/** Cache de metadados de listagem (30s). */
-export const listMetaCache = new ShortCache<{
-  summary_total: number
-  has_any: boolean
-  available_years: number[]
-}>(30_000)
-
-/** Cache de opções de filtro — anos/meses (60s). */
-export const filterOptionsCache = new ShortCache<{
-  years: number[]
-  months: number[]
-}>(60_000)

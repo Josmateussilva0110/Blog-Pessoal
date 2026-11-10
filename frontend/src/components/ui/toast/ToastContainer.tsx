@@ -1,4 +1,4 @@
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { AlertTriangle, CheckCircle2, X, XCircle } from "lucide-react";
 import type { ToastItem, ToastVariant } from "./types";
 
@@ -29,13 +29,9 @@ interface ToastContainerProps {
 }
 
 export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
-  if (toasts.length === 0) return null;
-
   return (
     <div
       className="fixed bottom-4 left-4 right-4 z-[100] flex flex-col gap-2 sm:left-auto sm:right-4 sm:w-full sm:max-w-sm"
-      aria-live="polite"
-      aria-relevant="additions text"
     >
       {toasts.map((toast) => {
         const styles = variantStyles[toast.variant];
@@ -44,9 +40,10 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
         return (
           <div
             key={toast.id}
-            role="status"
+            // Erro interrompe o leitor de tela; sucesso e aviso esperam a vez
+            role={toast.variant === "error" ? "alert" : "status"}
             className={cn(
-              "glass-strong rounded-2xl border p-4 shadow-lg shadow-blue-950/30 toast-enter",
+              "glass-strong rounded-2xl border p-4 shadow-lg shadow-scrim/40 toast-enter",
               styles.container,
             )}
           >
@@ -56,14 +53,14 @@ export function ToastContainer({ toasts, onDismiss }: ToastContainerProps) {
                 aria-hidden
               />
 
-              <p className="flex-1 text-sm text-text leading-relaxed">
+              <p className="flex-1 text-sm leading-relaxed text-home-ink">
                 {toast.message}
               </p>
 
               <button
                 type="button"
                 onClick={() => onDismiss(toast.id)}
-                className="shrink-0 rounded-lg p-1 text-text-muted transition-colors hover:bg-white/5 hover:text-text"
+                className="shrink-0 rounded-lg p-1 text-home-muted transition-colors hover:bg-home-raised hover:text-home-ink focus-visible:outline-2 focus-visible:outline-brand"
                 aria-label="Fechar notificação"
               >
                 <X className="h-4 w-4" aria-hidden />

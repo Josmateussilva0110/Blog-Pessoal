@@ -1,12 +1,12 @@
 import {
-  motion,
+  m,
   useMotionValue,
   useReducedMotion,
   useSpring,
   useTransform,
 } from "motion/react";
 import { useRef, type PointerEvent, type ReactNode } from "react";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useRestingTransform } from "@/lib/transform3d";
 
@@ -17,7 +17,7 @@ interface TiltCardProps {
   max?: number;
 }
 
-const SPRING = { stiffness: 260, damping: 22, mass: 0.5 };
+const SPRING = { stiffness: 170, damping: 24, mass: 0.6 };
 
 /**
  * Inclina o conteúdo em 3D seguindo o ponteiro, com uma sombra no "chão"
@@ -35,8 +35,8 @@ export function TiltCard({ children, className, max = 12 }: TiltCardProps) {
 
   const rotateX = useSpring(useTransform(pointerY, [0, 1], [max, -max]), SPRING);
   const rotateY = useSpring(useTransform(pointerX, [0, 1], [-max, max]), SPRING);
-  const scale = useTransform(hover, [0, 1], [1, 1.04]);
-  const lift = useTransform(hover, [0, 1], [0, -8]);
+  const scale = useTransform(hover, [0, 1], [1, 1.015]);
+  const lift = useTransform(hover, [0, 1], [0, -4]);
 
   const transform = useRestingTransform({ perspective: 900, y: lift, scale, rotateX, rotateY });
   const shadowX = useTransform(rotateY, (v) => v * -1.6);
@@ -50,6 +50,15 @@ export function TiltCard({ children, className, max = 12 }: TiltCardProps) {
 
   function handleMove(event: PointerEvent<HTMLDivElement>) {
     if (!enabled || !ref.current) return;
+
+    // Painel do ScrollReveal ainda entrando (com transform 3D): inclinar junto aninha 3D,
+    // o que gera artefatos no Chrome. Lê o style inline do motion, sem forçar recálculo
+    const panel = ref.current.closest<HTMLElement>(".scroll-panel");
+    if (panel && panel.style.transform && panel.style.transform !== "none") {
+      reset();
+      return;
+    }
+
     const rect = ref.current.getBoundingClientRect();
     pointerX.set((event.clientX - rect.left) / rect.width);
     pointerY.set((event.clientY - rect.top) / rect.height);
@@ -74,17 +83,17 @@ export function TiltCard({ children, className, max = 12 }: TiltCardProps) {
       onPointerLeave={reset}
       onClickCapture={flatten}
     >
-      <motion.div
+      <m.div
         aria-hidden
         className="tilt-shadow"
         style={{ x: shadowX, scaleX: shadowScale, opacity: hover }}
       />
-      <motion.div
+      <m.div
         className="relative"
         style={{ transform }}
       >
         {children}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

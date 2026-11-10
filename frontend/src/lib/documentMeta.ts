@@ -1,64 +1,128 @@
 import { SITE } from "@/config/constants";
+import { ROUTES } from "@/config/routes";
 import { isAdminRoute } from "@/lib/isAdminRoute";
 
 export const PUBLIC_FAVICON = "/favicon.svg";
 export const ADMIN_FAVICON = "/admin-favicon.svg";
 
-let titleOverride: string | null = null;
+/** Metadados que uma página pode definir (detalhe de projeto, atualização) */
+export type PageMeta = {
+  title: string;
+  description?: string;
+  /** URL absoluta da imagem do card ao compartilhar */
+  image?: string;
+};
+
+let pageMetaOverride: PageMeta | null = null;
+
+/** Título de cada página do admin (as rotas fixas; a de edição tem id no meio) */
+const ADMIN_PAGE_TITLES: Record<string, string> = {
+  [ROUTES.adminLogin]: "Login",
+  [ROUTES.adminNewPassword]: "Nova senha",
+  [ROUTES.admin]: "Painel",
+  [ROUTES.adminProjects]: "Projetos",
+  [ROUTES.adminProjectNew]: "Novo projeto",
+  [ROUTES.adminSettings]: "Configurações",
+  [ROUTES.adminLinks]: "Links",
+};
+
+const ADMIN_PROJECT_EDIT_PATTERN = new RegExp(`^${ROUTES.adminProjects}/[^/]+/edit$`);
 
 function getAdminPageTitle(pathname: string): string {
-  if (pathname === "/admin/login") return "login";
-  if (pathname === "/admin/new-password") return "new password";
-  if (pathname === "/admin") return "dashboard";
-  if (pathname === "/admin/projects") return "projects";
-  if (pathname === "/admin/projects/new") return "new project";
-  if (/^\/admin\/projects\/[^/]+\/edit$/.test(pathname)) return "edit project";
-  if (pathname === "/admin/settings") return "settings";
-  if (pathname === "/admin/links") return "links";
-  return "admin";
+  if (ADMIN_PROJECT_EDIT_PATTERN.test(pathname)) return "Editar projeto";
+  return ADMIN_PAGE_TITLES[pathname] ?? "Admin";
 }
 
 export function resolveDocumentMeta(pathname: string) {
   const admin = isAdminRoute(pathname);
+  const favicon = admin ? ADMIN_FAVICON : PUBLIC_FAVICON;
 
-  if (titleOverride) {
+  if (pageMetaOverride) {
     return {
-      title: titleOverride,
-      favicon: admin ? ADMIN_FAVICON : PUBLIC_FAVICON,
-    };
-  }
-
-  if (admin) {
-    return {
-      title: `${getAdminPageTitle(pathname)} — admin`,
-      favicon: ADMIN_FAVICON,
+      favicon,
+      admin,
+      title: pageMetaOverride.title,
+      description: pageMetaOverride.description ?? SITE.description,
+      image: pageMetaOverride.image,
     };
   }
 
   return {
-    title: SITE.name,
-    favicon: PUBLIC_FAVICON,
+    favicon,
+    admin,
+    title: admin ? `${getAdminPageTitle(pathname)} — Admin · ${SITE.name}` : SITE.name,
+    description: SITE.description,
+    image: undefined,
   };
 }
 
+/** Cria ou atualiza uma tag <meta>/<link> do head, identificada pelo seletor */
+function upsertHeadTag<T extends HTMLElement>(
+  selector: string,
+  create: () => T,
+  update: (element: T) => void,
+) {
+  const element = document.head.querySelector<T>(selector) ?? document.head.appendChild(create());
+  update(element);
+}
+
+function setMeta(attribute: "name" | "property", key: string, content: string | undefined) {
+  const selector = `meta[${attribute}="${key}"]`;
+
+  if (content === undefined) {
+    document.head.querySelector(selector)?.remove();
+    return;
+  }
+
+  upsertHeadTag(
+    selector,
+    () => {
+      const meta = document.createElement("meta");
+      meta.setAttribute(attribute, key);
+      return meta;
+    },
+    (meta) => meta.setAttribute("content", content),
+  );
+}
+
+/**
+ * Título, favicon, description, Open Graph e canonical da rota atual. Como o site é uma
+ * SPA, isso vale para o Google (que executa JS); os cards de redes sociais leem só o HTML.
+ */
 export function applyDocumentMeta(pathname: string) {
-  const { title, favicon } = resolveDocumentMeta(pathname);
+  const { title, description, image, favicon, admin } = resolveDocumentMeta(pathname);
+  // Canonical sem query string nem hash (ex.: ?utm=, /#projetos)
+  const canonicalUrl = `${window.location.origin}${pathname}`;
 
   document.title = title;
 
-  let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+  upsertHeadTag(
+    'link[rel="icon"]',
+    () => Object.assign(document.createElement("link"), { rel: "icon" }),
+    (link: HTMLLinkElement) => {
+      link.type = "image/svg+xml";
+      link.href = favicon;
+    },
+  );
+  upsertHeadTag(
+    'link[rel="canonical"]',
+    () => Object.assign(document.createElement("link"), { rel: "canonical" }),
+    (link: HTMLLinkElement) => {
+      link.href = canonicalUrl;
+    },
+  );
 
-  if (!link) {
-    link = document.createElement("link");
-    link.rel = "icon";
-    document.head.appendChild(link);
-  }
-
-  link.type = "image/svg+xml";
-  link.href = favicon;
+  setMeta("name", "description", description);
+  // Painel não deve aparecer em buscadores
+  setMeta("name", "robots", admin ? "noindex, nofollow" : undefined);
+  setMeta("property", "og:title", title);
+  setMeta("property", "og:description", description);
+  setMeta("property", "og:url", canonicalUrl);
+  setMeta("property", "og:image", image);
+  setMeta("name", "twitter:card", image ? "summary_large_image" : "summary");
 }
 
-export function setDocumentTitleOverride(title: string | null) {
-  titleOverride = title;
+export function setPageMetaOverride(meta: PageMeta | null) {
+  pageMetaOverride = meta;
   applyDocumentMeta(window.location.pathname);
 }

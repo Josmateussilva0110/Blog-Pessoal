@@ -23,8 +23,14 @@ import { ROUTES } from "@/config/routes";
 
 type SlidePhase = "idle" | "exit" | "enter";
 
+/** Tempo máximo esperando o código da página antes do slide: em rede lenta, o clique
+ * não pode ficar sem resposta (o slide segue e mostra o carregamento) */
+const PRELOAD_WAIT_MS = 800;
+
 type ProjectTransitionContextValue = {
-  openProject: (project: Project, element: HTMLElement) => void;
+  openProject: (project: Project) => void;
+  /** Baixa o código da página de projeto antes do clique (hover, foco) */
+  preloadProjectPage: () => void;
   closeProject: (project: Project, onNavigate: () => void) => void;
   slideDirection: SlideDirection | null;
   slidePhase: SlidePhase;
@@ -43,7 +49,11 @@ function runViewTransition(updateDom: () => void, mode: SlideDirection | null) {
   setSlideNavMode(mode);
 
   if (supportsViewTransitions() && !prefersReducedMotion()) {
-    return document.startViewTransition(updateDom).finished.finally(() => {
+    const transition = document.startViewTransition(updateDom);
+    // O navegador aborta a transição se a aba ficar oculta no meio: a navegação acontece
+    // do mesmo jeito, só sem animação, então a rejeição não é erro
+    transition.ready.catch(() => undefined);
+    return transition.finished.finally(() => {
       setSlideNavMode(null);
     });
   }
@@ -56,11 +66,22 @@ function runViewTransition(updateDom: () => void, mode: SlideDirection | null) {
   });
 }
 
-export function ProjectTransitionProvider({ children }: { children: ReactNode }) {
+type ProjectTransitionProviderProps = {
+  children: ReactNode;
+  /** Vem do router: a feature não conhece os módulos das páginas */
+  preloadProjectPage?: () => Promise<unknown>;
+};
+
+export function ProjectTransitionProvider({
+  children,
+  preloadProjectPage = () => Promise.resolve(),
+}: ProjectTransitionProviderProps) {
   const navigate = useNavigate();
   const [slideDirection, setSlideDirection] = useState<SlideDirection | null>(null);
   const [slidePhase, setSlidePhase] = useState<SlidePhase>("idle");
   const exitTimerRef = useRef<number | null>(null);
+  // Cliques repetidos enquanto a página baixa não agendam várias navegações
+  const openingRef = useRef(false);
 
   const clearExitTimer = useCallback(() => {
     if (exitTimerRef.current !== null) {
@@ -81,27 +102,42 @@ export function ProjectTransitionProvider({ children }: { children: ReactNode })
   }, []);
 
   const openProject = useCallback(
-    (_project: Project, _element: HTMLElement) => {
-      void _element;
-
+    (project: Project) => {
       if (prefersReducedMotion()) {
-        navigate(ROUTES.project(_project.slug));
+        navigate(ROUTES.project(project.slug));
         scrollToPageTop("instant");
         return;
       }
 
-      clearExitTimer();
-      setBodyTransitionLock(true);
-      setSlideDirection("push");
-      setSlidePhase("enter");
+      if (openingRef.current) return;
+      openingRef.current = true;
 
-      void runViewTransition(() => {
-        navigate(ROUTES.project(_project.slug));
-        scrollToPageTop("instant");
-      }, "push").finally(finishTransition);
+      const startTransition = () => {
+        openingRef.current = false;
+        clearExitTimer();
+        setBodyTransitionLock(true);
+        setSlideDirection("push");
+        setSlidePhase("enter");
+
+        void runViewTransition(() => {
+          navigate(ROUTES.project(project.slug));
+          scrollToPageTop("instant");
+        }, "push").finally(finishTransition);
+      };
+
+      // Com o código da página já baixado, o slide mostra o projeto e não o "Carregando…".
+      // Se o download falhar ou demorar, navega mesmo assim (erro ou carregamento da rota)
+      const timeout = new Promise((resolve) => window.setTimeout(resolve, PRELOAD_WAIT_MS));
+      void Promise.race([preloadProjectPage(), timeout])
+        .catch(() => undefined)
+        .then(startTransition);
     },
-    [clearExitTimer, finishTransition, navigate],
+    [clearExitTimer, finishTransition, navigate, preloadProjectPage],
   );
+
+  const handlePreload = useCallback(() => {
+    void preloadProjectPage().catch(() => undefined);
+  }, [preloadProjectPage]);
 
   const closeProject = useCallback(
     (_project: Project, onNavigate: () => void) => {
@@ -149,6 +185,7 @@ export function ProjectTransitionProvider({ children }: { children: ReactNode })
     <ProjectTransitionContext.Provider
       value={{
         openProject,
+        preloadProjectPage: handlePreload,
         closeProject,
         slideDirection,
         slidePhase,

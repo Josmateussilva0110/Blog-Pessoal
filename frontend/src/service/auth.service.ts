@@ -1,14 +1,14 @@
 import { request } from "./client";
 import type {
-  ChangePasswordPayload,
-  LoginCredentials,
+  ChangePasswordInput,
+  LoginInput,
   LoginResponse,
   SessionResponse,
   UserProfile,
 } from "./types";
 
 export const authService = {
-  login(credentials: LoginCredentials) {
+  login(credentials: LoginInput) {
     return request<LoginResponse>("/login", {
       method: "POST",
       body: credentials,
@@ -30,8 +30,8 @@ export const authService = {
     });
   },
 
-  changePassword(payload: ChangePasswordPayload) {
-    return request<UserProfile>("/profile/password", {
+  changePassword(payload: ChangePasswordInput) {
+    return request<void>("/profile/password", {
       method: "PUT",
       body: payload,
     });

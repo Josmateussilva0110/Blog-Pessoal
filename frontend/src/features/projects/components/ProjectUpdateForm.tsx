@@ -5,9 +5,11 @@ import {
   type ProjectUpdateFormValues,
 } from "@blog/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useId } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { LABEL_CLASS } from "@/components/ui/fieldStyles";
 import { MarkdownEditor } from "@/components/ui/MarkdownEditor";
 import { dateInputToIso, toDateInputValue } from "@/lib/format";
 
@@ -29,6 +31,7 @@ function toFormValues(update?: ProjectUpdate): ProjectUpdateFormInput {
 
 /** Formulário de uma atualização do projeto (criar ou editar) */
 export function ProjectUpdateForm({ update, isSaving, onSubmit, onCancel }: ProjectUpdateFormProps) {
+  const contentEditorId = useId();
   const {
     register,
     handleSubmit,
@@ -42,7 +45,7 @@ export function ProjectUpdateForm({ update, isSaving, onSubmit, onCancel }: Proj
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-4 rounded-xl border border-border-subtle bg-surface-raised p-4"
+      className="space-y-4 rounded-2xl border border-home-line p-4 sm:p-5"
       noValidate
     >
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_140px_170px]">
@@ -79,12 +82,15 @@ export function ProjectUpdateForm({ update, isSaving, onSubmit, onCancel }: Proj
       </div>
 
       <div className="space-y-2">
-        <span className="text-sm text-text-muted">O que mudou</span>
+        <label htmlFor={contentEditorId} className={LABEL_CLASS}>
+          O que mudou
+        </label>
         <Controller
           name="contentMarkdown"
           control={control}
           render={({ field }) => (
             <MarkdownEditor
+              id={contentEditorId}
               value={field.value}
               onChange={field.onChange}
               error={errors.contentMarkdown?.message}

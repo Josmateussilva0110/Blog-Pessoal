@@ -1,5 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { HERO_YEARS_CODING_MAX, heroStatsSchema, type HeroStats } from "@blog/shared";
 import { Button } from "@/components/ui/Button";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/components/ui/toast";
 import {
@@ -9,55 +13,56 @@ import {
 
 export function HeroStatsForm() {
   const toast = useToast();
-  const { data, isLoading } = useHeroStats();
+  const { data, isError, isRefetching, refetch } = useHeroStats();
   const updateHeroStats = useUpdateHeroStats();
-  const [yearsCoding, setYearsCoding] = useState("4");
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<HeroStats>({ resolver: zodResolver(heroStatsSchema) });
 
   useEffect(() => {
-    if (data) {
-      setYearsCoding(String(data.yearsCoding));
-    }
-  }, [data]);
+    if (data) reset(data);
+  }, [data, reset]);
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-
-    const parsed = Number(yearsCoding);
-    if (!Number.isInteger(parsed) || parsed < 0 || parsed > 50) {
-      toast.error("Informe um número inteiro entre 0 e 50.");
-      return;
-    }
-
+  async function onSubmit(values: HeroStats) {
     try {
-      await updateHeroStats.mutateAsync({ yearsCoding: parsed });
+      await updateHeroStats.mutateAsync(values);
       toast.success("Estatísticas da hero atualizadas.");
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Não foi possível salvar.",
-      );
+      toast.error(error instanceof Error ? error.message : "Não foi possível salvar.");
     }
   }
 
+  if (!data) {
+    return isError ? (
+      <ErrorState
+        message="Não foi possível carregar as estatísticas."
+        onRetry={() => void refetch()}
+        isRetrying={isRefetching}
+      />
+    ) : (
+      <p role="status" className="animate-pulse text-sm text-home-muted">
+        Carregando estatísticas…
+      </p>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       <Input
         label="Anos codando"
         type="number"
         min={0}
-        max={50}
-        value={yearsCoding}
-        onChange={(event) => setYearsCoding(event.target.value)}
-        placeholder="4"
+        max={HERO_YEARS_CODING_MAX}
+        error={errors.yearsCoding?.message}
+        {...register("yearsCoding", { valueAsNumber: true })}
       />
 
       <div className="flex justify-end">
-        <Button
-          type="submit"
-          size="sm"
-          className="font-mono"
-          disabled={isLoading || updateHeroStats.isPending}
-        >
-          {updateHeroStats.isPending ? "Salvando..." : "save_stats()"}
+        <Button type="submit" size="sm" disabled={updateHeroStats.isPending}>
+          {updateHeroStats.isPending ? "Salvando..." : "Salvar estatísticas"}
         </Button>
       </div>
     </form>

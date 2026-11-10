@@ -1,26 +1,32 @@
-import type { Project, ProjectFormValues as ApiProjectFormValues, ProjectStatus } from "@blog/shared";
+import type {
+  Project,
+  ProjectFormValues as ApiProjectFormValues,
+  ProjectStatus,
+} from "@blog/shared";
+import { PROJECT_DESCRIPTION_MAX_LENGTH } from "@blog/shared/constants";
 import { projectFormSchema, type ProjectFormValues } from "@/features/projects/schemas/projectForm.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller, type FieldErrors } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Textarea } from "@/components/ui/Textarea";
-import { MarkdownEditor } from "@/components/ui/MarkdownEditor";
 import { useToast } from "@/components/ui/toast";
 import { ROUTES } from "@/config/routes";
+import { ProjectContentField } from "@/features/projects/components/ProjectContentField";
 import { ProjectImagesField } from "@/features/projects/components/ProjectImagesField";
-import { projectKeys } from "@/features/projects/hooks/useProjects";
+import { TechStackField } from "@/features/projects/components/TechStackField";
+import { projectKeys } from "@/features/projects/lib/queryKeys";
 import { buildImageSubmission, useProjectImages } from "@/features/projects/hooks/useProjectImages";
 import { toProjectFormValues } from "@/features/projects/lib/projectFormValues";
 import { dateInputToIso, normalizeIsoDateTime, toDateInputValue } from "@/lib/format";
 import { PLATFORM_LABELS } from "@/lib/projectPlatform";
-import { normalizeProjectStatus } from "@/lib/projectStatus";
-import { slugify, splitCommaList } from "@/lib/slugify";
-import { getStatusLabel } from "@/lib/utils";
+import { getStatusLabel, normalizeProjectStatus } from "@/lib/projectStatus";
+import { slugify } from "@/lib/slugify";
+import { unwrap } from "@/service";
 import { submitProjectForm } from "@/service/projectForm.service";
 
 type ProjectFormProps = {
@@ -33,7 +39,6 @@ export function ProjectForm({ project }: ProjectFormProps) {
   const navigate = useNavigate();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const markdownInputRef = useRef<HTMLInputElement>(null);
   const { images, resetImages, addFiles, removeImage, moveImage } = useProjectImages();
   const [slugTouched, setSlugTouched] = useState(Boolean(project));
 
@@ -70,24 +75,6 @@ export function ProjectForm({ project }: ProjectFormProps) {
     resetImages(project.images);
   }, [project, reset, resetImages]);
 
-  async function handleMarkdownSelection(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-
-    if (!file) return;
-
-    try {
-      const content = await file.text();
-      setValue("contentMarkdown", content, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-      toast.success("Conteúdo importado do arquivo .md.");
-    } catch {
-      toast.error("Não foi possível ler o arquivo .md.");
-    }
-  }
-
   async function onSubmit(values: ProjectFormValues) {
     const imageSubmission = buildImageSubmission(images);
 
@@ -100,22 +87,10 @@ export function ProjectForm({ project }: ProjectFormProps) {
     };
 
     try {
-      const result = await submitProjectForm(
-        payload,
-        {
-          images: imageSubmission.files,
-        },
-        project?.id,
-      );
+      unwrap(await submitProjectForm(payload, { images: imageSubmission.files }, project?.id));
 
-      if (!result.success) {
-        throw new Error(result.message);
-      }
-
+      // Inclui o projeto em edição (projectKeys.adminDetail)
       await queryClient.invalidateQueries({ queryKey: projectKeys.all });
-      if (project?.id) {
-        await queryClient.invalidateQueries({ queryKey: ["admin-project", project.id] });
-      }
 
       toast.success(project ? "Projeto atualizado." : "Projeto criado.");
       navigate(ROUTES.adminProjects, { replace: true });
@@ -150,48 +125,22 @@ export function ProjectForm({ project }: ProjectFormProps) {
         label="Resumo"
         placeholder="Breve descrição do projeto para exibir nos cards e listagens"
         rows={3}
-        maxLength={500}
+        maxLength={PROJECT_DESCRIPTION_MAX_LENGTH}
         error={errors.description?.message}
         {...register("description")}
       />
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between gap-3">
-          <span className="text-sm font-medium text-text">Sobre o projeto</span>
-          <input
-            ref={markdownInputRef}
-            type="file"
-            accept=".md,text/markdown"
-            className="hidden"
-            onChange={handleMarkdownSelection}
+      <Controller
+        name="contentMarkdown"
+        control={control}
+        render={({ field }) => (
+          <ProjectContentField
+            value={field.value}
+            onChange={(content) => field.onChange(content)}
+            error={errors.contentMarkdown?.message}
           />
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => markdownInputRef.current?.click()}
-          >
-            Importar .md
-          </Button>
-        </div>
-
-        <Controller
-          name="contentMarkdown"
-          control={control}
-          render={({ field }) => (
-            <MarkdownEditor
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.contentMarkdown?.message}
-            />
-          )}
-        />
-        <p className="text-xs text-text-muted">
-          Editor em markdown puro. Use a aba <strong className="font-medium text-text">Preview</strong>{" "}
-          para ver o resultado formatado (tabelas, código, diagramas Mermaid). Também é possível{" "}
-          <strong className="font-medium text-text">Importar .md</strong>.
-        </p>
-      </div>
+        )}
+      />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Select label="Status" error={errors.status?.message} {...register("status")}>
@@ -223,25 +172,30 @@ export function ProjectForm({ project }: ProjectFormProps) {
       </div>
 
       <div className="space-y-1">
-        <label className="flex items-center gap-3 text-sm text-text-muted">
+        <label className="flex min-h-11 items-center gap-3 text-sm text-home-body">
           <input
             type="checkbox"
-            className="size-4 rounded border-hairline-hover bg-transparent"
+            className="size-4 rounded accent-brand"
             {...register("featured")}
           />
           Destacar na home
         </label>
-        <p className="text-xs text-text-subtle">
+        <p className="text-xs text-home-muted">
           Exibe somente os projetos marcados nos cards principais da home — pode ser 1, 2 ou mais,
           sem preencher com outros projetos.
         </p>
       </div>
 
-      <Input
-        label="Stack"
-        placeholder="React, Node.js, Supabase"
-        defaultValue={project?.techStack.join(", ") ?? ""}
-        onChange={(event) => setValue("techStack", splitCommaList(event.target.value))}
+      <Controller
+        name="techStack"
+        control={control}
+        render={({ field }) => (
+          <TechStackField
+            value={field.value}
+            onChange={field.onChange}
+            error={errors.techStack?.message}
+          />
+        )}
       />
 
       <Input

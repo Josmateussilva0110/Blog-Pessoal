@@ -4,6 +4,8 @@ import type { Project } from "@blog/shared";
 export const SECTION_IDS = {
   projects: "projetos",
   about: "sobre",
+  stack: "stack",
+  skills: "skills",
 } as const;
 
 const PROJECT_PATH_PREFIX = "/projects/";
@@ -14,9 +16,15 @@ export const ROUTES = {
   aboutSection: `/#${SECTION_IDS.about}`,
   project: (slug: string) => `${PROJECT_PATH_PREFIX}${slug}`,
   projectUpdate: (slug: string, updateId: string) =>
-    `${PROJECT_PATH_PREFIX}${slug}/atualizacoes/${updateId}`,
+    `${PROJECT_PATH_PREFIX}${slug}/updates/${updateId}`,
+  admin: "/admin",
+  adminLogin: "/admin/login",
+  adminNewPassword: "/admin/new-password",
   adminProjects: "/admin/projects",
+  adminProjectNew: "/admin/projects/new",
   adminProjectEdit: (id: Project["id"]) => `/admin/projects/${id}/edit`,
+  adminLinks: "/admin/links",
+  adminSettings: "/admin/settings",
 } as const;
 
 /** Página de detalhe de um projeto (layout mais largo, transição de slide) */

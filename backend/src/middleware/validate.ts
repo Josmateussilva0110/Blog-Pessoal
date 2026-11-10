@@ -1,30 +1,35 @@
-import { z } from "zod"
-import { Request, Response, NextFunction } from "express"
-import { HttpResponse } from "../types/http/HttpResponse"
+import type { NextFunction, Request, Response } from "express"
+import type { ZodType } from "zod"
+import type { ValidateTarget, ValidatedData } from "../types/common/validation"
+import { sendValidationError } from "../utils/http/sendValidationError"
 
-type ValidateTarget = "body" | "params"
+type ValidateSchemas = Partial<Record<ValidateTarget, ZodType>>
 
+const TARGETS: ValidateTarget[] = ["params", "query", "body"]
+
+/**
+ * Valida corpo, query e params antes do controller. O resultado convertido vai para
+ * request.validated, porque no Express 5 request.query não aceita atribuição.
+ */
 export const validate =
-  (schema: z.ZodTypeAny, target: ValidateTarget = "body") =>
-  (request: Request, response: Response<HttpResponse>, next: NextFunction) => {
-    const result = schema.safeParse(request[target])
+  (schemas: ValidateSchemas) =>
+  (request: Request, response: Response, next: NextFunction) => {
+    // Mantém o que um validate anterior da mesma rota já gravou (params antes do upload, body depois)
+    const validated: ValidatedData = { ...request.validated }
 
-    if (!result.success) {
-      return response.status(422).json({
-        success: false,
-        message: "Erro de validação",
-        errors: result.error.issues.map((issue) => ({
-          field: issue.path.length > 0 ? issue.path.join(".") : target,
-          message: issue.message,
-        })),
-      })
+    for (const target of TARGETS) {
+      const schema = schemas[target]
+      if (!schema) continue
+
+      const result = schema.safeParse(request[target])
+      if (!result.success) {
+        sendValidationError(response, result.error, target)
+        return
+      }
+
+      validated[target] = { schema, data: result.data }
     }
 
-    if (target === "params") {
-      request.validatedParams = result.data
-    } else {
-      request.body = result.data
-    }
-
-    return next()
+    request.validated = validated
+    next()
   }

@@ -1,22 +1,26 @@
 import { Outlet } from "react-router-dom";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { BackgroundOrbs } from "./BackgroundOrbs";
 import { ScrollToTopButton } from "@/components/ui/ScrollToTopButton";
 import { ProjectTransitionProvider } from "@/features/projects/context/ProjectTransitionProvider";
 import { IosNavPage } from "./IosNavPage";
-import { usePageWidthClass } from "@/hooks/usePageWidth";
-import { cn } from "@/lib/format";
+import { PAGE_WIDTH_CLASS } from "@/components/layout/pageWidth";
+import { cn } from "@/lib/cn";
 
-export function PublicLayout() {
-  const pageWidth = usePageWidthClass();
+type PublicLayoutProps = {
+  /** Pré-carregamento da página de projeto, injetado pelo router */
+  preloadProjectPage?: () => Promise<unknown>;
+};
+
+export function PublicLayout({ preloadProjectPage }: PublicLayoutProps) {
 
   return (
-    <ProjectTransitionProvider>
+    <ProjectTransitionProvider preloadProjectPage={preloadProjectPage}>
       <div className="min-h-dvh flex flex-col relative">
-        <BackgroundOrbs />
+        {/* Fundo liso do novo visual */}
+        <div className="fixed inset-0 -z-10 bg-home-bg" aria-hidden />
         <Header />
-        <main className={cn("flex-1 mx-auto w-full px-4 sm:px-6 ios-nav-main", pageWidth)}>
+        <main className={cn("flex-1 mx-auto w-full px-4 sm:px-6 ios-nav-main", PAGE_WIDTH_CLASS)}>
           <IosNavPage>
             <Outlet />
           </IosNavPage>

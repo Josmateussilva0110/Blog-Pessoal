@@ -21,7 +21,11 @@ const envSchema = z.object({
         .string()
         .default("http://localhost:5173,http://localhost:8081")
         .transform((val) => val.split(",").map((s) => s.trim()).filter(Boolean)),
-    /** Sufixos HTTPS extras (ex.: .vercel.app para previews da Vercel). */
+    /**
+     * Sufixos HTTPS extras de um domínio que só você controla (ex.: .meudominio.dev).
+     * Nunca use um domínio público de hospedagem (.vercel.app, .netlify.app): qualquer site
+     * nele passaria pelo CORS com cookies e pela proteção contra CSRF.
+     */
     ALLOWED_ORIGIN_SUFFIXES: z
         .string()
         .default("")

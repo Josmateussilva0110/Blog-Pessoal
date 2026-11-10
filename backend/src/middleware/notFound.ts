@@ -1,8 +1,7 @@
-import { Request, Response } from "express"
+import type { Request, Response } from "express"
+import { CommonErrorCode } from "../types/common/errorCode"
+import { sendCommonFailure } from "../utils/http/sendCommonFailure"
 
-export const notFound = (_req: Request, res: Response) => {
-    res.status(404).json({
-        status: false,
-        error: { message: "Rota não encontrada." },
-    })
+export const notFound = (_request: Request, response: Response) => {
+  sendCommonFailure(response, CommonErrorCode.ROUTE_NOT_FOUND)
 }

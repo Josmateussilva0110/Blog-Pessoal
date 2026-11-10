@@ -19,8 +19,12 @@ export function normalizeProjectStatus(status: string): ProjectStatus {
   return "planned";
 }
 
-export type ProjectFormStatus = ProjectStatus;
+const STATUS_LABELS: Record<ProjectStatus, string> = {
+  planned: "Planejado",
+  wip: "Em andamento",
+  completed: "Concluído",
+};
 
-export function toFormProjectStatus(status: string): ProjectFormStatus {
-  return normalizeProjectStatus(status);
+export function getStatusLabel(status: ProjectStatus | string) {
+  return STATUS_LABELS[normalizeProjectStatus(status)];
 }

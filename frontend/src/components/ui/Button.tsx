@@ -1,28 +1,49 @@
-import { cn } from "@/lib/format";
-import type { ButtonHTMLAttributes } from "react";
+import { cn } from "@/lib/cn";
+import type { ComponentProps } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "outline";
-type ButtonSize = "sm" | "md" | "lg";
+type ButtonVariant = "primary" | "secondary" | "ghost" | "outline" | "danger" | "danger-ghost";
+type ButtonSize = "sm" | "md" | "lg" | "cta" | "icon";
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends ComponentProps<"button"> {
   variant?: ButtonVariant;
   size?: ButtonSize;
 }
 
+// Mesmos botões do site público: claro para a ação principal, cinza neutro para o resto.
+// `cn` só junta classes (sem tailwind-merge): cores e espaçamentos mudam por variante/tamanho,
+// não sobrescrevendo pelo className, senão quem vence é a ordem do CSS gerado
 const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    "bg-accent text-surface border border-accent/30 hover:bg-accent-muted shadow-lg shadow-accent/20",
-  secondary: "glass text-text hover:bg-white/10",
-  ghost: "text-text-muted hover:text-text hover:bg-white/5",
-  outline:
-    "border border-border-subtle text-text-muted hover:text-text hover:border-border hover:bg-white/5",
+  primary: "bg-home-ink text-home-device hover:bg-home-ink-strong",
+  secondary: "bg-home-inset text-home-ink hover:bg-home-raised",
+  ghost: "text-home-muted hover:bg-home-inset hover:text-home-ink",
+  outline: "border border-home-line text-home-ink hover:bg-home-inset",
+  // Ações destrutivas: confirmação (cheio) e atalho em listas (só texto)
+  danger: "bg-danger-solid text-home-ink-strong hover:bg-danger-solid-hover",
+  "danger-ghost": "text-danger-text hover:bg-danger/10",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-xs rounded-lg",
-  md: "px-4 py-2 text-sm rounded-lg",
-  lg: "px-6 py-3 text-sm rounded-lg",
+  sm: "min-h-9 px-3 text-xs rounded-lg",
+  md: "min-h-10 px-4 text-sm rounded-xl",
+  lg: "min-h-12 px-5 text-sm rounded-xl",
+  // Chamada principal do site público (hero, destaque, detalhe do projeto)
+  cta: "min-h-12 px-5 text-cta rounded-xl",
+  icon: "size-9 rounded-lg",
 };
+
+/** Classes do botão, para links com cara de botão (um <Link> não pode conter um <button>) */
+export function buttonClassName({
+  variant = "primary",
+  size = "md",
+  className,
+}: { variant?: ButtonVariant; size?: ButtonSize; className?: string } = {}) {
+  return cn(
+    "inline-flex items-center justify-center gap-2 font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-40",
+    variantStyles[variant],
+    sizeStyles[size],
+    className,
+  );
+}
 
 export function Button({
   variant = "primary",
@@ -33,12 +54,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={cn(
-        "inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed",
-        variantStyles[variant],
-        sizeStyles[size],
-        className,
-      )}
+      className={buttonClassName({ variant, size, className })}
       {...props}
     >
       {children}

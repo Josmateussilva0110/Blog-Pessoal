@@ -1,6 +1,6 @@
 import { useInView, useReducedMotion } from "motion/react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { cn } from "@/lib/format";
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/cn";
 
 interface TypewriterOptions {
   speed: number;
@@ -91,54 +91,5 @@ export function TypingText({
       <span aria-hidden>{text.slice(0, length)}</span>
       <span className="typing-cursor" aria-hidden />
     </span>
-  );
-}
-
-interface TypingCommandProps {
-  /** Comando principal, ex.: "ls" */
-  command: string;
-  /** Argumentos, ex.: " ./tools" */
-  args?: string;
-  /** Informação exibida após terminar de digitar, ex.: " · 12 packages" */
-  suffix?: ReactNode;
-  speed?: number;
-  className?: string;
-}
-
-/** Linha de terminal `$ comando args` digitada quando entra na tela */
-export function TypingCommand({
-  command,
-  args = "",
-  suffix,
-  speed = 45,
-  className,
-}: TypingCommandProps) {
-  const full = command + args;
-  const { ref, length, done } = useTypewriter<HTMLParagraphElement>(full.length, {
-    speed,
-    delay: 150,
-    startOnView: true,
-  });
-
-  return (
-    <p ref={ref} className={className}>
-      <span className="sr-only">$ {full}</span>
-      <span aria-hidden>
-        <span className="text-terminal">$ </span>
-        <span className="text-accent">{command.slice(0, length)}</span>
-        <span className="text-text-muted">{args.slice(0, Math.max(0, length - command.length))}</span>
-        {!done && <span className="typing-cursor" />}
-      </span>
-      {suffix && (
-        <span
-          className={cn(
-            "text-text-subtle transition-opacity duration-500",
-            done ? "opacity-100" : "opacity-0",
-          )}
-        >
-          {suffix}
-        </span>
-      )}
-    </p>
   );
 }

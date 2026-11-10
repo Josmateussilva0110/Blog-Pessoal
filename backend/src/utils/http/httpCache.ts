@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express"
-
-/** Tempo curto: edições e exclusões no admin aparecem no site em até ~1,5 min */
-const PUBLIC_MAX_AGE_SECONDS = 60
-const PUBLIC_STALE_WHILE_REVALIDATE_SECONDS = 30
+import {
+  PUBLIC_MAX_AGE_SECONDS,
+  PUBLIC_STALE_WHILE_REVALIDATE_SECONDS,
+} from "../../constants/http"
 
 /**
  * Padrão da API: nada é cacheado. Só as rotas públicas que não variam por

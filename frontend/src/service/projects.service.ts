@@ -1,23 +1,19 @@
-import type { CreateProjectInput, HomeProjects, Project } from "@blog/shared";
+import type { HomeProjects, PaginatedList, Project } from "@blog/shared";
+// Constante pelo subpath: a raiz do shared traria os schemas zod para o bundle da home
+import { PAGINATION_MAX_LIMIT } from "@blog/shared/constants";
+import { API_ENDPOINTS } from "@/config/apiEndpoints";
 import { request } from "./client";
 
 const BASE = "/projects";
 
 export const projectsService = {
-  list() {
-    return request<Project[]>(BASE);
-  },
-
+  /** O admin mostra todos os projetos numa tela só: pede a maior página que a API aceita */
   listAdmin() {
-    return request<Project[]>(`${BASE}/admin`);
+    return request<PaginatedList<Project>>(`${BASE}/admin`, { params: { limit: PAGINATION_MAX_LIMIT } });
   },
 
   home() {
-    return request<HomeProjects>(`${BASE}/home`);
-  },
-
-  featured() {
-    return request<Project[]>(`${BASE}/featured`);
+    return request<HomeProjects>(API_ENDPOINTS.projectsHome);
   },
 
   /** fresh: revalida no servidor em vez de usar o cache HTTP do navegador */
@@ -27,14 +23,6 @@ export const projectsService = {
 
   getById(id: string) {
     return request<Project>(`${BASE}/id/${id}`);
-  },
-
-  create(data: CreateProjectInput) {
-    return request<Project>(BASE, { method: "POST", body: data });
-  },
-
-  update(id: string, data: Partial<CreateProjectInput>) {
-    return request<Project>(`${BASE}/${id}`, { method: "PUT", body: data });
   },
 
   remove(id: string) {

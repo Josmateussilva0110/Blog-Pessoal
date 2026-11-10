@@ -2,7 +2,7 @@ import type { Project } from "@blog/shared";
 import type { ProjectFormValues } from "@/features/projects/schemas/projectForm.schema";
 import { normalizeIsoDateTime } from "@/lib/format";
 import { normalizeProjectPlatform } from "@/lib/projectPlatform";
-import { toFormProjectStatus } from "@/lib/projectStatus";
+import { normalizeProjectStatus } from "@/lib/projectStatus";
 
 /** Valores do formulário a partir de um projeto (edição) ou vazios (criação) */
 export function toProjectFormValues(project?: Project): ProjectFormValues {
@@ -11,7 +11,7 @@ export function toProjectFormValues(project?: Project): ProjectFormValues {
     slug: project?.slug ?? "",
     description: project?.description ?? "",
     contentMarkdown: project?.contentMarkdown ?? "",
-    status: toFormProjectStatus(project?.status ?? "planned"),
+    status: normalizeProjectStatus(project?.status ?? "planned"),
     platform: normalizeProjectPlatform(project?.platform),
     techStack: project?.techStack ?? [],
     repoUrl: project?.repoUrl ?? "",

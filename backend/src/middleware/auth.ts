@@ -1,95 +1,37 @@
-import { Request, Response, NextFunction } from "express"
-import jwt from "jsonwebtoken"
-import type { User } from "@supabase/supabase-js"
-import { env } from "../config/env"
-import { supabaseAdmin } from "../database/supabase/supabase"
+import type { NextFunction, Request, Response } from "express"
 import UserService from "../services/UserService"
+import { CommonErrorCode } from "../types/common/errorCode"
+import { resolveActiveUserId } from "../utils/auth/accessToken"
 import {
   getAccessTokenFromCookies,
   getRefreshTokenFromCookies,
   setAuthCookies,
 } from "../utils/auth/authCookies"
-import { isAccessTokenRevoked, isUserSessionRevoked } from "../utils/auth/tokenRevocation"
+import { isAdminUser } from "../utils/auth/isAdminUser"
+import { sendCommonFailure } from "../utils/http/sendCommonFailure"
 
-type SupabaseJwtPayload = jwt.JwtPayload & {
-  sub: string
-  email?: string
+interface RequestSession {
+  userId: string
+  accessToken: string
 }
 
-function toAuthUser(payload: SupabaseJwtPayload): User {
-  const aud = payload.aud
-  return {
-    id: payload.sub,
-    email: payload.email ?? "",
-    aud: Array.isArray(aud) ? aud[0] ?? "authenticated" : aud ?? "authenticated",
-    role: payload.role ?? "authenticated",
-    app_metadata: {},
-    user_metadata: {},
-    created_at: "",
-  }
+async function sessionFromToken(accessToken: string | undefined): Promise<RequestSession | null> {
+  if (!accessToken) return null
+
+  const userId = await resolveActiveUserId(accessToken)
+  return userId ? { userId, accessToken } : null
 }
 
-async function verifyJwtLocally(token: string): Promise<User | null> {
-  if (await isAccessTokenRevoked(token)) return null
-
-  try {
-    const payload = jwt.verify(token, env.SUPABASE_JWT_SECRET, {
-      algorithms: ["HS256"],
-    }) as SupabaseJwtPayload
-
-    if (!payload.sub) return null
-    if (await isUserSessionRevoked(payload.sub)) return null
-
-    return toAuthUser(payload)
-  } catch {
-    return null
-  }
-}
-
-async function resolveUserFromAccessToken(token: string): Promise<User | null> {
-  const localUser = await verifyJwtLocally(token)
-  if (localUser) return localUser
-
-  const { data, error } = await supabaseAdmin.auth.getUser(token)
-
-  if (error || !data.user) {
-    return null
-  }
-
-  if (await isUserSessionRevoked(data.user.id)) {
-    return null
-  }
-
-  return data.user
-}
-
-async function refreshAccessToken(
-  request: Request,
-  response: Response
-): Promise<string | null> {
+/** Access token vencido: renova com o refresh token do cookie e grava os cookies novos */
+async function sessionFromRefresh(request: Request, response: Response): Promise<RequestSession | null> {
   const refreshToken = getRefreshTokenFromCookies(request)
+  if (!refreshToken) return null
 
-  if (!refreshToken) {
-    return null
-  }
-
-  const result = await UserService.refresh(refreshToken)
-
-  if (!result.status) {
-    return null
-  }
+  const result = await UserService.renewTokens(refreshToken)
+  if (!result.status) return null
 
   setAuthCookies(response, result.data)
-  return result.data.accessToken
-}
-
-/** Só o admin configurado em ADMIN_USER_ID usa as rotas protegidas */
-export function isAdminUser(userId: string): boolean {
-  return userId === env.ADMIN_USER_ID
-}
-
-function rejectNonAdmin(response: Response): void {
-  response.status(403).json({ success: false, message: "Acesso restrito ao administrador." })
+  return sessionFromToken(result.data.accessToken)
 }
 
 export async function authMiddleware(
@@ -97,45 +39,21 @@ export async function authMiddleware(
   response: Response,
   next: NextFunction
 ): Promise<void> {
-  let accessToken = getAccessTokenFromCookies(request)
+  const session =
+    (await sessionFromToken(getAccessTokenFromCookies(request))) ??
+    (await sessionFromRefresh(request, response))
 
-  if (accessToken) {
-    const user = await resolveUserFromAccessToken(accessToken)
-
-    if (user) {
-      if (!isAdminUser(user.id)) {
-        rejectNonAdmin(response)
-        return
-      }
-      request.user = user
-      request.accessToken = accessToken
-      next()
-      return
-    }
-  }
-
-  const refreshedToken = await refreshAccessToken(request, response)
-
-  if (!refreshedToken) {
-    response.status(401).json({ success: false, message: "Sessão não encontrada." })
+  if (!session) {
+    sendCommonFailure(response, CommonErrorCode.UNAUTHORIZED)
     return
   }
 
-  accessToken = refreshedToken
-
-  const user = await resolveUserFromAccessToken(accessToken)
-
-  if (!user) {
-    response.status(401).json({ success: false, message: "Token inválido ou expirado" })
+  if (!isAdminUser(session.userId)) {
+    sendCommonFailure(response, CommonErrorCode.FORBIDDEN)
     return
   }
 
-  if (!isAdminUser(user.id)) {
-    rejectNonAdmin(response)
-    return
-  }
-
-  request.user = user
-  request.accessToken = accessToken
+  request.userId = session.userId
+  request.accessToken = session.accessToken
   next()
 }

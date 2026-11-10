@@ -3,18 +3,11 @@ import type { HomeProjects } from "@blog/shared";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
   fetchAdminProjects,
-  fetchFeaturedProjects,
   fetchHomeProjects,
+  fetchProjectById,
   fetchProjectBySlug,
 } from "../api/projects.api";
-
-export const projectKeys = {
-  all: ["projects"] as const,
-  admin: () => [...projectKeys.all, "admin"] as const,
-  featured: () => [...projectKeys.all, "featured"] as const,
-  home: () => [...projectKeys.all, "home"] as const,
-  detail: (slug: string) => [...projectKeys.all, "detail", slug] as const,
-};
+import { projectKeys } from "../lib/queryKeys";
 
 /** Projetos da home já separados em destaque e restante pelo backend */
 export function useHomeProjects() {
@@ -26,15 +19,17 @@ export function useHomeProjects() {
 
 export function useAdminProjects() {
   return useQuery({
-    queryKey: projectKeys.admin(),
+    queryKey: projectKeys.adminList(),
     queryFn: fetchAdminProjects,
   });
 }
 
-export function useFeaturedProjects() {
+/** Projeto aberto no formulário de edição (busca por id, inclui não publicados) */
+export function useAdminProject(id: string | undefined) {
   return useQuery({
-    queryKey: projectKeys.featured(),
-    queryFn: fetchFeaturedProjects,
+    queryKey: projectKeys.adminDetail(id ?? ""),
+    queryFn: () => fetchProjectById(id ?? ""),
+    enabled: Boolean(id),
   });
 }
 
@@ -44,7 +39,7 @@ export function useProject(slug: string) {
   const { isAuthenticated } = useAuth();
 
   return useQuery({
-    queryKey: projectKeys.detail(slug),
+    queryKey: projectKeys.detail(slug, isAuthenticated),
     queryFn: () => fetchProjectBySlug(slug, isAuthenticated),
     enabled: Boolean(slug),
     // Vindo da home, o card já tem os dados: a página abre sem esperar a requisição

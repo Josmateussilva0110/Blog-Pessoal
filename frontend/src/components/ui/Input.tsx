@@ -1,34 +1,30 @@
-import { cn } from "@/lib/format";
-import type { InputHTMLAttributes } from "react";
+import type { ComponentProps } from "react";
+import { cn } from "@/lib/cn";
+import { FIELD_CLASS, FIELD_ERROR_CLASS } from "./fieldStyles";
+import { FormField, useFieldIds } from "./FormField";
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends ComponentProps<"input"> {
   label?: string;
   error?: string;
 }
 
-export function Input({ label, error, className, id, ...props }: InputProps) {
-  const inputId = id ?? label?.toLowerCase().replace(/\s/g, "-");
+export function Input({
+  label,
+  error,
+  className,
+  id,
+  "aria-describedby": describedBy,
+  ...props
+}: InputProps) {
+  const { fieldId, errorId, controlProps } = useFieldIds(id, error, describedBy);
 
   return (
-    <div className="flex flex-col gap-2">
-      {label && (
-        <label htmlFor={inputId} className="text-sm text-text-muted">
-          {label}
-        </label>
-      )}
+    <FormField label={label} fieldId={fieldId} error={error} errorId={errorId}>
       <input
-        id={inputId}
-        className={cn(
-          "glass rounded-xl px-3 py-2 text-sm text-text",
-          "placeholder:text-text-subtle",
-          "focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/20",
-          "transition-all duration-200",
-          error && "border-danger/40",
-          className,
-        )}
+        className={cn(FIELD_CLASS, error && FIELD_ERROR_CLASS, className)}
+        {...controlProps}
         {...props}
       />
-      {error && <span className="text-xs text-danger-text">{error}</span>}
-    </div>
+    </FormField>
   );
 }

@@ -25,7 +25,7 @@ export function IosNavPage({ children }: { children: ReactNode }) {
   return (
     <div
       key={location.pathname}
-      className={`ios-nav-page bg-surface${motionClass ? ` ${motionClass}` : ""}`}
+      className={`ios-nav-page bg-home-bg${motionClass ? ` ${motionClass}` : ""}`}
     >
       {children}
     </div>

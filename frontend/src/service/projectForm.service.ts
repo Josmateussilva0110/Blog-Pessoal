@@ -1,29 +1,7 @@
-import type { ProjectFormValues } from "@blog/shared";
-import type { ApiResponse } from "./types";
-import type { Project } from "@blog/shared";
+import type { CreatedId, ProjectFormValues } from "@blog/shared";
+import { parseJsonResponse } from "./client";
 import { fetchMultipartWithAuth } from "./fetchMultipart";
-
-async function parseJsonResponse<T>(response: Response): Promise<ApiResponse<T>> {
-  const payload = (await response.json().catch(() => null)) as
-    | ApiResponse<T>
-    | { message?: string; code?: string }
-    | null;
-
-  if (!response.ok) {
-    const errorBody = payload && "message" in payload ? payload : undefined;
-    return {
-      success: false,
-      message: errorBody?.message ?? `Erro ${response.status}`,
-      code: errorBody?.code,
-    };
-  }
-
-  if (payload && "success" in payload) {
-    return payload as ApiResponse<T>;
-  }
-
-  return { success: true, data: payload as T };
-}
+import type { ApiResponse } from "./types";
 
 type ProjectFormFiles = {
   images: File[];
@@ -33,7 +11,7 @@ export async function submitProjectForm(
   payload: ProjectFormValues,
   files: ProjectFormFiles,
   projectId?: string,
-): Promise<ApiResponse<Project>> {
+): Promise<ApiResponse<CreatedId>> {
   const endpoint = projectId ? `/projects/${projectId}` : "/projects";
   const method = projectId ? "PUT" : "POST";
 
@@ -52,5 +30,5 @@ export async function submitProjectForm(
     },
   });
 
-  return parseJsonResponse<Project>(response);
+  return parseJsonResponse<CreatedId>(response);
 }

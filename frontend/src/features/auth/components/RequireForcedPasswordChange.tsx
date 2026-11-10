@@ -1,25 +1,21 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { FullPageStatus } from "@/components/ui/FullPageStatus";
+import { ROUTES } from "@/config/routes";
 import { useAuth } from "../hooks/useAuth";
 
 export function RequireForcedPasswordChange() {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="min-h-dvh flex items-center justify-center">
-        <span className="text-sm text-text-muted animate-pulse">
-          Carregando...
-        </span>
-      </div>
-    );
+    return <FullPageStatus message="Carregando…" />;
   }
 
   if (!user) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to={ROUTES.adminLogin} replace />;
   }
 
   if (!user.mustChangePassword) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to={ROUTES.admin} replace />;
   }
 
   return <Outlet />;

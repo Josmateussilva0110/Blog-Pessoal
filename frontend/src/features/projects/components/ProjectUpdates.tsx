@@ -1,21 +1,22 @@
 import type { ProjectUpdate } from "@blog/shared";
 import { ArrowRight } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import { Link } from "react-router-dom";
 import { MarkdownContent } from "@/components/ui/MarkdownContent";
 import { ROUTES } from "@/config/routes";
 import { getUpdateExcerpt, isLongUpdate } from "@/features/projects/lib/projectUpdateContent";
-import { cn, formatDate } from "@/lib/format";
+import { cn } from "@/lib/cn";
+import { formatDate } from "@/lib/format";
 
 export const PROJECT_UPDATES_SECTION_ID = "atualizacoes";
 
 /** Data e versão da atualização (timeline e página própria) */
 export function ProjectUpdateMeta({ update }: { update: ProjectUpdate }) {
   return (
-    <p className="flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-text-subtle">
+    <p className="flex flex-wrap items-center gap-2 font-mono text-2xs uppercase tracking-wider text-home-muted">
       <time dateTime={update.publishedAt}>{formatDate(update.publishedAt)}</time>
       {update.version && (
-        <span className="rounded-full border border-accent/30 bg-accent-soft px-2 py-0.5 normal-case tracking-normal text-accent">
+        <span className="rounded-full bg-brand/15 px-2 py-0.5 normal-case tracking-normal text-brand">
           {update.version}
         </span>
       )}
@@ -37,7 +38,7 @@ function ProjectUpdateItem({ update, projectSlug, latest }: ProjectUpdateItemPro
   const href = ROUTES.projectUpdate(projectSlug, update.id);
 
   return (
-    <motion.li
+    <m.li
       id={`update-${update.id}`}
       className="relative scroll-mt-24 pb-10 pl-8 last:pb-0"
       initial={reducedMotion ? false : { opacity: 0, y: 16 }}
@@ -51,16 +52,16 @@ function ProjectUpdateItem({ update, projectSlug, latest }: ProjectUpdateItemPro
         className={cn(
           "absolute left-0 top-1 size-[11px] -translate-x-1/2 rounded-full border-2",
           latest
-            ? "border-accent bg-accent shadow-[0_0_0_4px] shadow-accent/15"
-            : "border-hairline-strong bg-surface",
+            ? "border-brand bg-brand shadow-[0_0_0_4px] shadow-brand/15"
+            : "border-home-raised bg-home-card",
         )}
       />
 
       <ProjectUpdateMeta update={update} />
 
-      <h3 className="mt-2 text-lg font-semibold text-text">
+      <h3 className="mt-2 text-lg font-semibold tracking-logo text-home-ink">
         {isLong ? (
-          <Link to={href} className="transition-colors hover:text-accent">
+          <Link to={href} className="transition-colors hover:text-brand">
             {update.title}
           </Link>
         ) : (
@@ -71,11 +72,11 @@ function ProjectUpdateItem({ update, projectSlug, latest }: ProjectUpdateItemPro
       {isLong ? (
         <>
           {excerpt && (
-            <p className="mt-3 text-sm leading-relaxed text-text-muted">{excerpt}</p>
+            <p className="mt-3 text-sm leading-relaxed text-home-body">{excerpt}</p>
           )}
           <Link
             to={href}
-            className="group mt-3 inline-flex items-center gap-1.5 font-mono text-xs text-accent transition-colors hover:text-accent/80"
+            className="group mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-brand transition-colors hover:text-home-ink"
           >
             Ler atualização completa
             <ArrowRight
@@ -92,7 +93,7 @@ function ProjectUpdateItem({ update, projectSlug, latest }: ProjectUpdateItemPro
           />
         )
       )}
-    </motion.li>
+    </m.li>
   );
 }
 
@@ -106,16 +107,19 @@ export function ProjectUpdates({ updates, projectSlug }: ProjectUpdatesProps) {
   if (updates.length === 0) return null;
 
   return (
-    <section aria-labelledby={PROJECT_UPDATES_SECTION_ID} className="mt-16 scroll-mt-24">
+    <section
+      aria-labelledby={PROJECT_UPDATES_SECTION_ID}
+      className="home-card scroll-mt-24 p-5 sm:scroll-mt-28 sm:p-8"
+    >
       <h2
         id={PROJECT_UPDATES_SECTION_ID}
-        className="mb-8 border-b border-hairline-subtle pb-4 font-mono text-[11px] uppercase tracking-wider text-text-subtle"
+        className="mb-7 flex items-baseline gap-2 text-xl font-semibold tracking-heading text-home-ink"
       >
         Atualizações
-        <span className="ml-2 text-text-muted">{updates.length}</span>
+        <span className="font-mono text-xs font-normal text-home-muted">{updates.length}</span>
       </h2>
 
-      <ol className="relative ml-[5px] border-l border-hairline-subtle">
+      <ol className="relative ml-[5px] border-l border-home-line">
         {updates.map((update, index) => (
           <ProjectUpdateItem
             key={update.id}

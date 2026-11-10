@@ -1,6 +1,6 @@
 import type { ProjectStatus } from "@blog/shared";
 import { Badge } from "@/components/ui/Badge";
-import { getStatusLabel } from "@/lib/utils";
+import { getStatusLabel } from "@/lib/projectStatus";
 import { normalizeProjectStatus } from "@/lib/projectStatus";
 
 const statusVariant: Record<

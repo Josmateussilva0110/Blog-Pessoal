@@ -11,7 +11,7 @@
  * Requer SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no .env (raiz ou backend/).
  */
 import { supabaseAdmin } from "./lib/supabaseAdmin";
-import { RegisterSchema } from "../src/schemas/registerSchema";
+import { RegisterSchema } from "../src/schemas/auth/register";
 
 function printUsage() {
   console.error("Uso: npm run create-user -- <email> <username> <senha>");

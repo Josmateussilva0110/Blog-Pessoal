@@ -1,101 +1,127 @@
-import { useEffect, useState } from "react";
-import type { SiteLink, SiteLinkInput } from "@blog/shared";
-import { updateSiteLinksSchema } from "@blog/shared";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  updateSiteLinksSchema,
+  type SiteLink,
+  type SiteLinkInput,
+  type SiteLinksGrouped,
+  type UpdateSiteLinksFormInput,
+  type UpdateSiteLinksInput,
+} from "@blog/shared";
 import { Button } from "@/components/ui/Button";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { useToast } from "@/components/ui/toast";
-import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
 import { LinkListEditor } from "@/features/site-links/components/LinkListEditor";
 import {
   useSiteLinks,
   useUpdateSiteLinks,
 } from "@/features/site-links/hooks/useSiteLinks";
 
-function toInput(links: SiteLink[]): SiteLinkInput[] {
+/** Item do formulário: href sempre string para o input controlado */
+type SiteLinkFormItem = Omit<SiteLinkInput, "href"> & { href: string };
+
+function toInput(links: SiteLink[]): SiteLinkFormItem[] {
   return links.map(({ id, label, href, icon, external }) => ({
     id,
     label,
-    href,
+    href: href ?? "",
     icon,
     external,
   }));
 }
 
+function toFormValues(data: SiteLinksGrouped): UpdateSiteLinksFormInput {
+  return {
+    nav: toInput(data.nav),
+    social: toInput(data.social),
+    // Skill exige ícone: começa como "" para o campo controlado
+    skill: toInput(data.skill).map((link) => ({ ...link, icon: link.icon ?? "" })),
+  };
+}
+
 export function SiteLinksForm() {
   const toast = useToast();
-  const { data, isLoading } = useSiteLinks();
+  const { data, isError, isRefetching, refetch } = useSiteLinks();
   const updateSiteLinks = useUpdateSiteLinks();
-  const [navLinks, setNavLinks] = useState<SiteLinkInput[]>([]);
-  const [socialLinks, setSocialLinks] = useState<SiteLinkInput[]>([]);
-  const [skillLinks, setSkillLinks] = useState<SiteLinkInput[]>([]);
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<UpdateSiteLinksFormInput, unknown, UpdateSiteLinksInput>({
+    resolver: zodResolver(updateSiteLinksSchema),
+    defaultValues: { nav: [], social: [], skill: [] },
+  });
 
   useEffect(() => {
-    const source = data ?? DEFAULT_SITE_LINKS;
-    setNavLinks(toInput(source.nav));
-    setSocialLinks(toInput(source.social));
-    setSkillLinks(toInput(source.skill));
-  }, [data]);
+    if (data) reset(toFormValues(data));
+  }, [data, reset]);
 
-  async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-
-    const payload = {
-      nav: navLinks,
-      social: socialLinks,
-      skill: skillLinks,
-    };
-
-    const parsed = updateSiteLinksSchema.safeParse(payload);
-
-    if (!parsed.success) {
-      const firstIssue = parsed.error.issues[0];
-      toast.error(firstIssue?.message ?? "Verifique os campos dos links.");
-      return;
-    }
-
+  async function onSubmit(values: UpdateSiteLinksInput) {
     try {
-      await updateSiteLinks.mutateAsync(parsed.data);
+      await updateSiteLinks.mutateAsync(values);
       toast.success("Links atualizados com sucesso.");
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Não foi possível salvar os links.",
-      );
+      toast.error(error instanceof Error ? error.message : "Não foi possível salvar os links.");
     }
   }
 
+  // Sem os links reais o form não abre: salvar valores vazios apagaria os cadastrados
+  if (!data) {
+    return isError ? (
+      <ErrorState
+        message="Não foi possível carregar os links."
+        onRetry={() => void refetch()}
+        isRetrying={isRefetching}
+      />
+    ) : (
+      <p role="status" className="animate-pulse text-sm text-home-muted">
+        Carregando links…
+      </p>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={handleSubmit(onSubmit, () => toast.error("Verifique os campos destacados."))}
+      className="space-y-4"
+      noValidate
+    >
       <LinkListEditor
+        name="nav"
+        control={control}
+        register={register}
+        errors={errors.nav}
         title="Navegação"
         description="Links exibidos no cabeçalho do site."
-        items={navLinks}
-        onChange={setNavLinks}
         showExternal
       />
 
       <LinkListEditor
+        name="social"
+        control={control}
+        register={register}
+        errors={errors.social}
         title="Redes sociais"
         description="Links exibidos no rodapé e na seção Sobre."
-        items={socialLinks}
-        onChange={setSocialLinks}
       />
 
       <LinkListEditor
+        name="skill"
+        control={control}
+        register={register}
+        errors={errors.skill}
         title="Skills"
         description="Tecnologias da home. O link é opcional — sem URL, o ícone não será clicável."
-        items={skillLinks}
-        onChange={setSkillLinks}
         showIcon
         hrefRequired={false}
       />
 
       <div className="flex justify-end">
-        <Button
-          type="submit"
-          size="sm"
-          className="font-mono"
-          disabled={isLoading || updateSiteLinks.isPending}
-        >
-          {updateSiteLinks.isPending ? "Salvando..." : "save_links()"}
+        <Button type="submit" size="sm" disabled={updateSiteLinks.isPending}>
+          {updateSiteLinks.isPending ? "Salvando..." : "Salvar links"}
         </Button>
       </div>
     </form>

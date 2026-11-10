@@ -26,7 +26,7 @@ export function buildImageSubmission(images: LocalImage[]) {
   return {
     images: images.filter((item) => item.isExisting).map((item) => item.url),
     imageOrder,
-    files: images.filter((item) => item.file).map((item) => item.file!),
+    files: images.flatMap((item) => (item.file ? [item.file] : [])),
   };
 }
 
@@ -56,7 +56,8 @@ export function useProjectImages(initialUrls: string[] = []) {
 
   const addFiles = useCallback((files: File[]) => {
     const nextImages = files.map((file) => ({
-      id: `${file.name}-${file.lastModified}`,
+      // Id único mesmo para o mesmo arquivo escolhido duas vezes (nome + data repetiriam)
+      id: crypto.randomUUID(),
       url: URL.createObjectURL(file),
       file,
     }));

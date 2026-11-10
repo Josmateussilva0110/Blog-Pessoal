@@ -1,3 +1,5 @@
+import { ROUTES } from "@/config/routes";
+
 export function isAdminRoute(pathname: string): boolean {
-  return pathname === "/admin" || pathname.startsWith("/admin/");
+  return pathname === ROUTES.admin || pathname.startsWith(`${ROUTES.admin}/`);
 }

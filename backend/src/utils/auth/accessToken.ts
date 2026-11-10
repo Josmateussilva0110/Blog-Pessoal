@@ -1,41 +1,38 @@
 import jwt from "jsonwebtoken"
-import { supabaseAdmin } from "../../database/supabase/supabase"
 import { env } from "../../config/env"
+import { SUPABASE_DB_JWT_TTL_SECONDS } from "../../constants/auth"
+import { supabaseAdmin } from "../../database/supabase/supabase"
+import { isAccessTokenRevoked, isUserSessionRevoked } from "./tokenRevocation"
 
-/** Tempo de vida do JWT emitido pelo backend para queries PostgREST (RLS). */
-const SUPABASE_DB_JWT_TTL_SECONDS = 300
-
-export function getUserIdFromAccessToken(accessToken: string): string | undefined {
+function verifyUserIdLocally(accessToken: string): string | undefined {
   try {
     const payload = jwt.verify(accessToken, env.SUPABASE_JWT_SECRET, {
       algorithms: ["HS256"],
     }) as { sub?: string }
 
-    return payload.sub
+    return payload.sub || undefined
   } catch {
     return undefined
   }
 }
 
 /**
- * Resolve o user id com JWT verificado localmente ou validação via Supabase Auth.
- * Nunca confia em jwt.decode — tokens forjados são rejeitados.
+ * Resolve o user id de um access token com JWT verificado localmente ou, se a
+ * verificação local falhar, pelo Supabase Auth. Nunca confia em jwt.decode —
+ * tokens forjados são rejeitados. Token ou usuário revogado (logout) não passa.
  */
-export async function resolveUserIdFromAccessToken(
-  accessToken: string,
-): Promise<string | undefined> {
-  const verifiedUserId = getUserIdFromAccessToken(accessToken)
-  if (verifiedUserId) {
-    return verifiedUserId
-  }
+export async function resolveActiveUserId(accessToken: string): Promise<string | undefined> {
+  if (await isAccessTokenRevoked(accessToken)) return undefined
 
+  const userId = verifyUserIdLocally(accessToken) ?? (await fetchUserIdFromProvider(accessToken))
+  if (!userId) return undefined
+
+  return (await isUserSessionRevoked(userId)) ? undefined : userId
+}
+
+async function fetchUserIdFromProvider(accessToken: string): Promise<string | undefined> {
   const { data, error } = await supabaseAdmin.auth.getUser(accessToken)
-
-  if (error || !data.user) {
-    return undefined
-  }
-
-  return data.user.id
+  return error || !data.user ? undefined : data.user.id
 }
 
 /**

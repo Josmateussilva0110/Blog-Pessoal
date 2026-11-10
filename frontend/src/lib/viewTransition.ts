@@ -1,4 +1,3 @@
-import type { NavigateFunction } from "react-router-dom";
 import { SECTION_IDS } from "@/config/routes";
 
 export function projectTransitionName(slug: string) {
@@ -61,18 +60,4 @@ export function applySlideTransitionVars() {
 export function setSlideNavMode(mode: SlideDirection | null) {
   document.documentElement.classList.toggle("ios-nav-pop", mode === "pop");
   document.documentElement.classList.toggle("ios-nav-push", mode === "push");
-}
-
-export function navigateWithViewTransition(
-  navigate: NavigateFunction,
-  to: string,
-) {
-  if (supportsViewTransitions() && !prefersReducedMotion()) {
-    document.startViewTransition(() => {
-      navigate(to);
-    });
-    return;
-  }
-
-  navigate(to);
 }

@@ -1,34 +1,26 @@
-import { NextFunction, Request, Response } from "express"
+import type { NextFunction, Request, Response } from "express"
+import { userErrorHttpStatusMap } from "../errors/users"
 import UserService from "../services/UserService"
+import { CommonErrorCode } from "../types/common/errorCode"
+import { requireAuthField } from "../utils/auth/requireAuthField"
+import { sendCommonFailure } from "../utils/http/sendCommonFailure"
+import { sendFailure } from "../utils/http/sendFailure"
 
+/** Enquanto a troca de senha obrigatória não for feita, o admin só pode trocar a senha */
 export async function rejectIfMustChangePassword(
   request: Request,
   response: Response,
   next: NextFunction
 ): Promise<void> {
-  const accessToken = request.accessToken
+  const result = await UserService.getProfile(requireAuthField(request, "userId"))
 
-  if (!accessToken) {
-    response.status(401).json({ success: false, message: "Sessão não encontrada." })
+  if (!result.status) {
+    sendFailure(response, result.error, userErrorHttpStatusMap)
     return
   }
 
-  const profileResult = await UserService.getProfile(accessToken)
-
-  if (!profileResult.status) {
-    response.status(401).json({
-      success: false,
-      message: profileResult.error.message,
-    })
-    return
-  }
-
-  if (profileResult.data.must_change_password) {
-    response.status(403).json({
-      success: false,
-      code: "PASSWORD_CHANGE_REQUIRED",
-      message: "Defina uma nova senha antes de continuar.",
-    })
+  if (result.data.must_change_password) {
+    sendCommonFailure(response, CommonErrorCode.PASSWORD_CHANGE_REQUIRED)
     return
   }
 

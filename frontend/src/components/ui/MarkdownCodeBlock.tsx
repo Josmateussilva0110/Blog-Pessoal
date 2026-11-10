@@ -15,7 +15,10 @@ import tsx from "react-syntax-highlighter/dist/esm/languages/prism/tsx";
 import typescript from "react-syntax-highlighter/dist/esm/languages/prism/typescript";
 import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
+
+/** Tempo que o botão mostra "Copiado" depois do clique */
+const COPIED_FEEDBACK_MS = 2000;
 
 const LANGUAGE_ALIASES: Record<string, string> = {
   js: "javascript",
@@ -94,7 +97,7 @@ export function MarkdownCodeBlock({
     try {
       await navigator.clipboard.writeText(code);
       setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      window.setTimeout(() => setCopied(false), COPIED_FEEDBACK_MS);
     } catch {
       setCopied(false);
     }
@@ -103,22 +106,22 @@ export function MarkdownCodeBlock({
   return (
     <div
       className={cn(
-        "markdown-code-block my-4 overflow-hidden rounded-xl border border-white/[0.08] bg-[#0d1117]",
+        "markdown-code-block my-4 overflow-hidden rounded-xl border border-home-line bg-home-device",
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-3 border-b border-white/[0.08] bg-white/[0.03] px-4 py-2">
-        <span className="font-mono text-[11px] uppercase tracking-wide text-text-subtle">
+      <div className="flex items-center justify-between gap-3 border-b border-home-line bg-home-inset/60 px-4 py-2">
+        <span className="font-mono text-2xs uppercase tracking-wide text-home-muted">
           {label}
         </span>
         <button
           type="button"
           onClick={handleCopy}
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-[11px] transition-colors",
+            "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-2xs transition-colors focus-visible:outline-2 focus-visible:outline-brand",
             copied
               ? "border-terminal/30 bg-terminal/10 text-terminal"
-              : "border-white/10 text-text-muted hover:border-accent/25 hover:bg-accent-soft hover:text-text",
+              : "border-home-line text-home-muted hover:bg-home-inset hover:text-home-ink",
           )}
           aria-label={copied ? "Código copiado" : "Copiar código"}
         >
@@ -154,7 +157,7 @@ export function MarkdownCodeBlock({
           {code}
         </SyntaxHighlighter>
       ) : (
-        <pre className="overflow-x-auto p-4 font-mono text-[0.8125rem] leading-relaxed text-text">
+        <pre className="overflow-x-auto p-4 font-mono text-caption leading-relaxed text-home-ink">
           <code>{code}</code>
         </pre>
       )}

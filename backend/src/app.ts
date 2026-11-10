@@ -12,13 +12,10 @@ import { notFound } from "./middleware/notFound"
 import router from "./routes/routes"
 import { noStoreByDefault } from "./utils/http/httpCache"
 import { isAllowedCorsOrigin } from "./utils/http/corsOrigins"
-
-function healthPayload() {
-    if (env.NODE_ENV === "production") {
-        return { status: "ok" }
-    }
-    return { status: "ok", env: env.NODE_ENV }
-}
+import { csrfProtection } from "./middleware/csrfProtection"
+import { CSRF_HEADER_NAME } from "@blog/shared"
+import { JSON_BODY_LIMIT } from "./constants/http"
+import { sendSuccess } from "./utils/http/sendSuccess"
 
 export const app = express()
 
@@ -26,6 +23,7 @@ export const app = express()
 // Render/Belmo: 1 hop de proxy. Ajuste TRUST_PROXY_HOPS se o deploy mudar.
 app.set("trust proxy", env.TRUST_PROXY_HOPS)
 
+app.disable("x-powered-by")
 app.use(helmet())
 app.use(compression())
 app.use(cookieParser())
@@ -41,7 +39,7 @@ app.use(cors({
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", CSRF_HEADER_NAME],
 }))
 
 // Atualizações de projeto levam markdown: o corpo (até 100kb) é lido na própria
@@ -55,8 +53,10 @@ function isGlobalJsonRequest(incoming: IncomingMessage): boolean {
 }
 
 // ── Rotas ────────────────────────────────────────────────
-const sendHealth = (_req: Request, res: Response) => {
-    res.json(healthPayload())
+const sendHealth = (_request: Request, response: Response) => {
+    // Em produção não anuncia o ambiente
+    const data = env.NODE_ENV === "production" ? { status: "ok" } : { status: "ok", env: env.NODE_ENV }
+    sendSuccess(response, "API no ar.", data)
 }
 
 app.get("/", healthRateLimiter, sendHealth)
@@ -65,8 +65,11 @@ app.get("/api/health", healthRateLimiter, sendHealth)
 
 app.use(rateLimiter)
 
+// Antes de ler o corpo: requisição forjada por outro site é recusada sem processar nada
+app.use("/api", csrfProtection)
+
 // API JSON-only — urlencoded desabilitado (superfície de Prototype Pollution via qs)
-app.use(express.json({ limit: "10kb", type: isGlobalJsonRequest }))
+app.use(express.json({ limit: JSON_BODY_LIMIT, type: isGlobalJsonRequest }))
 
 app.use("/api", noStoreByDefault, router)
 

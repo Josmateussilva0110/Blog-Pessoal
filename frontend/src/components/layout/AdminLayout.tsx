@@ -14,20 +14,34 @@ import {
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
 import { Image } from "@/components/ui/Image";
+import { DESKTOP_MEDIA_QUERY, SITE } from "@/config/constants";
+import { ROUTES } from "@/config/routes";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { resolveProfileImageUrl } from "@/lib/profileImageUrl";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 const SIDEBAR_STORAGE_KEY = "admin-sidebar-collapsed";
 const SIDEBAR_WIDTH_EXPANDED = "15.5rem";
 const SIDEBAR_WIDTH_COLLAPSED = "4.75rem";
 
 const adminNav = [
-  { to: "/admin", label: "dashboard", end: true, icon: LayoutDashboard },
-  { to: "/admin/projects", label: "projects", end: false, icon: FolderKanban },
-  { to: "/admin/links", label: "links", end: false, icon: Link2 },
-  { to: "/admin/settings", label: "settings", end: false, icon: Settings },
+  { to: ROUTES.admin, label: "Painel", end: true, icon: LayoutDashboard },
+  { to: ROUTES.adminProjects, label: "Projetos", end: false, icon: FolderKanban },
+  { to: ROUTES.adminLinks, label: "Links", end: false, icon: Link2 },
+  { to: ROUTES.adminSettings, label: "Configurações", end: false, icon: Settings },
 ];
+
+/** Linha do menu lateral: ícone + rótulo; recolhida mostra só o ícone */
+function navItemClass(collapsed: boolean, active = false) {
+  return cn(
+    "group flex min-h-11 items-center rounded-xl text-sm transition-colors focus-visible:outline-2 focus-visible:outline-brand",
+    collapsed ? "justify-center px-2" : "gap-3 px-3",
+    active ? "bg-home-inset text-home-ink" : "text-home-muted hover:bg-home-inset/60 hover:text-home-ink",
+  );
+}
 
 function readSidebarCollapsed() {
   try {
@@ -43,33 +57,39 @@ export function AdminLayout() {
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed);
+  const isDesktop = useMediaQuery(DESKTOP_MEDIA_QUERY);
+  // Abaixo do lg a barra lateral vira gaveta: aberta funciona como modal, fechada sai do Tab
+  const drawerOpen = mobileNavOpen && !isDesktop;
+  const drawerHidden = !mobileNavOpen && !isDesktop;
+  const sidebarRef = useFocusTrap<HTMLElement>(drawerOpen);
+  useBodyScrollLock(drawerOpen);
 
   useEffect(() => {
     setMobileNavOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
-    if (!mobileNavOpen) return;
+    if (!drawerOpen) return;
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setMobileNavOpen(false);
+    }
 
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [mobileNavOpen]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [drawerOpen]);
 
   useEffect(() => {
     try {
       localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarCollapsed));
     } catch {
-      // ignore storage errors
+      // Armazenamento bloqueado (modo privado): a preferência só não persiste
     }
   }, [sidebarCollapsed]);
 
   async function handleLogout() {
     await logout();
-    navigate("/admin/login", { replace: true });
+    navigate(ROUTES.adminLogin, { replace: true });
   }
 
   function toggleSidebar() {
@@ -77,17 +97,21 @@ export function AdminLayout() {
   }
 
   return (
-    <div className="admin-shell min-h-dvh lg:flex grid-bg">
+    <div className="admin-shell min-h-dvh bg-home-bg lg:flex">
       {mobileNavOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-black/70 backdrop-blur-[2px] lg:hidden"
+          className="fixed inset-0 z-40 bg-scrim/70 backdrop-blur-[2px] lg:hidden"
           aria-label="Fechar menu"
           onClick={() => setMobileNavOpen(false)}
         />
       )}
 
       <aside
+        ref={sidebarRef}
+        tabIndex={-1}
+        inert={drawerHidden}
+        aria-label="Menu do painel"
         style={
           {
             "--admin-sidebar-width": sidebarCollapsed
@@ -96,65 +120,53 @@ export function AdminLayout() {
           } as CSSProperties
         }
         className={cn(
-          "admin-sidebar fixed inset-y-0 left-0 z-50 flex w-[var(--admin-sidebar-width)] flex-col overflow-hidden border-r",
+          "fixed inset-y-0 left-0 z-50 flex w-[var(--admin-sidebar-width)] flex-col overflow-hidden border-r border-home-line bg-home-card outline-none",
           // Desktop: fixa na altura da tela, sem esticar junto com o conteúdo da página
           "transition-[width,transform] duration-200 ease-out lg:sticky lg:top-0 lg:h-dvh lg:shrink-0 lg:translate-x-0",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
-        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border-subtle bg-surface-raised">
-          <span className="h-2 w-2 rounded-full bg-danger/80 shrink-0" />
-          <span className="h-2 w-2 rounded-full bg-warning/80 shrink-0" />
-          <span className="h-2 w-2 rounded-full bg-terminal/80 shrink-0" />
-          {!sidebarCollapsed && (
-            <span className="font-mono text-[10px] ml-1 truncate">
-              <span className="text-terminal">mateus@dev</span>
-              <span className="text-text-subtle">:</span>
-              <span className="text-accent">~/admin</span>
-            </span>
-          )}
-        </div>
-
         <div
           className={cn(
-            "flex items-center border-b border-border-subtle py-4",
-            sidebarCollapsed ? "justify-center px-2" : "justify-between gap-3 px-4",
+            "flex min-h-16 items-center border-b border-home-line",
+            sidebarCollapsed ? "justify-center px-2" : "justify-between gap-3 pl-5 pr-3",
           )}
         >
           {!sidebarCollapsed && (
             <div className="min-w-0">
-              <p className="code-comment">// painel</p>
-              <p className="mt-1 font-mono text-sm font-semibold text-text">admin shell</p>
+              <p className="truncate font-semibold tracking-logo text-home-ink">{SITE.name}</p>
+              <p className="text-xs text-home-muted">Painel admin</p>
             </div>
           )}
 
-          <div className={cn("flex items-center gap-1", sidebarCollapsed && "flex-col")}>
-            <button
-              type="button"
-              className="hidden rounded-lg p-2 text-text-muted transition-colors hover:bg-accent-soft hover:text-text lg:inline-flex"
-              aria-label={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
-              aria-expanded={!sidebarCollapsed}
-              onClick={toggleSidebar}
-            >
-              {sidebarCollapsed ? (
-                <ChevronRight className="size-5" aria-hidden />
-              ) : (
-                <ChevronLeft className="size-5" aria-hidden />
-              )}
-            </button>
+          <button
+            type="button"
+            className="hidden size-10 items-center justify-center rounded-xl text-home-muted transition-colors hover:bg-home-inset hover:text-home-ink focus-visible:outline-2 focus-visible:outline-brand lg:inline-flex"
+            aria-label={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+            aria-expanded={!sidebarCollapsed}
+            onClick={toggleSidebar}
+          >
+            {sidebarCollapsed ? (
+              <ChevronRight className="size-5" aria-hidden />
+            ) : (
+              <ChevronLeft className="size-5" aria-hidden />
+            )}
+          </button>
 
-            <button
-              type="button"
-              className="rounded-lg p-2 text-text-muted transition-colors hover:bg-accent-soft hover:text-text lg:hidden"
-              aria-label="Fechar menu"
-              onClick={() => setMobileNavOpen(false)}
-            >
-              <X className="size-5" aria-hidden />
-            </button>
-          </div>
+          <button
+            type="button"
+            className="inline-flex size-10 items-center justify-center rounded-xl text-home-muted transition-colors hover:bg-home-inset hover:text-home-ink focus-visible:outline-2 focus-visible:outline-brand lg:hidden"
+            aria-label="Fechar menu"
+            onClick={() => setMobileNavOpen(false)}
+          >
+            <X className="size-5" aria-hidden />
+          </button>
         </div>
 
-        <nav className={cn("min-h-0 flex-1 space-y-1 overflow-y-auto py-4", sidebarCollapsed ? "px-2" : "px-3")}>
+        <nav
+          aria-label="Admin"
+          className={cn("min-h-0 flex-1 space-y-1 overflow-y-auto py-4", sidebarCollapsed ? "px-2" : "px-3")}
+        >
           {adminNav.map((item) => {
             const Icon = item.icon;
 
@@ -164,34 +176,16 @@ export function AdminLayout() {
                 to={item.to}
                 end={item.end}
                 title={sidebarCollapsed ? item.label : undefined}
-                className={({ isActive }) =>
-                  cn(
-                    "group flex items-center rounded-lg font-mono text-sm transition-colors",
-                    sidebarCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5",
-                    isActive
-                      ? "bg-accent-soft text-accent"
-                      : "text-text-muted hover:bg-accent-soft/50 hover:text-text",
-                  )
-                }
+                aria-label={sidebarCollapsed ? item.label : undefined}
+                className={({ isActive }) => navItemClass(sidebarCollapsed, isActive)}
               >
                 {({ isActive }) => (
                   <>
-                    <span
-                      className={cn(
-                        "flex size-8 shrink-0 items-center justify-center rounded-md border transition-colors",
-                        isActive
-                          ? "border-accent/25 bg-accent-soft text-accent"
-                          : "border-border-subtle bg-surface-raised text-text-subtle group-hover:text-text-muted",
-                      )}
-                    >
-                      <Icon className="size-4" aria-hidden />
-                    </span>
-                    {!sidebarCollapsed && (
-                      <>
-                        <span className="text-text-subtle">{"// "}</span>
-                        {item.label}
-                      </>
-                    )}
+                    <Icon
+                      className={cn("size-[1.125rem] shrink-0 transition-colors", isActive && "text-brand")}
+                      aria-hidden
+                    />
+                    {!sidebarCollapsed && item.label}
                   </>
                 )}
               </NavLink>
@@ -199,60 +193,35 @@ export function AdminLayout() {
           })}
         </nav>
 
-        <div className={cn("space-y-2 border-t border-border-subtle", sidebarCollapsed ? "p-2" : "p-3")}>
+        <div className={cn("space-y-2 border-t border-home-line", sidebarCollapsed ? "p-2" : "p-3")}>
           <a
-            href="/"
+            href={ROUTES.home}
             target="_blank"
             rel="noopener noreferrer"
             title={sidebarCollapsed ? "Ver site" : undefined}
-            className={cn(
-              "flex items-center rounded-lg font-mono text-sm text-text-muted transition-colors hover:bg-accent-soft/50 hover:text-text",
-              sidebarCollapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5",
-            )}
+            aria-label={sidebarCollapsed ? "Ver site" : undefined}
+            className={navItemClass(sidebarCollapsed)}
           >
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-raised">
-              <ExternalLink className="size-4" aria-hidden />
-            </span>
-            {!sidebarCollapsed && (
-              <>
-                <span className="text-text-subtle">{"// "}</span>
-                site
-              </>
-            )}
+            <ExternalLink className="size-[1.125rem] shrink-0" aria-hidden />
+            {!sidebarCollapsed && "Ver site"}
           </a>
 
-          <div
-            className={cn(
-              "rounded-lg border border-border-subtle bg-surface-raised",
-              sidebarCollapsed ? "p-2" : "p-3",
-            )}
-          >
-            <div
-              className={cn(
-                "flex items-center",
-                sidebarCollapsed ? "justify-center" : "gap-3",
-              )}
-            >
+          <div className={cn("rounded-2xl bg-home-inset", sidebarCollapsed ? "p-2" : "p-3")}>
+            <div className={cn("flex items-center", sidebarCollapsed ? "justify-center" : "gap-3")}>
               <Image
                 src={resolveProfileImageUrl(user?.profileImagePublicUrl)}
                 alt={user?.username ?? "Administrador"}
                 width={36}
                 height={36}
-                rounded="md"
+                rounded="full"
                 loading="eager"
-                className="shrink-0 border border-accent/20"
+                className="shrink-0"
                 title={sidebarCollapsed ? user?.username ?? "Administrador" : undefined}
               />
               {!sidebarCollapsed && (
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-mono text-sm text-text">
-                    {user?.username ?? "admin"}
-                  </p>
-                  {user?.email && (
-                    <p className="truncate font-mono text-[10px] text-text-subtle">
-                      {user.email}
-                    </p>
-                  )}
+                  <p className="truncate text-sm font-medium text-home-ink">{user?.username ?? "admin"}</p>
+                  {user?.email && <p className="truncate text-xs text-home-muted">{user.email}</p>}
                 </div>
               )}
             </div>
@@ -261,40 +230,38 @@ export function AdminLayout() {
               variant="ghost"
               size="sm"
               title={sidebarCollapsed ? "Sair" : undefined}
+              aria-label={sidebarCollapsed ? "Sair" : undefined}
               className={cn(
-                "mt-3 font-mono text-text-muted hover:bg-accent-soft hover:text-text",
-                sidebarCollapsed ? "w-full justify-center px-2" : "w-full justify-start px-2",
+                "mt-3 w-full hover:bg-home-raised",
+                sidebarCollapsed ? "justify-center px-2" : "justify-start px-2",
               )}
               onClick={handleLogout}
             >
               <LogOut className="size-4" aria-hidden />
-              {!sidebarCollapsed && "logout()"}
+              {!sidebarCollapsed && "Sair"}
             </Button>
           </div>
         </div>
       </aside>
 
       <div className="admin-main flex min-h-dvh min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border-subtle bg-surface/90 px-4 backdrop-blur-md sm:px-6 lg:px-8">
-          <div className="flex min-w-0 items-center gap-3">
-            <button
-              type="button"
-              className="rounded-lg border border-border-subtle p-2 text-text-muted transition-colors hover:bg-accent-soft hover:text-text lg:hidden"
-              aria-label="Abrir menu"
-              aria-expanded={mobileNavOpen}
-              onClick={() => setMobileNavOpen(true)}
-            >
-              <Menu className="size-5" aria-hidden />
-            </button>
-
-            <p className="truncate font-mono text-xs text-text-subtle">
-              <span className="text-terminal">$ </span>
-              admin --shell
-            </p>
-          </div>
+        {/* No desktop o menu lateral já identifica a área; a barra fica só no celular */}
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-home-line bg-home-card/90 px-4 backdrop-blur-md sm:px-6 lg:hidden">
+          <button
+            type="button"
+            className="inline-flex size-10 items-center justify-center rounded-xl text-home-muted transition-colors hover:bg-home-inset hover:text-home-ink focus-visible:outline-2 focus-visible:outline-brand"
+            aria-label="Abrir menu"
+            aria-expanded={mobileNavOpen}
+            onClick={() => setMobileNavOpen(true)}
+          >
+            <Menu className="size-5" aria-hidden />
+          </button>
+          <p className="truncate text-sm font-semibold text-home-ink">
+            {SITE.name} <span className="font-normal text-home-muted">· Admin</span>
+          </p>
         </header>
 
-        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
           <div className="mx-auto w-full max-w-7xl">
             <Outlet />
           </div>

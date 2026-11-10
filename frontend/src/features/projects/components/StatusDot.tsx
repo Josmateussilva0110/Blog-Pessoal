@@ -1,6 +1,6 @@
 import type { ProjectStatus } from "@blog/shared";
 import { STATUS_DOT_CLASS } from "@/features/projects/lib/statusDot";
-import { cn } from "@/lib/format";
+import { cn } from "@/lib/cn";
 
 /** Ponto colorido que indica o status do projeto (decorativo: o rótulo vem ao lado) */
 export function StatusDot({ status, className }: { status: ProjectStatus; className?: string }) {

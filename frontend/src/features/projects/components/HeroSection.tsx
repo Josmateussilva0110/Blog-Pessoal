@@ -1,140 +1,82 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { Link } from "react-router-dom";
-import { Image, DEFAULT_IMAGE_FALLBACK } from "@/components/ui/Image";
-import { TerminalWindow, TerminalWindowBar } from "@/components/ui/TerminalWindow";
-import { SITE } from "@/config/constants";
+import { ArrowDown } from "lucide-react";
+import { buttonClassName } from "@/components/ui/Button";
+import { Image } from "@/components/ui/Image";
+import { HOME_HERO, SITE } from "@/config/constants";
 import { RevealText } from "@/components/ui/RevealText";
 import { usePublicProfileImage } from "@/features/profile/hooks/usePublicProfileImage";
-import { useHeroStats } from "@/features/site-settings/hooks/useHeroStats";
-import { ROUTES } from "@/config/routes";
+import { ROUTES, SECTION_IDS } from "@/config/routes";
 
-const MotionLink = motion.create(Link);
+const MotionLink = m.create(Link);
 
-interface HeroSectionProps {
-  projectCount?: number;
-  isLoading?: boolean;
-}
+const PROFILE_PHOTO_CLASS =
+  "aspect-[4/3] w-full flex-1 rounded-[1.125rem] bg-home-inset object-[50%_30%] md:aspect-auto md:min-h-[18rem]";
 
-export function HeroSection({ projectCount = 0, isLoading = false }: HeroSectionProps) {
+export function HeroSection() {
   const { data: profileImage } = usePublicProfileImage();
-  const { data: heroStats } = useHeroStats();
-  const countLabel = isLoading ? "—" : String(projectCount);
 
+  // Duas colunas já no tablet: em coluna única a foto vira um quadrado maior que a tela
   return (
-    <section className="py-12 sm:py-16 md:py-24 lg:py-28">
-      <div className="grid gap-8 sm:gap-12 md:grid-cols-[1fr_auto] md:gap-14 lg:gap-20 items-start">
-        <div className="order-2 md:order-1 max-w-3xl">
-          <TerminalWindow path="~/index.md" bodyClassName="p-4 sm:p-6 md:p-8 lg:p-10">
-            <div className="inline-flex items-center gap-2 border border-terminal/30 rounded px-3 py-1 mb-6">
-              <span className="h-1.5 w-1.5 rounded-full bg-terminal animate-pulse" />
-              <span className="font-mono text-[10px] uppercase tracking-widest text-terminal">
-                online — open source
-              </span>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <p className="code-comment">// dev blog</p>
-              <span className="font-mono text-[10px] text-accent bg-accent-soft border border-accent/20 px-2.5 py-1 rounded">
-                --{SITE.role}
-              </span>
-            </div>
-
-            <RevealText
-              as="h1"
-              text="Código que cria coisas."
-              accent={["cria"]}
-              animated={false}
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] mb-5 sm:mb-6 tracking-tight"
-            />
-
-            <p className="text-sm sm:text-base md:text-lg text-text-muted leading-relaxed max-w-xl mb-8 sm:mb-10">
-              {SITE.description}
-            </p>
-
-            <div className="flex flex-col min-[400px]:flex-row flex-wrap gap-3 mb-8 sm:mb-10">
-              <MotionLink
-                to={ROUTES.projectsSection}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center justify-center font-mono text-sm font-medium bg-accent text-surface px-6 py-3 btn-terminal hover:bg-accent-muted transition-colors"
-              >
-                ver_projetos()
-              </MotionLink>
-              <motion.a
-                href={ROUTES.aboutSection}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                className="inline-flex items-center justify-center font-mono text-sm text-text-muted border border-border-subtle px-5 py-3 hover:text-text hover:border-border transition-colors"
-              >
-                about --me
-              </motion.a>
-            </div>
-
-            <div className="border-t border-border-subtle pt-6 sm:pt-8">
-              <p className="code-comment mb-3 sm:mb-4">// stats</p>
-              <div className="grid grid-cols-3 gap-2 sm:gap-6 md:gap-8 max-w-md">
-                <div className="min-w-0">
-                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-text">{countLabel}</p>
-                  <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wide sm:tracking-widest text-text-subtle mt-1 leading-tight">
-                    projetos
-                  </p>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-text">
-                    {heroStats?.yearsCoding}
-                  </p>
-                  <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wide sm:tracking-widest text-text-subtle mt-1 leading-tight">
-                    anos codando
-                  </p>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-accent">∞</p>
-                  <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-wide sm:tracking-widest text-text-subtle mt-1 leading-tight">
-                    café
-                  </p>
-                </div>
-              </div>
-            </div>
-          </TerminalWindow>
+    <section className="grid gap-3 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="home-card flex min-h-[24rem] flex-col justify-between gap-10 p-6 sm:min-h-[27.5rem] sm:p-10">
+        <div>
+          <RevealText
+            as="h1"
+            text={HOME_HERO.title}
+            animated={false}
+            className="mb-5 max-w-[42rem] text-4xl font-semibold leading-[1.04] tracking-[-0.04em] text-home-ink sm:text-5xl lg:text-6xl"
+          />
+          <p className="max-w-[32rem] text-base leading-relaxed text-home-muted sm:text-[17px]">
+            {HOME_HERO.description}
+          </p>
         </div>
 
-        <div className="order-1 md:order-2 flex justify-center md:justify-end md:pt-6">
-          <div className="terminal-card w-full max-w-[220px] min-[400px]:max-w-[260px] sm:max-w-[300px] overflow-hidden">
-            <TerminalWindowBar path="~/avatar.jpg" />
-
-            <div className="p-3">
-              <div className="relative overflow-hidden rounded-md border border-accent/15 bg-surface">
-                <Image
-                  src={profileImage?.url ?? DEFAULT_IMAGE_FALLBACK}
-                  fallback={profileImage?.fullUrl ?? DEFAULT_IMAGE_FALLBACK}
-                  alt={SITE.profileImageAlt}
-                  width={280}
-                  height={280}
-                  fit="cover"
-                  rounded="md"
-                  loading="eager"
-                  className="w-full aspect-square"
-                />
-                <div
-                  className="pointer-events-none absolute inset-0 bg-[linear-gradient(transparent_50%,rgb(34_211_238/0.03)_50%)] bg-[length:100%_4px]"
-                  aria-hidden
-                />
-              </div>
-            </div>
-
-            <div className="px-4 pb-4 space-y-1.5">
-              <p className="font-mono text-[11px]">
-                <span className="text-terminal">$ </span>
-                <span className="text-accent">file</span>
-                <span className="text-text-muted"> avatar.jpg</span>
-              </p>
-              <p className="font-mono text-[10px] text-text-subtle">
-                image/jpeg · 1:1 · profile
-              </p>
-            </div>
-          </div>
+        <div className="flex flex-wrap gap-2.5">
+          <MotionLink
+            to={ROUTES.projectsSection}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            className={buttonClassName({ size: "cta" })}
+          >
+            Explorar projetos
+            <ArrowDown className="size-4" aria-hidden />
+          </MotionLink>
         </div>
       </div>
+
+      {/* "Sobre" no menu leva até a foto */}
+      <figure
+        id={SECTION_IDS.about}
+        className="home-card m-0 flex scroll-mt-24 flex-col p-2 sm:scroll-mt-28"
+      >
+        {/* Enquanto os dados da foto chegam, só a área reservada: o SVG provisório seria
+            baixado à toa e viraria candidato a LCP antes de ser trocado */}
+        {profileImage ? (
+          <Image
+            src={profileImage.url}
+            fallback={profileImage.fullUrl}
+            srcSet={
+              profileImage.hasImage && profileImage.url !== profileImage.fullUrl
+                ? `${profileImage.url} 320w, ${profileImage.fullUrl} 800w`
+                : undefined
+            }
+            sizes="(min-width: 768px) 30rem, 100vw"
+            fetchPriority="high"
+            alt={SITE.profileImageAlt}
+            fit="cover"
+            rounded="none"
+            loading="eager"
+            className={PROFILE_PHOTO_CLASS}
+          />
+        ) : (
+          <div className={PROFILE_PHOTO_CLASS} aria-hidden />
+        )}
+        <figcaption className="flex items-center justify-between gap-2 px-3 pb-2 pt-3.5">
+          <span className="font-semibold text-home-ink">{SITE.author}</span>
+          <span className="font-mono text-xs text-home-muted">dev {SITE.role}</span>
+        </figcaption>
+      </figure>
     </section>
   );
 }

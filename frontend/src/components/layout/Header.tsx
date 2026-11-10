@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import { SITE } from "@/config/constants";
+import { ROUTES } from "@/config/routes";
 import { DEFAULT_SITE_LINKS } from "@/config/siteLinks.defaults";
-import { useSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
+import { usePublicSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 import { TypingText } from "@/components/ui/TypingText";
-import { usePageWidthClass } from "@/hooks/usePageWidth";
-import { cn } from "@/lib/format";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
+import { PAGE_WIDTH_CLASS } from "@/components/layout/pageWidth";
+import { cn } from "@/lib/cn";
 import { prefersReducedMotion, scrollToPageTop } from "@/lib/viewTransition";
 
 type NavLinkItem = {
@@ -21,7 +23,7 @@ function handleHomeNavClick(
   pathname: string,
   onNavigate?: () => void,
 ) {
-  if (href !== "/" || pathname !== "/") {
+  if (href !== ROUTES.home || pathname !== ROUTES.home) {
     onNavigate?.();
     return;
   }
@@ -30,7 +32,7 @@ function handleHomeNavClick(
   onNavigate?.();
 
   if (window.location.hash) {
-    window.history.replaceState(null, "", "/");
+    window.history.replaceState(null, "", ROUTES.home);
   }
 
   scrollToPageTop(prefersReducedMotion() ? "instant" : "smooth");
@@ -38,13 +40,12 @@ function handleHomeNavClick(
 
 function getLinkClassName(isActive: boolean, mobile = false) {
   return cn(
-    "font-mono transition-colors",
-    mobile ? "text-sm py-2.5 px-3 rounded-md" : "text-sm",
+    // Rótulos vêm do admin em minúsculas ("projects", "github")
+    "inline-flex items-center gap-1 rounded-[0.625rem] text-sm capitalize transition-colors focus-visible:outline-2 focus-visible:outline-brand",
+    mobile ? "min-h-11 px-3" : "min-h-10 px-3.5",
     isActive
-      ? "text-accent"
-      : mobile
-        ? "text-text-muted hover:text-text hover:bg-surface-raised"
-        : "text-text-muted hover:text-text",
+      ? "bg-home-inset text-home-ink"
+      : "text-home-muted hover:bg-home-inset/60 hover:text-home-ink",
   );
 }
 
@@ -62,12 +63,10 @@ function NavLinks({
   return (
     <>
       {links.map((link) => {
-        const href = link.href ?? "/";
-        const isActive =
-          !link.external &&
-          (href === "/"
-            ? pathname === "/"
-            : href.startsWith("/#") && pathname === "/");
+        const href = link.href ?? ROUTES.home;
+        // Só a página atual fica destacada; as âncoras da home (/#projetos) não,
+        // senão todos os links aparecem ativos ao mesmo tempo na home
+        const isActive = !link.external && href === ROUTES.home && pathname === ROUTES.home;
 
         const className = getLinkClassName(isActive, mobile);
 
@@ -81,8 +80,8 @@ function NavLinks({
               className={className}
               onClick={onNavigate}
             >
-              {"// "}
               {link.label}
+              <ArrowUpRight className="size-3.5" aria-hidden />
             </a>
           );
         }
@@ -94,7 +93,6 @@ function NavLinks({
             className={className}
             onClick={(event) => handleHomeNavClick(event, href, pathname, onNavigate)}
           >
-            {"// "}
             {link.label}
           </a>
         );
@@ -105,8 +103,7 @@ function NavLinks({
 
 export function Header() {
   const { pathname } = useLocation();
-  const pageWidth = usePageWidthClass();
-  const { data: siteLinks } = useSiteLinks();
+  const { data: siteLinks } = usePublicSiteLinks();
   const navLinks = siteLinks?.nav ?? DEFAULT_SITE_LINKS.nav;
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
@@ -114,58 +111,73 @@ export function Header() {
     setMobileNavOpen(false);
   }, [pathname]);
 
+  useBodyScrollLock(mobileNavOpen);
+
   useEffect(() => {
     if (!mobileNavOpen) return;
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setMobileNavOpen(false);
+    }
 
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [mobileNavOpen]);
 
   return (
-    <header className="sticky top-0 z-50 px-4 sm:px-6 pt-4 sm:pt-5 pb-2 bg-surface/80 backdrop-blur-md border-b border-border-subtle/60">
-      <div className={cn("relative z-[60] mx-auto flex items-center justify-between gap-4", pageWidth)}>
-        <Link
-          to="/"
-          className="font-mono text-sm font-semibold text-text hover:text-accent transition-colors min-w-0 truncate"
-        >
-          <TypingText text={SITE.name} />
-        </Link>
-
-        <nav className="hidden sm:flex items-center gap-6 shrink-0">
-          <NavLinks links={navLinks} pathname={pathname} />
-        </nav>
-
+    <header className="sticky top-0 z-50 px-4 pt-3 sm:px-6 sm:pt-4">
+      {/* Fora do card: com backdrop-filter no card, um fixed dentro dele ficaria preso ao card */}
+      {mobileNavOpen && (
         <button
           type="button"
-          className="sm:hidden inline-flex items-center justify-center h-9 w-9 rounded-md border border-border-subtle text-text-muted hover:text-text hover:border-border transition-colors shrink-0"
-          aria-expanded={mobileNavOpen}
-          aria-controls="mobile-nav"
-          aria-label={mobileNavOpen ? "Fechar menu" : "Abrir menu"}
-          onClick={() => setMobileNavOpen((open) => !open)}
-        >
-          {mobileNavOpen ? (
-            <X className="h-4 w-4" aria-hidden />
-          ) : (
-            <Menu className="h-4 w-4" aria-hidden />
-          )}
-        </button>
-      </div>
+          // Só para mouse/toque: pelo teclado o botão do menu e o Esc já fecham
+          tabIndex={-1}
+          aria-hidden
+          className="fixed inset-0 z-40 bg-home-bg/60 backdrop-blur-[2px] sm:hidden"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
 
-      {mobileNavOpen && (
-        <>
+      {/* Barra em card, como os blocos da home */}
+      <div
+        className={cn(
+          "relative z-[60] mx-auto rounded-2xl border border-home-line bg-home-card/85 py-2 pl-5 pr-2 backdrop-blur-md",
+          PAGE_WIDTH_CLASS,
+        )}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <Link
+            to={ROUTES.home}
+            className="min-w-0 truncate font-semibold tracking-logo text-home-ink transition-colors hover:text-home-ink-strong"
+          >
+            <TypingText text={SITE.name} />
+          </Link>
+
+          <nav className="hidden shrink-0 items-center gap-1 sm:flex" aria-label="Principal">
+            <NavLinks links={navLinks} pathname={pathname} />
+          </nav>
+
           <button
             type="button"
-            className="fixed inset-0 z-40 bg-surface/60 backdrop-blur-[2px] sm:hidden"
-            aria-label="Fechar menu"
-            onClick={() => setMobileNavOpen(false)}
-          />
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-[0.625rem] text-home-muted transition-colors hover:bg-home-inset hover:text-home-ink focus-visible:outline-2 focus-visible:outline-brand sm:hidden"
+            aria-expanded={mobileNavOpen}
+            aria-controls="mobile-nav"
+            aria-label={mobileNavOpen ? "Fechar menu" : "Abrir menu"}
+            onClick={() => setMobileNavOpen((open) => !open)}
+          >
+            {mobileNavOpen ? (
+              <X className="h-4 w-4" aria-hidden />
+            ) : (
+              <Menu className="h-4 w-4" aria-hidden />
+            )}
+          </button>
+        </div>
+
+        {mobileNavOpen && (
           <nav
             id="mobile-nav"
-            className="relative z-[60] sm:hidden mt-3 pt-3 border-t border-border-subtle flex flex-col gap-1"
+            aria-label="Principal"
+            className="mt-2 flex flex-col gap-1 border-t border-home-line pb-1 pt-2 pr-3 sm:hidden"
           >
             <NavLinks
               links={navLinks}
@@ -174,8 +186,8 @@ export function Header() {
               onNavigate={() => setMobileNavOpen(false)}
             />
           </nav>
-        </>
-      )}
+        )}
+      </div>
     </header>
   );
 }
