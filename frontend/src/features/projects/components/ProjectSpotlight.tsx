@@ -7,7 +7,7 @@ import { ProjectStage } from "@/features/projects/components/ProjectStage";
 import { TechIconChip } from "@/features/projects/components/TechIconChip";
 import { useProjectCardLink } from "@/features/projects/hooks/useProjectCardLink";
 import { normalizeProjectPlatform, PLATFORM_KIND_LABELS } from "@/lib/projectPlatform";
-import { getTechMeta } from "@/lib/skillicons";
+import { useTechMeta } from "@/features/site-links/hooks/useTechMeta";
 import { ROUTES } from "@/config/routes";
 
 /** Detalhe do projeto selecionado no explorador da home */
@@ -15,8 +15,11 @@ export function ProjectSpotlight({ project }: { project: Project }) {
   const { handleClick, prefetchProps } = useProjectCardLink(project);
   const platform = normalizeProjectPlatform(project.platform);
   const year = new Date(project.createdAt).getFullYear();
+  const resolveTech = useTechMeta();
   // "node.js" e "nodejs" viram o mesmo chip
-  const techs = [...new Set(project.techStack.map((tech) => getTechMeta(tech).label))];
+  const techs = [
+    ...new Map(project.techStack.map((tech) => resolveTech(tech)).map((meta) => [meta.label, meta])).values(),
+  ];
   const projectUrl = ROUTES.project(project.slug);
 
   return (
@@ -42,7 +45,7 @@ export function ProjectSpotlight({ project }: { project: Project }) {
           {techs.length > 0 && (
             <ul className="flex flex-wrap gap-1.5" aria-label="Tecnologias">
               {techs.map((tech) => (
-                <TechIconChip key={tech} name={tech} />
+                <TechIconChip key={tech.label} meta={tech} />
               ))}
             </ul>
           )}

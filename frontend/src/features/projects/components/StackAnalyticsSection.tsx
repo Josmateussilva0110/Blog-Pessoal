@@ -6,6 +6,7 @@ import { TechRadarChart } from "./charts/TechRadarChart";
 import { PlatformDonutChart } from "./charts/PlatformDonutChart";
 import { countByPlatform, countProjectsByMonth, countTechUsage } from "@/features/projects/lib/projectStats";
 import { SECTION_IDS } from "@/config/routes";
+import { useTechMeta } from "@/features/site-links/hooks/useTechMeta";
 import { StackAnalyticsSkeleton } from "./StackAnalyticsSkeleton";
 
 interface StackAnalyticsSectionProps {
@@ -14,7 +15,8 @@ interface StackAnalyticsSectionProps {
 }
 
 export function StackAnalyticsSection({ projects, isLoading }: StackAnalyticsSectionProps) {
-  const techUsage = useMemo(() => countTechUsage(projects), [projects]);
+  const resolveTech = useTechMeta();
+  const techUsage = useMemo(() => countTechUsage(projects, resolveTech), [projects, resolveTech]);
   const byMonth = useMemo(() => countProjectsByMonth(projects), [projects]);
   const byPlatform = useMemo(() => countByPlatform(projects), [projects]);
 

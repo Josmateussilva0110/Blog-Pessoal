@@ -1,9 +1,7 @@
-import { getSkillIconUrl, getTechMeta } from "@/lib/skillicons";
+import { getSkillIconUrl, type TechMeta } from "@/lib/skillicons";
 
 /** Chip de tecnologia com o ícone do skillicons (quando a tecnologia é conhecida) */
-export function TechIconChip({ name }: { name: string }) {
-  const meta = getTechMeta(name);
-
+export function TechIconChip({ meta }: { meta: TechMeta }) {
   return (
     <li className="inline-flex items-center gap-2 rounded-lg bg-home-inset py-1.5 pl-1.5 pr-2.5 font-mono text-xs text-home-ink">
       {meta.icon && (

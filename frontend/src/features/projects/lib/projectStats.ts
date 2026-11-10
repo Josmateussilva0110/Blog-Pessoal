@@ -1,5 +1,5 @@
 import type { Project, ProjectPlatform } from "@blog/shared";
-import { getTechMeta } from "@/lib/skillicons";
+import type { TechResolver } from "@/lib/skillicons";
 import { normalizeProjectPlatform, PLATFORM_LABELS } from "@/lib/projectPlatform";
 
 export type TechUsage = {
@@ -22,12 +22,12 @@ export type MonthUsage = {
 const MAX_MONTHS = 6;
 
 /** Tecnologias agrupadas pelo nome padronizado, da mais usada para a menos usada */
-export function countTechUsage(projects: Project[]): TechUsage[] {
+export function countTechUsage(projects: Project[], resolveTech: TechResolver): TechUsage[] {
   const byLabel = new Map<string, TechUsage>();
 
   for (const project of projects) {
     for (const tech of project.techStack) {
-      const meta = getTechMeta(tech);
+      const meta = resolveTech(tech);
       const entry = byLabel.get(meta.label) ?? { label: meta.label, icon: meta.icon, projects: [] };
       // Mesma tecnologia escrita duas vezes no projeto conta uma vez só
       if (!entry.projects.includes(project.title)) entry.projects.push(project.title);

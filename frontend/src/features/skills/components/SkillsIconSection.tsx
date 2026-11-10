@@ -5,7 +5,7 @@ import { usePublicSiteLinks } from "@/features/site-links/hooks/useSiteLinks";
 import { countTechUsage } from "@/features/projects/lib/projectStats";
 import { Image } from "@/components/ui/Image";
 import { RevealText } from "@/components/ui/RevealText";
-import { getSkillIconUrl, getTechMeta } from "@/lib/skillicons";
+import { createTechResolver, getSkillIconUrl } from "@/lib/skillicons";
 import { fadeUp, inViewRepeat, staggerContainer } from "@/lib/motion";
 import { SECTION_IDS } from "@/config/routes";
 
@@ -67,15 +67,17 @@ function SkillsSkeleton() {
 
 export function SkillsIconSection({ projects }: { projects: Project[] }) {
   const { data: siteLinks, isPending } = usePublicSiteLinks();
-  const skills = siteLinks?.skill ?? [];
+  const skills = siteLinks?.skill;
+  // Mesmo resolvedor do useTechMeta, com as skills que esta seção já buscou
+  const resolveTech = useMemo(() => createTechResolver(skills), [skills]);
   // Quantos projetos usam cada ferramenta, pelo nome padronizado
   const usage = useMemo(
-    () => new Map(countTechUsage(projects).map((tech) => [tech.label, tech.projects.length])),
-    [projects],
+    () => new Map(countTechUsage(projects, resolveTech).map((tech) => [tech.label, tech.projects.length])),
+    [projects, resolveTech],
   );
 
   // A lista vem só da API: com erro ou sem ferramentas cadastradas, a seção não aparece
-  if (!isPending && skills.length === 0) return null;
+  if (!isPending && !skills?.length) return null;
 
   return (
     <section
@@ -101,9 +103,9 @@ export function SkillsIconSection({ projects }: { projects: Project[] }) {
           whileInView="show"
           viewport={inViewRepeat}
         >
-          {skills.map((skill) => {
+          {skills?.map((skill) => {
             const icon = skill.icon ?? skill.label.toLowerCase();
-            const count = usage.get(getTechMeta(skill.label).label) ?? 0;
+            const count = usage.get(resolveTech(skill.label).label) ?? 0;
 
             return (
               <m.li key={`${icon}-${skill.label}`} variants={fadeUp} whileTap={{ scale: 0.95 }}>

@@ -1,9 +1,11 @@
-import { getSkillIconUrl, getTechMeta } from "@/lib/skillicons";
+import { useTechMeta } from "@/features/site-links/hooks/useTechMeta";
+import { getSkillIconUrl } from "@/lib/skillicons";
 
 /** Stack do projeto na coluna lateral, com o ícone de cada tecnologia */
 export function ProjectStackCard({ techStack }: { techStack: string[] }) {
+  const resolveTech = useTechMeta();
   // "node.js" e "nodejs" viram a mesma linha
-  const techs = [...new Map(techStack.map(getTechMeta).map((meta) => [meta.label, meta])).values()];
+  const techs = [...new Map(techStack.map((tech) => resolveTech(tech)).map((meta) => [meta.label, meta])).values()];
 
   if (techs.length === 0) return null;
 

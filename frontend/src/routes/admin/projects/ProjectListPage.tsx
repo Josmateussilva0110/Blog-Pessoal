@@ -14,18 +14,20 @@ import { projectKeys } from "@/features/projects/lib/queryKeys";
 import { StatusBadge } from "@/features/projects/components/StatusBadge";
 import { PlatformBadge } from "@/features/projects/components/PlatformBadge";
 import type { Project } from "@blog/shared";
-import { getTechMeta } from "@/lib/skillicons";
+import { useTechMeta } from "@/features/site-links/hooks/useTechMeta";
+import type { TechResolver } from "@/lib/skillicons";
 import { cn } from "@/lib/cn";
 
 /** Primeiras tecnologias com a grafia padronizada ("TypeScript · React Native") */
-function stackSummary(project: Project) {
-  return project.techStack.slice(0, 3).map((tech) => getTechMeta(tech).label).join(" · ");
+function stackSummary(project: Project, resolveTech: TechResolver) {
+  return project.techStack.slice(0, 3).map((tech) => resolveTech(tech).label).join(" · ");
 }
 
 export default function ProjectListPage() {
   const { data: projects, isLoading, error, isRefetching, refetch } = useAdminProjects();
   const queryClient = useQueryClient();
   const toast = useToast();
+  const resolveTech = useTechMeta();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
@@ -119,7 +121,7 @@ export default function ProjectListPage() {
                     <StatusBadge status={project.status} />
                   </div>
                 </div>
-                <p className="text-xs text-home-muted">{stackSummary(project)}</p>
+                <p className="text-xs text-home-muted">{stackSummary(project, resolveTech)}</p>
                 {renderActions(project, true)}
               </article>
             ))}
@@ -156,7 +158,7 @@ export default function ProjectListPage() {
                     <td className="px-5 py-3.5">
                       <PlatformBadge platform={project.platform} />
                     </td>
-                    <td className="px-5 py-3.5 text-xs text-home-muted">{stackSummary(project)}</td>
+                    <td className="px-5 py-3.5 text-xs text-home-muted">{stackSummary(project, resolveTech)}</td>
                     <td className="px-5 py-3.5 text-right">{renderActions(project)}</td>
                   </tr>
                 ))}
