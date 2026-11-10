@@ -1,124 +1,57 @@
-import type { SiteLinksGrouped, UpdateSiteLinksInput } from "@blog/shared"
+import type { SiteLinksGrouped } from "@blog/shared"
+import { PUBLIC_CACHE_KEY } from "../constants/cache"
+import { REPLACE_SITE_LINKS_RPC, SITE_LINK_SELECT } from "../constants/siteLinks"
 import { supabaseAdmin } from "../database/supabase/supabase"
-import { SITE_LINK_SELECT, mapSiteLinkRow } from "../utils/site-link/siteLinkMapper"
-import { siteLinksCache } from "../utils/site-link/siteLinkCache"
-import { groupSiteLinks, toSiteLinkInsertRow } from "../utils/site-link/siteLinkHelpers"
-import { ServiceResult } from "../types/serviceResults/ServiceResult"
-import { SiteLinkErrorCode } from "../types/code/siteLinkCode"
-import type { SiteLinkRow } from "../types/siteLinks/siteLinkRow"
+import type { UpdateSiteLinksDTO } from "../schemas/siteLinks/siteLinks"
+import type { SiteLinkResult } from "../types/siteLinks"
+import { SiteLinkErrorCode } from "../types/siteLinks/errorCode"
+import type { SiteLinkRow } from "../types/siteLinks/row"
+import { siteLinksCache } from "../utils/siteLinks/siteLinkCache"
+import { mapSiteLinkRow } from "../utils/siteLinks/siteLinkMapper"
+import { groupSiteLinks, toSiteLinkRows } from "../utils/siteLinks/siteLinkRows"
 
 class SiteLinkService {
-  async list(): Promise<ServiceResult<SiteLinksGrouped, SiteLinkErrorCode>> {
+  async list(): Promise<SiteLinkResult<SiteLinksGrouped>> {
     try {
-      const cached = siteLinksCache.get("public")
-      if (cached) {
-        return { status: true, data: cached }
-      }
+      const cached = siteLinksCache.get(PUBLIC_CACHE_KEY)
+      if (cached) return { status: true, data: cached }
 
       const { data, error } = await supabaseAdmin
         .from("site_links")
         .select(SITE_LINK_SELECT)
         .order("sort_order", { ascending: true })
+        .returns<SiteLinkRow[]>()
 
       if (error) {
         console.error("[SiteLinkService.list]", error)
-        return {
-          status: false,
-          error: {
-            code: SiteLinkErrorCode.SITE_LINK_FETCH_FAILED,
-            message: "Erro ao carregar links do site.",
-          },
-        }
+        return { status: false, error: { code: SiteLinkErrorCode.SITE_LINK_FETCH_FAILED } }
       }
 
-      const links = (data as SiteLinkRow[] | null)?.map(mapSiteLinkRow) ?? []
-      const grouped = groupSiteLinks(links)
-      siteLinksCache.set("public", grouped)
+      const grouped = groupSiteLinks((data ?? []).map(mapSiteLinkRow))
+      siteLinksCache.set(PUBLIC_CACHE_KEY, grouped)
 
-      return {
-        status: true,
-        data: grouped,
-      }
+      return { status: true, data: grouped }
     } catch (error) {
       console.error("[SiteLinkService.list] error:", error)
-      return {
-        status: false,
-        error: {
-          code: SiteLinkErrorCode.SITE_LINK_FETCH_FAILED,
-          message: "Erro ao carregar links do site.",
-        },
-      }
+      return { status: false, error: { code: SiteLinkErrorCode.SITE_LINK_FETCH_FAILED } }
     }
   }
 
-  async replaceAll(
-    payload: UpdateSiteLinksInput
-  ): Promise<ServiceResult<SiteLinksGrouped, SiteLinkErrorCode>> {
+  /** Troca todos os links de uma vez: apagar e inserir correm na mesma transação, no banco */
+  async replaceAll(payload: UpdateSiteLinksDTO): Promise<SiteLinkResult<null>> {
     try {
-      const rows = [
-        ...payload.nav.map((link, index) => toSiteLinkInsertRow("nav", link, index)),
-        ...payload.social.map((link, index) => toSiteLinkInsertRow("social", link, index)),
-        ...payload.skill.map((link, index) => toSiteLinkInsertRow("skill", link, index)),
-      ]
+      const { error } = await supabaseAdmin.rpc(REPLACE_SITE_LINKS_RPC, { p_links: toSiteLinkRows(payload) })
 
-      const { error: deleteError } = await supabaseAdmin
-        .from("site_links")
-        .delete()
-        .neq("id", "00000000-0000-0000-0000-000000000000")
-
-      if (deleteError) {
-        console.error("[SiteLinkService.replaceAll] delete", deleteError)
-        return {
-          status: false,
-          error: {
-            code: SiteLinkErrorCode.SITE_LINK_UPDATE_FAILED,
-            message: "Erro ao atualizar links do site.",
-          },
-        }
+      if (error) {
+        console.error("[SiteLinkService.replaceAll]", error)
+        return { status: false, error: { code: SiteLinkErrorCode.SITE_LINK_UPDATE_FAILED } }
       }
 
-      if (rows.length > 0) {
-        const { data, error: insertError } = await supabaseAdmin
-          .from("site_links")
-          .insert(rows)
-          .select(SITE_LINK_SELECT)
-          .order("sort_order", { ascending: true })
-
-        if (insertError) {
-          console.error("[SiteLinkService.replaceAll] insert", insertError)
-          return {
-            status: false,
-            error: {
-              code: SiteLinkErrorCode.SITE_LINK_UPDATE_FAILED,
-              message: "Erro ao atualizar links do site.",
-            },
-          }
-        }
-
-        const links = (data as SiteLinkRow[] | null)?.map(mapSiteLinkRow) ?? []
-        const grouped = groupSiteLinks(links)
-        siteLinksCache.set("public", grouped)
-
-        return {
-          status: true,
-          data: grouped,
-        }
-      }
-
-      siteLinksCache.delete("public")
-      return {
-        status: true,
-        data: { nav: [], social: [], skill: [] },
-      }
+      siteLinksCache.delete(PUBLIC_CACHE_KEY)
+      return { status: true, data: null }
     } catch (error) {
       console.error("[SiteLinkService.replaceAll] error:", error)
-      return {
-        status: false,
-        error: {
-          code: SiteLinkErrorCode.SITE_LINK_UPDATE_FAILED,
-          message: "Erro ao atualizar links do site.",
-        },
-      }
+      return { status: false, error: { code: SiteLinkErrorCode.SITE_LINK_UPDATE_FAILED } }
     }
   }
 }

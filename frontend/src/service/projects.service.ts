@@ -1,12 +1,15 @@
-import type { HomeProjects, Project } from "@blog/shared";
+import type { HomeProjects, PaginatedList, Project } from "@blog/shared";
+// Constante pelo subpath: a raiz do shared traria os schemas zod para o bundle da home
+import { PAGINATION_MAX_LIMIT } from "@blog/shared/constants";
 import { API_ENDPOINTS } from "@/config/apiEndpoints";
 import { request } from "./client";
 
 const BASE = "/projects";
 
 export const projectsService = {
+  /** O admin mostra todos os projetos numa tela só: pede a maior página que a API aceita */
   listAdmin() {
-    return request<Project[]>(`${BASE}/admin`);
+    return request<PaginatedList<Project>>(`${BASE}/admin`, { params: { limit: PAGINATION_MAX_LIMIT } });
   },
 
   home() {

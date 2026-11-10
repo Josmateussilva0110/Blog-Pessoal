@@ -51,7 +51,10 @@ export async function changePassword(payload: ChangePasswordInput) {
     throw new Error(result.message);
   }
 
-  const user = mapAuthUser(result.data);
+  // A API responde só a confirmação: o perfil atualizado vem de uma nova leitura,
+  // com refresh de sessão liberado (a senha já mudou, não pode falhar por token vencido)
+  const profile = await authService.me();
+  const user = profile.success ? mapAuthUser(profile.data) : null;
   if (!user) {
     throw new Error("Senha atualizada, mas não foi possível carregar o perfil.");
   }

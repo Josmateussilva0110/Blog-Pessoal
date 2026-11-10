@@ -1,49 +1,42 @@
-import { Request, Response } from "express"
+import type { Request, Response } from "express"
+import { PROFILE_IMAGE_REDIRECT_MAX_AGE_SECONDS } from "../constants/http"
+import { userErrorHttpStatusMap } from "../errors/users"
 import UserService from "../services/UserService"
-import { userErrorHttpStatusMap } from "../errors/userErrorHttpMapper"
-import { getAccessToken } from "../utils/auth/getAccessToken"
-import { getSessionUser } from "../utils/auth/getSessionUser"
-import { sendServiceError } from "../utils/http/sendServiceError"
+import { ChangePasswordSchema } from "../schemas/auth/changePassword"
+import { LoginSchema } from "../schemas/auth/login"
+import { PasswordResetRequestSchema } from "../schemas/auth/passwordResetRequest"
+import { UpdateProfileSchema } from "../schemas/users/updateProfile"
+import { UserErrorCode } from "../types/users/errorCode"
 import {
   clearAuthCookies,
   getAccessTokenFromCookies,
   getRefreshTokenFromCookies,
   setAuthCookies,
 } from "../utils/auth/authCookies"
+import { requireAuthField } from "../utils/auth/requireAuthField"
+import { setPublicCacheHeaders } from "../utils/http/httpCache"
+import { requireValidated } from "../utils/http/requireValidated"
+import { sendFailure } from "../utils/http/sendFailure"
+import { sendSuccess } from "../utils/http/sendSuccess"
 
 class UserController {
   async login(request: Request, response: Response): Promise<Response> {
-    const { email, password } = request.body as { email: string; password: string }
-    const result = await UserService.login(email, password)
+    const result = await UserService.login(requireValidated(request, "body", LoginSchema))
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, userErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, userErrorHttpStatusMap)
 
-    setAuthCookies(response, result.data)
-
-    const user = await getSessionUser(result.data.accessToken)
-
-    return response.status(200).json({
-      success: true,
-      message: "Login Realizado com sucesso",
-      data: { user },
-    })
+    setAuthCookies(response, result.data.tokens)
+    return sendSuccess(response, "Login realizado com sucesso.", { user: result.data.user })
   }
 
   async logout(request: Request, response: Response): Promise<Response> {
     const accessToken = getAccessTokenFromCookies(request)
 
-    if (accessToken) {
-      await UserService.logout(accessToken)
-    }
+    // Os cookies saem de qualquer jeito: falha ao revogar no provedor não prende o usuário logado
+    if (accessToken) await UserService.logout(accessToken)
 
     clearAuthCookies(response)
-
-    return response.status(200).json({
-      success: true,
-      message: "Logout realizado com sucesso",
-    })
+    return sendSuccess(response, "Logout realizado com sucesso.")
   }
 
   async refresh(request: Request, response: Response): Promise<Response> {
@@ -51,157 +44,99 @@ class UserController {
 
     if (!refreshToken) {
       clearAuthCookies(response)
-      return response.status(401).json({
-        success: false,
-        message: "Sessão expirada. Faça login novamente.",
-      })
+      return sendFailure(response, { code: UserErrorCode.SESSION_EXPIRED }, userErrorHttpStatusMap)
     }
 
     const result = await UserService.refresh(refreshToken)
 
     if (!result.status) {
       clearAuthCookies(response)
-      return sendServiceError(response, result.error, userErrorHttpStatusMap, {
-        includeCode: true,
-      })
+      return sendFailure(response, result.error, userErrorHttpStatusMap)
     }
 
-    setAuthCookies(response, result.data)
-
-    const user = await getSessionUser(result.data.accessToken)
-
-    return response.status(200).json({
-      success: true,
-      message: "Sessão renovada com sucesso.",
-      data: { user },
-    })
+    setAuthCookies(response, result.data.tokens)
+    return sendSuccess(response, "Sessão renovada com sucesso.", { user: result.data.user })
   }
 
   async getProfile(request: Request, response: Response): Promise<Response> {
-    const result = await UserService.getProfile(getAccessToken(request))
+    const result = await UserService.getProfile(requireAuthField(request, "userId"))
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, userErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, userErrorHttpStatusMap)
 
-    return response.status(200).json({
-      success: true,
-      data: result.data,
-    })
+    return sendSuccess(response, "Perfil carregado.", result.data)
   }
 
   async updateProfile(request: Request, response: Response): Promise<Response> {
-    const { username } = request.body
+    const result = await UserService.updateProfile(
+      requireAuthField(request, "userId"),
+      requireValidated(request, "body", UpdateProfileSchema)
+    )
 
-    const result = await UserService.updateProfile(getAccessToken(request), { username })
+    if (!result.status) return sendFailure(response, result.error, userErrorHttpStatusMap)
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, userErrorHttpStatusMap)
-    }
-
-    return response.status(200).json({
-      success: true,
-      message: "Perfil atualizado com sucesso.",
-      data: result.data,
-    })
+    return sendSuccess(response, "Perfil atualizado com sucesso.", result.data)
   }
 
   async changePassword(request: Request, response: Response): Promise<Response> {
     const result = await UserService.changePassword(
-      getAccessToken(request),
-      request.body
+      requireAuthField(request, "userId"),
+      requireValidated(request, "body", ChangePasswordSchema)
     )
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, userErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, userErrorHttpStatusMap)
 
-    return response.status(200).json({
-      success: true,
-      message: "Senha atualizada com sucesso.",
-      data: result.data,
-    })
+    return sendSuccess(response, "Senha atualizada com sucesso.")
   }
 
   async requestPasswordReset(request: Request, response: Response): Promise<Response> {
-    const result = await UserService.requestPasswordReset(request.body)
+    const result = await UserService.requestPasswordReset(requireValidated(request, "body", PasswordResetRequestSchema))
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, userErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, userErrorHttpStatusMap)
 
-    return response.status(200).json({
-      success: true,
-      message:
-        "Solicitação enviada. Nossa equipe vai entrar em contato para confirmar sua identidade e liberar o acesso.",
-    })
+    return sendSuccess(
+      response,
+      "Solicitação enviada. Nossa equipe vai entrar em contato para confirmar sua identidade e liberar o acesso."
+    )
   }
 
   async uploadProfileImage(request: Request, response: Response): Promise<Response> {
-    const file = request.file
-
-    if (!file) {
-      return response.status(422).json({
-        success: false,
-        message: "Envie um arquivo de imagem no campo image.",
-      })
-    }
-
-    const result = await UserService.updateProfileImage(getAccessToken(request), {
+    // O middleware uploadProfileImage já recusou a requisição sem arquivo
+    const file = request.file as Express.Multer.File
+    const result = await UserService.updateProfileImage(requireAuthField(request, "userId"), {
       buffer: file.buffer,
       mimetype: file.mimetype,
     })
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, userErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, userErrorHttpStatusMap)
 
-    return response.status(200).json({
-      success: true,
-      message: "Foto de perfil atualizada com sucesso.",
-      data: result.data,
-    })
+    return sendSuccess(response, "Foto de perfil atualizada com sucesso.", result.data)
   }
 
   async deleteProfileImage(request: Request, response: Response): Promise<Response> {
-    const result = await UserService.deleteProfileImage(getAccessToken(request))
+    const result = await UserService.deleteProfileImage(requireAuthField(request, "userId"))
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, userErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, userErrorHttpStatusMap)
 
-    return response.status(200).json({
-      success: true,
-      message: "Foto de perfil removida com sucesso.",
-      data: result.data,
-    })
+    return sendSuccess(response, "Foto de perfil removida com sucesso.")
   }
 
   async getPublicProfileImageMeta(_request: Request, response: Response): Promise<Response> {
     const result = await UserService.getPublicProfileImageMeta()
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, userErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, userErrorHttpStatusMap)
 
-    return response.status(200).json({
-      success: true,
-      data: result.data,
-    })
+    return sendSuccess(response, "Foto de perfil carregada.", result.data)
   }
 
-  async getPublicProfileImage(_request: Request, response: Response): Promise<Response> {
-    const result = await UserService.getPublicProfileImage()
+  /** Única rota sem envelope no sucesso: é usada direto em <img src>, então redireciona */
+  async getPublicProfileImage(_request: Request, response: Response): Promise<Response | void> {
+    const result = await UserService.getPublicProfileImageUrl()
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, userErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, userErrorHttpStatusMap)
 
-    response.setHeader("Cache-Control", "public, max-age=300")
-    response.redirect(302, result.data.publicUrl)
-    return response
+    setPublicCacheHeaders(response, PROFILE_IMAGE_REDIRECT_MAX_AGE_SECONDS)
+    response.redirect(302, result.data)
   }
-
 }
 
 export default new UserController()

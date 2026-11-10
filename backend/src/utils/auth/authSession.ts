@@ -1,17 +1,6 @@
-import { AuthTokens } from "../../types/auth/auth.types"
+import type { AuthTokens, ProviderSession, ProviderUser } from "../../types/auth"
 
-type AuthSession = {
-  access_token: string
-  refresh_token: string
-  expires_at?: number
-}
-
-type AuthUser = {
-  id: string
-  email?: string | null
-}
-
-export function buildAuthTokens(session: AuthSession, user: AuthUser): AuthTokens {
+export function buildAuthTokens(session: ProviderSession, user: ProviderUser): AuthTokens {
   const expiresAtSec = session.expires_at ?? 0
 
   return {

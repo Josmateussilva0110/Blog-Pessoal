@@ -1,4 +1,4 @@
-import type { Project, ProjectFormValues } from "@blog/shared";
+import type { CreatedId, ProjectFormValues } from "@blog/shared";
 import { parseJsonResponse } from "./client";
 import { fetchMultipartWithAuth } from "./fetchMultipart";
 import type { ApiResponse } from "./types";
@@ -11,7 +11,7 @@ export async function submitProjectForm(
   payload: ProjectFormValues,
   files: ProjectFormFiles,
   projectId?: string,
-): Promise<ApiResponse<Project>> {
+): Promise<ApiResponse<CreatedId>> {
   const endpoint = projectId ? `/projects/${projectId}` : "/projects";
   const method = projectId ? "PUT" : "POST";
 
@@ -30,5 +30,5 @@ export async function submitProjectForm(
     },
   });
 
-  return parseJsonResponse<Project>(response);
+  return parseJsonResponse<CreatedId>(response);
 }

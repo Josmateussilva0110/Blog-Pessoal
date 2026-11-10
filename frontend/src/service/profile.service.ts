@@ -1,10 +1,11 @@
+import type { CreatedId } from "@blog/shared";
 import type { ProfileImageMeta } from "@/lib/profileImageUrl";
 import { API_ENDPOINTS } from "@/config/apiEndpoints";
 import { parseJsonResponse, request } from "./client";
 import { fetchMultipartWithAuth } from "./fetchMultipart";
-import type { ApiResponse, UserProfile } from "./types";
+import type { ApiResponse } from "./types";
 
-export async function uploadProfileImage(file: File): Promise<ApiResponse<UserProfile>> {
+export async function uploadProfileImage(file: File): Promise<ApiResponse<CreatedId>> {
   const response = await fetchMultipartWithAuth({
     method: "PUT",
     endpoint: "/profile/image",
@@ -15,11 +16,11 @@ export async function uploadProfileImage(file: File): Promise<ApiResponse<UserPr
     },
   });
 
-  return parseJsonResponse<UserProfile>(response);
+  return parseJsonResponse<CreatedId>(response);
 }
 
 export function deleteProfileImage() {
-  return request<UserProfile>("/profile/image", { method: "DELETE" });
+  return request<void>("/profile/image", { method: "DELETE" });
 }
 
 /** Rota pública: sem renovar sessão em 401 */

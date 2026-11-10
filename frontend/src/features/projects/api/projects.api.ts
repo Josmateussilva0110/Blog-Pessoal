@@ -3,7 +3,7 @@ import { projectsService, unwrap } from "@/service";
 
 export async function fetchAdminProjects(): Promise<Project[]> {
   const result = await projectsService.listAdmin();
-  return unwrap(result);
+  return unwrap(result).items;
 }
 
 export async function fetchHomeProjects(): Promise<HomeProjects> {
@@ -14,7 +14,7 @@ export async function fetchHomeProjects(): Promise<HomeProjects> {
 export async function fetchProjectBySlug(slug: string, fresh = false): Promise<Project | null> {
   const result = await projectsService.getBySlug(slug, fresh);
   if (!result.success) {
-    if (result.code === "NOT_FOUND") return null;
+    if (result.code === "PROJECT_NOT_FOUND") return null;
     throw new Error(result.message);
   }
   return result.data;

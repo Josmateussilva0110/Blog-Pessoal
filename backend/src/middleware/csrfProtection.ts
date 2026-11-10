@@ -1,16 +1,9 @@
 import type { NextFunction, Request, Response } from "express"
 import { CSRF_HEADER_NAME, CSRF_HEADER_VALUE } from "@blog/shared"
+import { SAFE_HTTP_METHODS } from "../constants/http"
+import { CommonErrorCode } from "../types/common/errorCode"
 import { isAllowedCorsOrigin } from "../utils/http/corsOrigins"
-
-const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"])
-
-function reject(response: Response) {
-  response.status(403).json({
-    success: false,
-    code: "CSRF_REJECTED",
-    message: "Requisição recusada por segurança. Recarregue a página e tente novamente.",
-  })
-}
+import { sendCommonFailure } from "../utils/http/sendCommonFailure"
 
 /**
  * CSRF: o cookie de sessão é SameSite=None em produção (front e API em domínios diferentes),
@@ -19,26 +12,21 @@ function reject(response: Response) {
  * que ser uma das permitidas no CORS (o CORS sozinho só bloqueia a leitura da resposta).
  */
 export function csrfProtection(request: Request, response: Response, next: NextFunction) {
-  if (SAFE_METHODS.has(request.method)) {
+  if (SAFE_HTTP_METHODS.has(request.method)) {
     next()
     return
   }
 
-  if (request.get(CSRF_HEADER_NAME) !== CSRF_HEADER_VALUE) {
-    reject(response)
-    return
-  }
-
   const origin = request.get("Origin")
-
-  if (!isAllowedCorsOrigin(origin)) {
-    reject(response)
-    return
-  }
-
   // Sem Origin, o navegador ainda informa se a requisição veio de outro site
-  if (!origin && request.get("Sec-Fetch-Site") === "cross-site") {
-    reject(response)
+  const isCrossSiteWithoutOrigin = !origin && request.get("Sec-Fetch-Site") === "cross-site"
+
+  if (
+    request.get(CSRF_HEADER_NAME) !== CSRF_HEADER_VALUE ||
+    !isAllowedCorsOrigin(origin) ||
+    isCrossSiteWithoutOrigin
+  ) {
+    sendCommonFailure(response, CommonErrorCode.CSRF_REJECTED)
     return
   }
 

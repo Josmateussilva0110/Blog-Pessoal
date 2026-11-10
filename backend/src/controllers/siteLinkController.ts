@@ -1,35 +1,28 @@
 import type { Request, Response } from "express"
+import { siteLinkErrorHttpStatusMap } from "../errors/siteLinks"
 import SiteLinkService from "../services/SiteLinkService"
-import { siteLinkErrorHttpStatusMap } from "../errors/siteLinkErrorHttpMapper"
-import { sendServiceError } from "../utils/http/sendServiceError"
-import type { UpdateSiteLinksInput } from "@blog/shared"
+import { UpdateSiteLinksSchema } from "../schemas/siteLinks/siteLinks"
 import { setPublicCacheHeaders } from "../utils/http/httpCache"
+import { requireValidated } from "../utils/http/requireValidated"
+import { sendFailure } from "../utils/http/sendFailure"
+import { sendSuccess } from "../utils/http/sendSuccess"
 
 class SiteLinkController {
   async list(_request: Request, response: Response): Promise<Response> {
     const result = await SiteLinkService.list()
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, siteLinkErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, siteLinkErrorHttpStatusMap)
 
     setPublicCacheHeaders(response)
-    return response.status(200).json({ success: true, data: result.data })
+    return sendSuccess(response, "Links carregados.", result.data)
   }
 
   async replaceAll(request: Request, response: Response): Promise<Response> {
-    const payload = request.body as UpdateSiteLinksInput
-    const result = await SiteLinkService.replaceAll(payload)
+    const result = await SiteLinkService.replaceAll(requireValidated(request, "body", UpdateSiteLinksSchema))
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, siteLinkErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, siteLinkErrorHttpStatusMap)
 
-    return response.status(200).json({
-      success: true,
-      message: "Links atualizados com sucesso.",
-      data: result.data,
-    })
+    return sendSuccess(response, "Links atualizados com sucesso.")
   }
 }
 

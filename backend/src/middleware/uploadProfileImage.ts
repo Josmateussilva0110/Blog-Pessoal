@@ -1,10 +1,7 @@
-import type { NextFunction, Request, Response } from "express"
 import multer from "multer"
-import {
-  PROFILE_IMAGE_MAX_BYTES,
-  PROFILE_IMAGE_MIME_TYPES,
-} from "../constants/profileImage.constants"
-import { validateUploadedImage } from "../utils/image/fileSignature"
+import { PROFILE_IMAGE_MAX_BYTES, PROFILE_IMAGE_MIME_TYPES } from "../constants/profileImage"
+import { buildUploadErrorMessages, INVALID_UPLOAD_TYPE_ERROR } from "../errors/uploads"
+import { runUpload } from "../utils/http/runUpload"
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -15,48 +12,11 @@ const upload = multer({
       return
     }
 
-    callback(new Error("INVALID_PROFILE_IMAGE_TYPE"))
+    callback(new Error(INVALID_UPLOAD_TYPE_ERROR))
   },
 })
 
-export function uploadProfileImage(
-  request: Request,
-  response: Response,
-  next: NextFunction
-) {
-  upload.single("image")(request, response, (error: unknown) => {
-    if (!error) {
-      const validationError = validateUploadedImage(request.file)
-      if (validationError) {
-        response.status(422).json({ success: false, message: validationError })
-        return
-      }
-
-      next()
-      return
-    }
-
-    if (error instanceof multer.MulterError) {
-      const message =
-        error.code === "LIMIT_FILE_SIZE"
-          ? "A imagem deve ter no máximo 2 MB."
-          : "Não foi possível processar o arquivo enviado."
-
-      response.status(422).json({ success: false, message })
-      return
-    }
-
-    if (error instanceof Error && error.message === "INVALID_PROFILE_IMAGE_TYPE") {
-      response.status(422).json({
-        success: false,
-        message: "Formato inválido. Use JPEG, PNG ou WebP.",
-      })
-      return
-    }
-
-    response.status(400).json({
-      success: false,
-      message: "Não foi possível enviar a imagem.",
-    })
-  })
-}
+export const uploadProfileImage = runUpload(upload.single("image"), {
+  messages: buildUploadErrorMessages(PROFILE_IMAGE_MAX_BYTES, "a imagem", "JPEG, PNG ou WebP"),
+  requireFile: true,
+})

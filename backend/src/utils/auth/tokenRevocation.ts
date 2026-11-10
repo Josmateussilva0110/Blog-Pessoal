@@ -1,13 +1,15 @@
 import crypto from "crypto"
 import jwt from "jsonwebtoken"
+import {
+  REVOKED_TOKEN_KEY_PREFIX as TOKEN_KEY_PREFIX,
+  REVOKED_USER_KEY_PREFIX as USER_KEY_PREFIX,
+  USER_SESSION_REVOKE_TTL_MS,
+} from "../../constants/auth"
 import { getRedisClient } from "../../database/redis/redis"
 
 const revokedTokenHashes = new Map<string, number>()
 const revokedUsers = new Map<string, number>()
 
-const DEFAULT_USER_REVOKE_TTL_MS = 60 * 60 * 1000
-const TOKEN_KEY_PREFIX = "revoked:token:"
-const USER_KEY_PREFIX = "revoked:user:"
 
 function pruneExpired(): void {
   const now = Date.now()
@@ -47,7 +49,7 @@ export async function revokeAccessToken(token: string): Promise<void> {
 
 export async function revokeUserSessions(
   userId: string,
-  ttlMs = DEFAULT_USER_REVOKE_TTL_MS
+  ttlMs = USER_SESSION_REVOKE_TTL_MS
 ): Promise<void> {
   const redis = await getRedisClient()
   const ttlSeconds = Math.max(1, Math.ceil(ttlMs / 1000))

@@ -1,159 +1,112 @@
 import type { Request, Response } from "express"
-import type { ProjectIdParams, ProjectSlugParams } from "../schemas/projectSchema"
+import { projectErrorHttpStatusMap } from "../errors/projects"
 import ProjectService from "../services/ProjectService"
-import { projectErrorHttpStatusMap } from "../errors/projectErrorHttpMapper"
-import { sendServiceError } from "../utils/http/sendServiceError"
-import { getUploadedImages, parseProjectPayload } from "../utils/project/projectRequest"
+import { IdParamSchema } from "../schemas/common/idParam"
+import { PaginationQuerySchema } from "../schemas/common/pagination"
+import { ProjectPayloadSchema, ProjectSlugParamSchema } from "../schemas/projects/project"
+import { requireAuthField } from "../utils/auth/requireAuthField"
 import { setPublicCacheHeaders } from "../utils/http/httpCache"
+import { getUploadedImages } from "../utils/http/getUploadedImages"
+import { requireValidated } from "../utils/http/requireValidated"
+import { sendFailure } from "../utils/http/sendFailure"
+import { sendSuccess } from "../utils/http/sendSuccess"
 
 class ProjectController {
-  async list(_request: Request, response: Response): Promise<Response> {
-    const result = await ProjectService.list()
+  async list(request: Request, response: Response): Promise<Response> {
+    const result = await ProjectService.list(requireValidated(request, "query", PaginationQuerySchema))
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectErrorHttpStatusMap)
 
     setPublicCacheHeaders(response)
-    return response.status(200).json({ success: true, data: result.data })
+    return sendSuccess(response, "Projetos carregados.", result.data)
   }
 
   async listHome(_request: Request, response: Response): Promise<Response> {
     const result = await ProjectService.listHome()
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectErrorHttpStatusMap)
 
     setPublicCacheHeaders(response)
-    return response.status(200).json({ success: true, data: result.data })
+    return sendSuccess(response, "Projetos carregados.", result.data)
   }
 
-  async listFeatured(_request: Request, response: Response): Promise<Response> {
-    const result = await ProjectService.listFeatured()
+  async listFeatured(request: Request, response: Response): Promise<Response> {
+    const result = await ProjectService.listFeatured(requireValidated(request, "query", PaginationQuerySchema))
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectErrorHttpStatusMap)
 
     setPublicCacheHeaders(response)
-    return response.status(200).json({ success: true, data: result.data })
+    return sendSuccess(response, "Projetos em destaque carregados.", result.data)
   }
 
   async count(_request: Request, response: Response): Promise<Response> {
     const result = await ProjectService.count()
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectErrorHttpStatusMap)
 
     setPublicCacheHeaders(response)
-    return response.status(200).json({ success: true, data: { count: result.data } })
+    return sendSuccess(response, "Total de projetos carregado.", { count: result.data })
   }
 
-  async listAll(_request: Request, response: Response): Promise<Response> {
-    const result = await ProjectService.listAll()
+  async listAdmin(request: Request, response: Response): Promise<Response> {
+    const result = await ProjectService.listAdmin(requireValidated(request, "query", PaginationQuerySchema))
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectErrorHttpStatusMap)
 
-    return response.status(200).json({ success: true, data: result.data })
+    return sendSuccess(response, "Projetos carregados.", result.data)
   }
 
   async getBySlug(request: Request, response: Response): Promise<Response> {
-    const { slug } = request.validatedParams as ProjectSlugParams
+    const { slug } = requireValidated(request, "params", ProjectSlugParamSchema)
     const result = await ProjectService.getBySlug(slug)
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectErrorHttpStatusMap)
 
     setPublicCacheHeaders(response)
-    return response.status(200).json({ success: true, data: result.data })
+    return sendSuccess(response, "Projeto carregado.", result.data)
   }
 
   async getById(request: Request, response: Response): Promise<Response> {
-    const { id } = request.validatedParams as ProjectIdParams
+    const { id } = requireValidated(request, "params", IdParamSchema)
     const result = await ProjectService.getById(id)
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectErrorHttpStatusMap)
 
-    return response.status(200).json({ success: true, data: result.data })
+    return sendSuccess(response, "Projeto carregado.", result.data)
   }
 
   async create(request: Request, response: Response): Promise<Response> {
-    try {
-      const payload = parseProjectPayload(request)
-      const result = await ProjectService.create(
-        request.accessToken,
-        payload,
-        getUploadedImages(request)
-      )
+    const result = await ProjectService.create(
+      requireAuthField(request, "userId"),
+      requireValidated(request, "body", ProjectPayloadSchema),
+      getUploadedImages(request)
+    )
 
-      if (!result.status) {
-        return sendServiceError(response, result.error, projectErrorHttpStatusMap)
-      }
+    if (!result.status) return sendFailure(response, result.error, projectErrorHttpStatusMap)
 
-      return response.status(201).json({
-        success: true,
-        message: "Projeto criado com sucesso.",
-        data: result.data,
-      })
-    } catch (error) {
-      const message =
-        error instanceof Error && error.message === "MISSING_PAYLOAD"
-          ? "Dados do formulário inválidos."
-          : "Não foi possível validar os dados do projeto."
-
-      return response.status(422).json({ success: false, message })
-    }
+    return sendSuccess(response, "Projeto criado com sucesso.", result.data, 201)
   }
 
   async update(request: Request, response: Response): Promise<Response> {
-    try {
-      const { id } = request.validatedParams as ProjectIdParams
-      const payload = parseProjectPayload(request)
-      const result = await ProjectService.update(
-        request.accessToken,
-        id,
-        payload,
-        getUploadedImages(request)
-      )
+    const { id } = requireValidated(request, "params", IdParamSchema)
+    const result = await ProjectService.update(
+      id,
+      requireValidated(request, "body", ProjectPayloadSchema),
+      getUploadedImages(request)
+    )
 
-      if (!result.status) {
-        return sendServiceError(response, result.error, projectErrorHttpStatusMap)
-      }
+    if (!result.status) return sendFailure(response, result.error, projectErrorHttpStatusMap)
 
-      return response.status(200).json({
-        success: true,
-        message: "Projeto atualizado com sucesso.",
-        data: result.data,
-      })
-    } catch (error) {
-      const message =
-        error instanceof Error && error.message === "MISSING_PAYLOAD"
-          ? "Dados do formulário inválidos."
-          : "Não foi possível validar os dados do projeto."
-
-      return response.status(422).json({ success: false, message })
-    }
+    return sendSuccess(response, "Projeto atualizado com sucesso.", result.data)
   }
 
   async remove(request: Request, response: Response): Promise<Response> {
-    const { id } = request.validatedParams as ProjectIdParams
+    const { id } = requireValidated(request, "params", IdParamSchema)
     const result = await ProjectService.remove(id)
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectErrorHttpStatusMap)
 
-    return response.status(200).json({
-      success: true,
-      message: "Projeto excluído com sucesso.",
-    })
+    return sendSuccess(response, "Projeto excluído com sucesso.")
   }
 }
 

@@ -3,7 +3,7 @@ import SiteSettingsController from "../controllers/siteSettingsController"
 import { authMiddleware } from "../middleware/auth"
 import { rejectIfMustChangePassword } from "../middleware/rejectIfMustChangePassword"
 import { validate } from "../middleware/validate"
-import { updateHeroStatsSchema } from "../schemas/siteSettingsSchema"
+import { UpdateHeroStatsSchema } from "../schemas/siteSettings/heroStats"
 
 const router = Router()
 
@@ -12,7 +12,7 @@ router.put(
   "/hero-stats",
   authMiddleware,
   rejectIfMustChangePassword,
-  validate(updateHeroStatsSchema),
+  validate({ body: UpdateHeroStatsSchema }),
   SiteSettingsController.updateHeroStats
 )
 

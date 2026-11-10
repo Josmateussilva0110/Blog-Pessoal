@@ -31,7 +31,7 @@ export const authService = {
   },
 
   changePassword(payload: ChangePasswordInput) {
-    return request<UserProfile>("/profile/password", {
+    return request<void>("/profile/password", {
       method: "PUT",
       body: payload,
     });

@@ -1,14 +1,11 @@
-import { createRateLimiter } from "../utils/rate-limit/createRateLimiter"
+import { FIFTEEN_MINUTES_MS } from "../constants/rateLimit"
+import { createRateLimiter } from "../utils/rateLimit/createRateLimiter"
 
 /**
  * Com REDIS_URL: contadores compartilhados entre instâncias.
  * Sem Redis: MemoryStore (reset a cada deploy/restart).
  */
 export const rateLimiter = createRateLimiter({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: {
-    success: false,
-    message: "Muitas requisições. Tente novamente em 15 minutos.",
-  },
+  windowMs: FIFTEEN_MINUTES_MS,
+  limit: 100,
 })

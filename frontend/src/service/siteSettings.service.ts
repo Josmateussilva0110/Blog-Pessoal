@@ -9,6 +9,6 @@ export const siteSettingsService = {
   },
 
   updateHeroStats(data: HeroStats) {
-    return request<HeroStats>(`${BASE}/hero-stats`, { method: "PUT", body: data });
+    return request<void>(`${BASE}/hero-stats`, { method: "PUT", body: data });
   },
 };

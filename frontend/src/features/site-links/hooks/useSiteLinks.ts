@@ -46,8 +46,7 @@ export function useUpdateSiteLinks() {
   return useMutation({
     mutationFn: async (payload: UpdateSiteLinksInput) =>
       unwrap(await siteLinksService.update(payload)),
-    onSuccess: (data) => {
-      queryClient.setQueryData(siteLinkKeys.all, data);
-    },
+    // A API responde só a confirmação: os links salvos vêm de uma nova leitura
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: siteLinkKeys.all }),
   });
 }

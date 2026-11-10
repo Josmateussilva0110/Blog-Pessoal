@@ -18,7 +18,7 @@ import {
   toThumbnailStoragePath,
 } from "../src/utils/image/imageProcessing";
 // Constante pura: projectStorage.ts importaria o client da API, que exige o .env completo
-import { PROJECT_IMAGES_BUCKET } from "../src/constants/storage.constants";
+import { PROJECT_IMAGES_BUCKET } from "../src/constants/storage";
 import { supabaseAdmin } from "./lib/supabaseAdmin";
 
 const dryRun = process.argv.includes("--dry-run");

@@ -1,11 +1,9 @@
-import { createRateLimiter } from "../utils/rate-limit/createRateLimiter"
+import { ONE_MINUTE_MS } from "../constants/rateLimit"
+import { createRateLimiter } from "../utils/rateLimit/createRateLimiter"
 
 /** Protege health checks contra abuso; limite generoso para probes de cloud (Render, etc.). */
 export const healthRateLimiter = createRateLimiter({
-  windowMs: 60 * 1000,
-  max: 60,
-  message: {
-    success: false,
-    message: "Muitas requisições ao health check.",
-  },
+  windowMs: ONE_MINUTE_MS,
+  limit: 60,
+  message: "Muitas requisições ao health check.",
 })

@@ -1,10 +1,10 @@
 import { Router } from "express"
-const router = Router()
-
-import userRoutes from "./userRoutes"
 import projectRoutes from "./projectRoutes"
 import siteLinkRoutes from "./siteLinkRoutes"
 import siteSettingsRoutes from "./siteSettingsRoutes"
+import userRoutes from "./userRoutes"
+
+const router = Router()
 
 router.use(userRoutes)
 router.use("/projects", projectRoutes)

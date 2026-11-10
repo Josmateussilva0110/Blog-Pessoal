@@ -1,601 +1,227 @@
-import { env } from "../config/env"
-import { supabaseAuth, supabaseAdmin, createSupabaseClientForUser, createEphemeralAuthClient } from "../database/supabase/supabase"
-import { USER_PROFILE_SELECT } from "../constants/user.constants"
-import { ServiceResult } from "../types/serviceResults/ServiceResult"
-import { UserErrorCode } from "../types/code/userCode"
-import { AuthTokens } from "../types/auth/auth.types"
-import { UserProfile } from "../types/users/profile"
-import { ChangePasswordDTO } from "../schemas/changePasswordSchema"
-import { PasswordResetRequestDTO } from "../schemas/passwordResetRequestSchema"
-import { resolveUserIdFromAccessToken } from "../utils/auth/accessToken"
+import { PASSWORD_RESET_PENDING_STATUS, USER_PROFILE_SELECT } from "../constants/users"
+import {
+    createEphemeralAuthClient,
+    createSupabaseClientForUser,
+    supabaseAdmin,
+    supabaseAuth,
+} from "../database/supabase/supabase"
+import type { ChangePasswordDTO } from "../schemas/auth/changePassword"
+import type { LoginDTO } from "../schemas/auth/login"
+import type { PasswordResetRequestDTO } from "../schemas/auth/passwordResetRequest"
+import type { UpdateProfileDTO } from "../schemas/users/updateProfile"
+import type { AuthSession, AuthTokens } from "../types/auth"
+import type { CreatedId } from "../types/common/serviceResult"
+import type {
+    PasswordChangeProfile,
+    ProfileImageFile,
+    PublicProfileImageMeta,
+    UserProfile,
+    UserResult,
+} from "../types/users"
+import { UserErrorCode } from "../types/users/errorCode"
+import { resolveActiveUserId } from "../utils/auth/accessToken"
 import { isRefreshTokenReuseOrRevoked, mapPasswordUpdateError } from "../utils/auth/authErrors"
 import { buildAuthTokens } from "../utils/auth/authSession"
-import { mapUserProfileRow } from "../utils/user/userProfile"
+import { isAdminUser } from "../utils/auth/isAdminUser"
 import { revokeAccessToken, revokeUserSessions } from "../utils/auth/tokenRevocation"
 import {
-  deleteProfileImageFromStorage,
-  getProfileImagePublicUrl,
-  getProfileThumbnailPublicUrl,
-  uploadProfileImageToStorage,
-} from "../utils/user/profileImageStorage"
+    deleteProfileImageFromStorage,
+    getProfileImagePublicUrl,
+    getProfileThumbnailPublicUrl,
+    uploadProfileImageToStorage,
+} from "../utils/users/profileImageStorage"
+import { mapUserProfileRow } from "../utils/users/userProfile"
 
 class UserService {
-    private async resolveAuthenticatedUserId(
-        accessToken: string
-    ): Promise<ServiceResult<string, UserErrorCode>> {
-        const userId = await resolveUserIdFromAccessToken(accessToken)
-
-        if (!userId) {
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.USER_UPDATE_FAILED,
-                    message: "Sessão inválida.",
-                },
-            }
-        }
-
-        return { status: true, data: userId }
-    }
-
-    private async fetchProfileForPasswordChange(
-        accessToken: string,
-        userId: string
-    ): Promise<
-        ServiceResult<
-            { email: string; must_change_password: boolean | null },
-            UserErrorCode
-        >
-    > {
-        const supabase = await createSupabaseClientForUser(accessToken)
-
-        const { data: profileRow, error: profileError } = await supabase
-            .from("users")
-            .select("email, must_change_password")
-            .eq("id", userId)
-            .single()
-
-        if (profileError || !profileRow) {
-            console.error("[UserService.fetchProfileForPasswordChange]", profileError)
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.USER_NOT_FOUND,
-                    message: "Usuário não encontrado.",
-                },
-            }
-        }
-
-        return { status: true, data: profileRow }
-    }
-
-    private getCurrentPasswordFromPayload(payload: ChangePasswordDTO): string | undefined {
-        return "current_password" in payload ? payload.current_password : undefined
-    }
-
-    private async changePasswordWithReauth(
-        email: string,
-        currentPassword: string,
-        newPassword: string
-    ): Promise<ServiceResult<null, UserErrorCode>> {
-        const authClient = createEphemeralAuthClient()
-
-        const { data: reauthData, error: reauthError } =
-            await authClient.auth.signInWithPassword({
-                email,
-                password: currentPassword,
-            })
-
-        if (reauthError || !reauthData.session) {
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.INVALID_CREDENTIALS,
-                    message: "Senha atual incorreta.",
-                },
-            }
-        }
-
-        const { error: updateError } = await authClient.auth.updateUser({
-            password: newPassword,
-        })
-
-        if (updateError) {
-            console.error("[UserService.changePasswordWithReauth]", updateError)
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.USER_UPDATE_FAILED,
-                    message: mapPasswordUpdateError(updateError.message),
-                },
-            }
-        }
-
-        return { status: true, data: null }
-    }
-
-    private async changePasswordWithAdmin(
-        userId: string,
-        newPassword: string
-    ): Promise<ServiceResult<null, UserErrorCode>> {
-        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-            password: newPassword,
-        })
-
-        if (updateError) {
-            console.error("[UserService.changePasswordWithAdmin]", updateError)
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.USER_UPDATE_FAILED,
-                    message: mapPasswordUpdateError(updateError.message),
-                },
-            }
-        }
-
-        return { status: true, data: null }
-    }
-
-    private async clearMustChangePasswordFlag(userId: string): Promise<void> {
-        const { error: flagError } = await supabaseAdmin
-            .from("users")
-            .update({ must_change_password: false })
-            .eq("id", userId)
-
-        if (flagError) {
-            console.error("[UserService.clearMustChangePasswordFlag]", flagError)
-        }
-    }
-
-    private validateProfileImageFile(
-        file: { buffer: Buffer }
-    ): ServiceResult<null, UserErrorCode> {
-        if (!file.buffer.length) {
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.PROFILE_IMAGE_INVALID,
-                    message: "Arquivo de imagem vazio.",
-                },
-            }
-        }
-
-        return { status: true, data: null }
-    }
-
-    private async fetchCurrentProfileImageUrl(
-        accessToken: string,
-        userId: string
-    ): Promise<string | null> {
-        const supabase = await createSupabaseClientForUser(accessToken)
-
-        const { data, error } = await supabase
-            .from("users")
-            .select("profile_image_url")
-            .eq("id", userId)
-            .single()
-
-        if (error) {
-            console.error("[UserService.fetchCurrentProfileImageUrl]", error)
-            return null
-        }
-
-        return data?.profile_image_url ?? null
-    }
-
-    private async updateProfileImageRecord(
-        accessToken: string,
-        userId: string,
-        storagePath: string
-    ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
-        const now = new Date().toISOString()
-        const supabase = await createSupabaseClientForUser(accessToken)
-
-        const { data, error } = await supabase
-            .from("users")
-            .update({
-                profile_image_url: storagePath,
-                profile_image_updated_at: now,
-                updated_at: now,
-            })
-            .eq("id", userId)
-            .select(USER_PROFILE_SELECT)
-            .single()
-
-        if (error || !data) {
-            console.error("[UserService.updateProfileImageRecord]", error)
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.USER_UPDATE_FAILED,
-                    message: "Não foi possível salvar a foto de perfil.",
-                },
-            }
-        }
-
-        return { status: true, data: mapUserProfileRow(data) }
-    }
-
-    private async removeProfileImageRecord(
-        accessToken: string,
-        userId: string
-    ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
-        const now = new Date().toISOString()
-        const supabase = await createSupabaseClientForUser(accessToken)
-
-        const { data, error } = await supabase
-            .from("users")
-            .update({
-                profile_image_url: null,
-                profile_image_updated_at: null,
-                updated_at: now,
-            })
-            .eq("id", userId)
-            .select(USER_PROFILE_SELECT)
-            .single()
-
-        if (error || !data) {
-            console.error("[UserService.removeProfileImageRecord]", error)
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.USER_UPDATE_FAILED,
-                    message: "Não foi possível remover a foto de perfil.",
-                },
-            }
-        }
-
-        return { status: true, data: mapUserProfileRow(data) }
-    }
-
-    private async removeStoredProfileImage(
-        storagePath: string,
-        context: string
-    ): Promise<void> {
-        await deleteProfileImageFromStorage(storagePath).catch((error: unknown) => {
-            console.error(`[UserService.${context}] storage cleanup failed:`, error)
-        })
-    }
-    
-    async login(email: string, password: string): Promise<ServiceResult<AuthTokens, UserErrorCode>> {
+    async login({ email, password }: LoginDTO): Promise<UserResult<AuthSession>> {
         try {
-            const { data, error } = await supabaseAuth.auth.signInWithPassword({
-                email,
-                password,
-            })
+            const { data, error } = await supabaseAuth.auth.signInWithPassword({ email, password })
 
             // Conta que não é o admin recebe a mesma resposta de credencial inválida
             // (não revela que a conta existe) e os tokens emitidos nunca saem daqui
-            if (error || !data.session || !data.user || data.user.id !== env.ADMIN_USER_ID) {
-                return {
-                    status: false,
-                    error: {
-                        code: UserErrorCode.INVALID_CREDENTIALS,
-                        message: "Email ou senha incorreto",
-                    },
-                }
+            if (error || !data.session || !data.user || !isAdminUser(data.user.id)) {
+                return { status: false, error: { code: UserErrorCode.INVALID_CREDENTIALS } }
             }
 
-            return {
-                status: true,
-                data: buildAuthTokens(data.session, data.user),
-            }
+            return { status: true, data: await this.buildSession(buildAuthTokens(data.session, data.user)) }
         } catch (error) {
             console.error("[UserService.login] error:", error)
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.LOGIN_FAILED,
-                    message: "Erro ao fazer login",
-                },
-            }
+            return { status: false, error: { code: UserErrorCode.LOGIN_FAILED } }
         }
     }
 
-    async logout(accessToken: string): Promise<ServiceResult<null, UserErrorCode>> {
+    /** Só renova os tokens (usado pelo authMiddleware, que não precisa do perfil) */
+    async renewTokens(refreshToken: string): Promise<UserResult<AuthTokens>> {
         try {
-            const userId = await resolveUserIdFromAccessToken(accessToken)
+            const { data, error } = await supabaseAuth.auth.refreshSession({ refresh_token: refreshToken })
 
-            if (!userId) {
-                return {
-                    status: false,
-                    error: { code: UserErrorCode.LOGOUT_FAILED, message: "Erro ao fazer logout" },
-                }
+            if (error || !data.session || !data.user) {
+                const code = isRefreshTokenReuseOrRevoked(error)
+                    ? UserErrorCode.SESSION_REVOKED
+                    : UserErrorCode.SESSION_EXPIRED
+                return { status: false, error: { code } }
             }
+
+            return { status: true, data: buildAuthTokens(data.session, data.user) }
+        } catch (error) {
+            console.error("[UserService.renewTokens] error:", error)
+            return { status: false, error: { code: UserErrorCode.LOGIN_FAILED, message: "Erro ao renovar sessão." } }
+        }
+    }
+
+    async refresh(refreshToken: string): Promise<UserResult<AuthSession>> {
+        const renewed = await this.renewTokens(refreshToken)
+        if (!renewed.status) return renewed
+
+        return { status: true, data: await this.buildSession(renewed.data) }
+    }
+
+    async logout(accessToken: string): Promise<UserResult<null>> {
+        try {
+            const userId = await resolveActiveUserId(accessToken)
+            if (!userId) return { status: false, error: { code: UserErrorCode.LOGOUT_FAILED } }
 
             const { error } = await supabaseAdmin.auth.admin.signOut(userId, "global")
 
             if (error) {
-                return {
-                    status: false,
-                    error: { code: UserErrorCode.LOGOUT_FAILED, message: "Erro ao fazer logout" },
-                }
+                console.error("[UserService.logout]", error)
+                return { status: false, error: { code: UserErrorCode.LOGOUT_FAILED } }
             }
 
-            await revokeAccessToken(accessToken)
-            await revokeUserSessions(userId)
+            await Promise.all([revokeAccessToken(accessToken), revokeUserSessions(userId)])
 
             return { status: true, data: null }
         } catch (error) {
             console.error("[UserService.logout] error:", error)
-            return {
-                status: false,
-                error: { code: UserErrorCode.LOGOUT_FAILED, message: "Erro ao fazer logout" },
-            }
+            return { status: false, error: { code: UserErrorCode.LOGOUT_FAILED } }
         }
     }
 
-    async refresh(refreshToken: string): Promise<ServiceResult<AuthTokens, UserErrorCode>> {
+    async getProfile(userId: string): Promise<UserResult<UserProfile>> {
         try {
-            const { data, error } = await supabaseAuth.auth.refreshSession({
-                refresh_token: refreshToken,
-            })
-
-            if (error || !data.session || !data.user) {
-                const revoked = isRefreshTokenReuseOrRevoked(error)
-
-                return {
-                    status: false,
-                    error: {
-                        code: revoked ? UserErrorCode.SESSION_REVOKED : UserErrorCode.INVALID_CREDENTIALS,
-                        message: revoked
-                            ? "Sessão encerrada por segurança. Faça login novamente."
-                            : "Sessão expirada. Faça login novamente.",
-                    },
-                }
-            }
-
-            return {
-                status: true,
-                data: buildAuthTokens(data.session, data.user),
-            }
-        } catch (error) {
-            console.error("[UserService.refresh] error:", error)
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.LOGIN_FAILED,
-                    message: "Erro ao renovar sessão.",
-                },
-            }
-        }
-    }
-
-    async getProfile(accessToken: string): Promise<ServiceResult<UserProfile, UserErrorCode>> {
-        try {
-            const userId = await resolveUserIdFromAccessToken(accessToken)
-
-            if (!userId) {
-                return {
-                    status: false,
-                    error: {
-                        code: UserErrorCode.USER_FETCH_FAILED,
-                        message: "Sessão inválida.",
-                    },
-                }
-            }
-
-            const supabase = await createSupabaseClientForUser(accessToken)
-
-            const { data, error } = await supabase
+            const { data, error } = await createSupabaseClientForUser(userId)
                 .from("users")
                 .select(USER_PROFILE_SELECT)
                 .eq("id", userId)
-                .single()
+                .maybeSingle()
 
-            if (error || !data) {
+            if (error) {
                 console.error("[UserService.getProfile]", error)
-                return {
-                    status: false,
-                    error: {
-                        code: UserErrorCode.USER_NOT_FOUND,
-                        message: "Usuário não encontrado.",
-                    },
-                }
+                return { status: false, error: { code: UserErrorCode.USER_FETCH_FAILED } }
             }
 
-            return {
-                status: true,
-                data: mapUserProfileRow(data),
-            }
+            if (!data) return { status: false, error: { code: UserErrorCode.USER_NOT_FOUND } }
+
+            return { status: true, data: mapUserProfileRow(data) }
         } catch (error) {
             console.error("[UserService.getProfile] error:", error)
-
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.USER_FETCH_FAILED,
-                    message: "Erro ao buscar perfil do usuário.",
-                },
-            }
+            return { status: false, error: { code: UserErrorCode.USER_FETCH_FAILED } }
         }
     }
 
-    async updateProfile(
-        accessToken: string,
-        updates: { username: string }
-    ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
+    async updateProfile(userId: string, { username }: UpdateProfileDTO): Promise<UserResult<CreatedId>> {
         try {
-            const userId = await resolveUserIdFromAccessToken(accessToken)
-
-            if (!userId) {
-                return {
-                    status: false,
-                    error: {
-                        code: UserErrorCode.USER_UPDATE_FAILED,
-                        message: "Sessão inválida.",
-                    },
-                }
-            }
-
-            const supabase = await createSupabaseClientForUser(accessToken)
-
-            const { data, error } = await supabase
+            const { data, error } = await createSupabaseClientForUser(userId)
                 .from("users")
-                .update({ username: updates.username })
+                .update({ username })
                 .eq("id", userId)
-                .select(USER_PROFILE_SELECT)
+                .select("id")
                 .single()
 
             if (error || !data) {
                 console.error("[UserService.updateProfile]", error)
-                return {
-                    status: false,
-                    error: {
-                        code: UserErrorCode.USER_UPDATE_FAILED,
-                        message: "Não foi possível atualizar o perfil.",
-                    },
-                }
+                return { status: false, error: { code: UserErrorCode.USER_UPDATE_FAILED } }
             }
 
-            return {
-                status: true,
-                data: mapUserProfileRow(data),
-            }
+            return { status: true, data: { id: data.id } }
         } catch (error) {
             console.error("[UserService.updateProfile] error:", error)
-
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.USER_UPDATE_FAILED,
-                    message: "Erro ao atualizar perfil do usuário.",
-                },
-            }
+            return { status: false, error: { code: UserErrorCode.USER_UPDATE_FAILED } }
         }
     }
 
-    async changePassword(
-        accessToken: string,
-        payload: ChangePasswordDTO
-    ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
+    async changePassword(userId: string, payload: ChangePasswordDTO): Promise<UserResult<null>> {
         try {
-            const userResult = await this.resolveAuthenticatedUserId(accessToken)
-            if (!userResult.status) return userResult
+            const profile = await this.fetchProfileForPasswordChange(userId)
+            if (!profile.status) return profile
 
-            const profileResult = await this.fetchProfileForPasswordChange(
-                accessToken,
-                userResult.data
-            )
-            if (!profileResult.status) return profileResult
+            if (profile.data.must_change_password === true) {
+                const changed = await this.changePasswordWithAdmin(userId, payload.new_password)
+                if (!changed.status) return changed
 
-            const profileRow = profileResult.data
-            const mustChangePassword = profileRow.must_change_password === true
-
-            if (!mustChangePassword) {
-                const currentPassword = this.getCurrentPasswordFromPayload(payload)
-
-                if (!currentPassword) {
-                    return {
-                        status: false,
-                        error: {
-                            code: UserErrorCode.INVALID_PASSWORD,
-                            message: "Informe a senha atual.",
-                        },
-                    }
-                }
-
-                const changeResult = await this.changePasswordWithReauth(
-                    profileRow.email,
-                    currentPassword,
-                    payload.new_password
-                )
-                if (!changeResult.status) return changeResult
-            } else {
-                const changeResult = await this.changePasswordWithAdmin(
-                    userResult.data,
-                    payload.new_password
-                )
-                if (!changeResult.status) return changeResult
-
-                await this.clearMustChangePasswordFlag(userResult.data)
+                await this.clearMustChangePasswordFlag(userId)
+                return changed
             }
 
-            return this.getProfile(accessToken)
+            // Fora da troca obrigatória, a senha atual é exigida
+            if (!payload.current_password) {
+                return { status: false, error: { code: UserErrorCode.INVALID_PASSWORD } }
+            }
+
+            return this.changePasswordWithReauth(profile.data.email, payload.current_password, payload.new_password)
         } catch (error) {
             console.error("[UserService.changePassword] error:", error)
             return {
                 status: false,
-                error: {
-                    code: UserErrorCode.USER_UPDATE_FAILED,
-                    message: "Não foi possível atualizar a senha.",
-                },
+                error: { code: UserErrorCode.USER_UPDATE_FAILED, message: "Não foi possível atualizar a senha." },
             }
         }
     }
 
-    async requestPasswordReset(
-        payload: PasswordResetRequestDTO
-    ): Promise<ServiceResult<{ accepted: true }, UserErrorCode>> {
+    async requestPasswordReset({ identifier }: PasswordResetRequestDTO): Promise<UserResult<null>> {
         try {
-            const identifier = payload.identifier.trim().toLowerCase()
-
-            const { data: userRow } = await supabaseAdmin
+            const { data: userRow, error: lookupError } = await supabaseAdmin
                 .from("users")
                 .select("id")
                 .eq("email", identifier)
                 .maybeSingle()
 
-            if (userRow?.id) {
-                const { error: insertError } = await supabaseAdmin
-                    .from("password_reset_requests")
-                    .insert({
-                        user_id: userRow.id,
-                        identifier,
-                        status: "pending",
-                    })
-
-                if (insertError) {
-                    console.error("[UserService.requestPasswordReset] insert failed:", insertError)
-                    return {
-                        status: false,
-                        error: {
-                            code: UserErrorCode.PASSWORD_RESET_REQUEST_FAILED,
-                            message: "Não foi possível registrar a solicitação.",
-                        },
-                    }
-                }
+            if (lookupError) {
+                console.error("[UserService.requestPasswordReset] lookup failed:", lookupError)
+                return { status: false, error: { code: UserErrorCode.PASSWORD_RESET_REQUEST_FAILED } }
             }
 
-            return {
-                status: true,
-                data: { accepted: true },
+            // E-mail desconhecido recebe a mesma resposta, para não revelar quais contas existem
+            if (!userRow) return { status: true, data: null }
+
+            const { error: insertError } = await supabaseAdmin
+                .from("password_reset_requests")
+                .insert({ user_id: userRow.id, identifier, status: PASSWORD_RESET_PENDING_STATUS })
+
+            if (insertError) {
+                console.error("[UserService.requestPasswordReset] insert failed:", insertError)
+                return { status: false, error: { code: UserErrorCode.PASSWORD_RESET_REQUEST_FAILED } }
             }
+
+            return { status: true, data: null }
         } catch (error) {
             console.error("[UserService.requestPasswordReset] error:", error)
-            return {
-                status: false,
-                error: {
-                    code: UserErrorCode.PASSWORD_RESET_REQUEST_FAILED,
-                    message: "Não foi possível registrar a solicitação.",
-                },
-            }
+            return { status: false, error: { code: UserErrorCode.PASSWORD_RESET_REQUEST_FAILED } }
         }
     }
 
-    async updateProfileImage(
-        accessToken: string,
-        file: { buffer: Buffer; mimetype: string }
-    ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
+    async updateProfileImage(userId: string, file: ProfileImageFile): Promise<UserResult<CreatedId>> {
         try {
-            const userResult = await this.resolveAuthenticatedUserId(accessToken)
-            if (!userResult.status) return userResult
+            if (!file.buffer.length) {
+                return {
+                    status: false,
+                    error: { code: UserErrorCode.PROFILE_IMAGE_INVALID, message: "Arquivo de imagem vazio." },
+                }
+            }
 
-            const validation = this.validateProfileImageFile(file)
-            if (!validation.status) return validation
+            const [previousImagePath, storagePath] = await Promise.all([
+                this.fetchCurrentProfileImagePath(userId),
+                uploadProfileImageToStorage(userId, file.buffer),
+            ])
 
-            const userId = userResult.data
-            const previousImageUrl = await this.fetchCurrentProfileImageUrl(accessToken, userId)
-            const storagePath = await uploadProfileImageToStorage(userId, file.buffer)
-
-            const updated = await this.updateProfileImageRecord(accessToken, userId, storagePath)
+            const updated = await this.saveProfileImagePath(userId, storagePath)
             if (!updated.status) {
                 await this.removeStoredProfileImage(storagePath, "updateProfileImage rollback")
                 return updated
             }
 
-            if (previousImageUrl && previousImageUrl !== storagePath) {
-                await this.removeStoredProfileImage(previousImageUrl, "updateProfileImage")
+            if (previousImagePath && previousImagePath !== storagePath) {
+                await this.removeStoredProfileImage(previousImagePath, "updateProfileImage")
             }
 
             return updated
@@ -603,55 +229,34 @@ class UserService {
             console.error("[UserService.updateProfileImage] error:", error)
             return {
                 status: false,
-                error: {
-                    code: UserErrorCode.USER_UPDATE_FAILED,
-                    message: "Erro ao salvar a foto de perfil.",
-                },
+                error: { code: UserErrorCode.USER_UPDATE_FAILED, message: "Erro ao salvar a foto de perfil." },
             }
         }
     }
 
-    async deleteProfileImage(
-        accessToken: string
-    ): Promise<ServiceResult<UserProfile, UserErrorCode>> {
+    async deleteProfileImage(userId: string): Promise<UserResult<null>> {
         try {
-            const userResult = await this.resolveAuthenticatedUserId(accessToken)
-            if (!userResult.status) return userResult
-
-            const userId = userResult.data
-            const previousImageUrl = await this.fetchCurrentProfileImageUrl(accessToken, userId)
-            const updated = await this.removeProfileImageRecord(accessToken, userId)
-
+            const previousImagePath = await this.fetchCurrentProfileImagePath(userId)
+            const updated = await this.saveProfileImagePath(userId, null)
             if (!updated.status) return updated
 
-            if (previousImageUrl) {
-                await this.removeStoredProfileImage(previousImageUrl, "deleteProfileImage")
+            if (previousImagePath) {
+                await this.removeStoredProfileImage(previousImagePath, "deleteProfileImage")
             }
 
-            return updated
+            return { status: true, data: null }
         } catch (error) {
             console.error("[UserService.deleteProfileImage] error:", error)
             return {
                 status: false,
-                error: {
-                    code: UserErrorCode.USER_UPDATE_FAILED,
-                    message: "Erro ao remover a foto de perfil.",
-                },
+                error: { code: UserErrorCode.USER_UPDATE_FAILED, message: "Erro ao remover a foto de perfil." },
             }
         }
     }
 
-    async getPublicProfileImageMeta(): Promise<
-        ServiceResult<
-            {
-                updated_at: string | null
-                image_url: string | null
-                thumbnail_url: string | null
-            },
-            UserErrorCode
-        >
-    > {
+    async getPublicProfileImageMeta(): Promise<UserResult<PublicProfileImageMeta>> {
         try {
+            // Rota pública, sem sessão: o cliente administrativo é o único que lê aqui
             const { data, error } = await supabaseAdmin
                 .from("users")
                 .select("profile_image_url, profile_image_updated_at")
@@ -664,91 +269,168 @@ class UserService {
                 console.error("[UserService.getPublicProfileImageMeta]", error)
                 return {
                     status: false,
-                    error: {
-                        code: UserErrorCode.USER_FETCH_FAILED,
-                        message: "Erro ao buscar foto de perfil.",
-                    },
+                    error: { code: UserErrorCode.USER_FETCH_FAILED, message: "Erro ao buscar foto de perfil." },
                 }
             }
 
             if (!data?.profile_image_url) {
-                return {
-                    status: true,
-                    data: {
-                        updated_at: null,
-                        image_url: null,
-                        thumbnail_url: null,
-                    },
-                }
+                return { status: true, data: { updated_at: null, image_url: null, thumbnail_url: null } }
             }
 
             return {
                 status: true,
                 data: {
                     updated_at: data.profile_image_updated_at,
-                    image_url: getProfileImagePublicUrl(
-                        data.profile_image_url,
-                        data.profile_image_updated_at
-                    ),
-                    thumbnail_url: getProfileThumbnailPublicUrl(
-                        data.profile_image_url,
-                        data.profile_image_updated_at
-                    ),
+                    image_url: getProfileImagePublicUrl(data.profile_image_url, data.profile_image_updated_at),
+                    thumbnail_url: getProfileThumbnailPublicUrl(data.profile_image_url, data.profile_image_updated_at),
                 },
             }
         } catch (error) {
             console.error("[UserService.getPublicProfileImageMeta] error:", error)
             return {
                 status: false,
-                error: {
-                    code: UserErrorCode.USER_FETCH_FAILED,
-                    message: "Erro ao buscar foto de perfil.",
-                },
+                error: { code: UserErrorCode.USER_FETCH_FAILED, message: "Erro ao buscar foto de perfil." },
             }
         }
     }
 
-    async getPublicProfileImage(): Promise<
-        ServiceResult<{ publicUrl: string }, UserErrorCode>
-    > {
-        try {
-            const metaResult = await this.getPublicProfileImageMeta()
+    async getPublicProfileImageUrl(): Promise<UserResult<string>> {
+        const meta = await this.getPublicProfileImageMeta()
+        if (!meta.status) return meta
 
-            if (!metaResult.status) {
-                return {
-                    status: false,
-                    error: metaResult.error,
-                }
-            }
+        if (!meta.data.image_url) {
+            return { status: false, error: { code: UserErrorCode.PROFILE_IMAGE_NOT_FOUND } }
+        }
 
-            if (!metaResult.data.image_url) {
-                return {
-                    status: false,
-                    error: {
-                        code: UserErrorCode.PROFILE_IMAGE_NOT_FOUND,
-                        message: "Foto de perfil não encontrada.",
-                    },
-                }
-            }
+        return { status: true, data: meta.data.image_url }
+    }
 
-            return {
-                status: true,
-                data: {
-                    publicUrl: metaResult.data.image_url,
-                },
-            }
-        } catch (error) {
-            console.error("[UserService.getPublicProfileImage] error:", error)
+    /** Perfil junto dos tokens; se a leitura falhar, a sessão vale do mesmo jeito */
+    private async buildSession(tokens: AuthTokens): Promise<AuthSession> {
+        const profile = await this.getProfile(tokens.user.id)
+        return { tokens, user: profile.status ? profile.data : null }
+    }
+
+    private async fetchProfileForPasswordChange(userId: string): Promise<UserResult<PasswordChangeProfile>> {
+        const { data, error } = await createSupabaseClientForUser(userId)
+            .from("users")
+            .select("email, must_change_password")
+            .eq("id", userId)
+            .maybeSingle()
+
+        if (error) {
+            console.error("[UserService.fetchProfileForPasswordChange]", error)
+            return { status: false, error: { code: UserErrorCode.USER_FETCH_FAILED } }
+        }
+
+        if (!data) return { status: false, error: { code: UserErrorCode.USER_NOT_FOUND } }
+
+        return { status: true, data }
+    }
+
+    private async changePasswordWithReauth(
+        email: string,
+        currentPassword: string,
+        newPassword: string
+    ): Promise<UserResult<null>> {
+        const authClient = createEphemeralAuthClient()
+
+        const { data: reauthData, error: reauthError } = await authClient.auth.signInWithPassword({
+            email,
+            password: currentPassword,
+        })
+
+        if (reauthError || !reauthData.session) {
             return {
                 status: false,
-                error: {
-                    code: UserErrorCode.USER_FETCH_FAILED,
-                    message: "Erro ao buscar foto de perfil.",
-                },
+                error: { code: UserErrorCode.INVALID_CREDENTIALS, message: "Senha atual incorreta." },
             }
+        }
+
+        const { error: updateError } = await authClient.auth.updateUser({ password: newPassword })
+
+        if (updateError) {
+            console.error("[UserService.changePasswordWithReauth]", updateError)
+            return {
+                status: false,
+                error: { code: UserErrorCode.USER_UPDATE_FAILED, message: mapPasswordUpdateError(updateError.message) },
+            }
+        }
+
+        return { status: true, data: null }
+    }
+
+    private async changePasswordWithAdmin(userId: string, newPassword: string): Promise<UserResult<null>> {
+        const { error } = await supabaseAdmin.auth.admin.updateUserById(userId, { password: newPassword })
+
+        if (error) {
+            console.error("[UserService.changePasswordWithAdmin]", error)
+            return {
+                status: false,
+                error: { code: UserErrorCode.USER_UPDATE_FAILED, message: mapPasswordUpdateError(error.message) },
+            }
+        }
+
+        return { status: true, data: null }
+    }
+
+    private async clearMustChangePasswordFlag(userId: string): Promise<void> {
+        const { error } = await supabaseAdmin
+            .from("users")
+            .update({ must_change_password: false })
+            .eq("id", userId)
+
+        if (error) {
+            console.error("[UserService.clearMustChangePasswordFlag]", error)
         }
     }
 
+    private async fetchCurrentProfileImagePath(userId: string): Promise<string | null> {
+        const { data, error } = await createSupabaseClientForUser(userId)
+            .from("users")
+            .select("profile_image_url")
+            .eq("id", userId)
+            .maybeSingle()
+
+        if (error) {
+            console.error("[UserService.fetchCurrentProfileImagePath]", error)
+            return null
+        }
+
+        return data?.profile_image_url ?? null
+    }
+
+    /** Grava (ou limpa, com null) o caminho da foto no perfil */
+    private async saveProfileImagePath(userId: string, storagePath: string | null): Promise<UserResult<CreatedId>> {
+        const now = new Date().toISOString()
+
+        const { data, error } = await createSupabaseClientForUser(userId)
+            .from("users")
+            .update({
+                profile_image_url: storagePath,
+                profile_image_updated_at: storagePath ? now : null,
+                updated_at: now,
+            })
+            .eq("id", userId)
+            .select("id")
+            .single()
+
+        if (error || !data) {
+            console.error("[UserService.saveProfileImagePath]", error)
+            return {
+                status: false,
+                error: { code: UserErrorCode.USER_UPDATE_FAILED, message: "Não foi possível salvar a foto de perfil." },
+            }
+        }
+
+        return { status: true, data: { id: data.id } }
+    }
+
+    private async removeStoredProfileImage(storagePath: string, context: string): Promise<void> {
+        await deleteProfileImageFromStorage(storagePath).catch((error: unknown) => {
+            console.error(`[UserService.${context}] storage cleanup failed:`, error)
+        })
+    }
 }
 
 export default new UserService()

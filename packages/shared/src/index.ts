@@ -4,3 +4,4 @@ export * from "./schemas/siteLink.schema";
 export * from "./schemas/siteSettings.schema";
 export * from "./schemas/auth.schema";
 export * from "./constants";
+export * from "./types/api.types";

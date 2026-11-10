@@ -1,14 +1,14 @@
-import type { ProjectUpdate, ProjectUpdateFormValues } from "@blog/shared";
+import type { CreatedId, ProjectUpdate, ProjectUpdateFormValues } from "@blog/shared";
 import { projectUpdatesService, unwrap } from "@/service";
 
 export async function fetchProjectUpdates(projectId: string): Promise<ProjectUpdate[]> {
-  return unwrap(await projectUpdatesService.list(projectId));
+  return unwrap(await projectUpdatesService.list(projectId)).items;
 }
 
 export async function createProjectUpdate(
   projectId: string,
   data: ProjectUpdateFormValues,
-): Promise<ProjectUpdate> {
+): Promise<CreatedId> {
   return unwrap(await projectUpdatesService.create(projectId, data));
 }
 
@@ -16,7 +16,7 @@ export async function updateProjectUpdate(
   projectId: string,
   updateId: string,
   data: ProjectUpdateFormValues,
-): Promise<ProjectUpdate> {
+): Promise<CreatedId> {
   return unwrap(await projectUpdatesService.update(projectId, updateId, data));
 }
 

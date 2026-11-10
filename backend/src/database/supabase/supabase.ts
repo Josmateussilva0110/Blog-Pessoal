@@ -1,9 +1,6 @@
 import { createClient } from "@supabase/supabase-js"
 import { env } from "../../config/env"
-import {
-  mintSupabaseAccessToken,
-  resolveUserIdFromAccessToken,
-} from "../../utils/auth/accessToken"
+import { mintSupabaseAccessToken } from "../../utils/auth/accessToken"
 
 const clientOptions = {
     auth: {
@@ -12,26 +9,33 @@ const clientOptions = {
     },
 } as const
 
-/** Bypasses RLS — use only for server-side DB and admin auth APIs. */
+/**
+ * Ignora RLS. Só para o que nenhuma policy cobre: escrita do admin (as policies de
+ * escrita foram removidas), leitura pública sem sessão e APIs administrativas de auth.
+ */
 export const supabaseAdmin = createClient(
     env.SUPABASE_URL,
     env.SUPABASE_SERVICE_ROLE_KEY,
     clientOptions
 )
 
-/** Auth flows (login/register/refresh) — must not share session with supabaseAdmin. */
+/** Auth flows (login/refresh) — não compartilha sessão com o supabaseAdmin. */
 export const supabaseAuth = createClient(
     env.SUPABASE_URL,
     env.SUPABASE_ANON_KEY,
     clientOptions
 )
 
-/** Cliente isolado por requisição — login, reauth e updateUser de senha. */
+/** Cliente isolado por requisição — reauth e updateUser de senha. */
 export function createEphemeralAuthClient() {
     return createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, clientOptions)
 }
 
-export function createSupabaseClientForUserId(userId: string) {
+/**
+ * Respeita RLS: emite JWT próprio do usuário para o PostgREST. O userId deve vir
+ * do authMiddleware (token já verificado), nunca do corpo ou da URL.
+ */
+export function createSupabaseClientForUser(userId: string) {
     const dbAccessToken = mintSupabaseAccessToken(userId)
 
     return createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
@@ -42,14 +46,4 @@ export function createSupabaseClientForUserId(userId: string) {
             },
         },
     })
-}
-
-/** Respeita RLS — valida o token do usuário e emite JWT próprio para o PostgREST. */
-export async function createSupabaseClientForUser(accessToken: string) {
-    const userId = await resolveUserIdFromAccessToken(accessToken)
-    if (!userId) {
-        throw new Error("Token de acesso inválido para consulta ao banco.")
-    }
-
-    return createSupabaseClientForUserId(userId)
 }

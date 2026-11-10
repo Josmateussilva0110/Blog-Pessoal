@@ -9,6 +9,6 @@ export const siteLinksService = {
   },
 
   update(data: UpdateSiteLinksInput) {
-    return request<SiteLinksGrouped>(BASE, { method: "PUT", body: data });
+    return request<void>(BASE, { method: "PUT", body: data });
   },
 };

@@ -19,8 +19,9 @@ export function useUpdateHeroStats() {
   return useMutation({
     mutationFn: async (payload: HeroStats) =>
       unwrap(await siteSettingsService.updateHeroStats(payload)),
-    onSuccess: (data) => {
-      queryClient.setQueryData(heroStatsKeys.all, data);
+    // A API responde só a confirmação: o valor salvo é o que acabou de ser enviado
+    onSuccess: (_data, payload) => {
+      queryClient.setQueryData(heroStatsKeys.all, payload);
     },
   });
 }

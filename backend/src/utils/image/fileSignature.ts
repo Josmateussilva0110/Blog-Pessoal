@@ -28,15 +28,3 @@ export function isSupportedImageBuffer(mimetype: string, buffer: Buffer): boolea
 
   return signatures.some((signature) => matchesSignature(buffer, signature))
 }
-
-export function validateUploadedImage(
-  file: Express.Multer.File | undefined,
-): string | null {
-  if (!file) return null
-
-  if (!isSupportedImageBuffer(file.mimetype, file.buffer)) {
-    return "O conteúdo do arquivo não corresponde a uma imagem válida."
-  }
-
-  return null
-}

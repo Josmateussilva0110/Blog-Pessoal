@@ -1,68 +1,55 @@
 import type { Request, Response } from "express"
-import type { ProjectUpdateFormValues } from "@blog/shared"
-import type { ProjectIdParams, ProjectUpdateParams } from "../schemas/projectSchema"
+import { projectUpdateErrorHttpStatusMap } from "../errors/projectUpdates"
 import ProjectUpdateService from "../services/ProjectUpdateService"
-import { projectUpdateErrorHttpStatusMap } from "../errors/projectUpdateErrorHttpMapper"
-import { sendServiceError } from "../utils/http/sendServiceError"
+import { IdParamSchema } from "../schemas/common/idParam"
+import { PaginationQuerySchema } from "../schemas/common/pagination"
+import { ProjectUpdateParamSchema, ProjectUpdatePayloadSchema } from "../schemas/projectUpdates/projectUpdate"
+import { requireValidated } from "../utils/http/requireValidated"
+import { sendFailure } from "../utils/http/sendFailure"
+import { sendSuccess } from "../utils/http/sendSuccess"
 
 class ProjectUpdateController {
   async list(request: Request, response: Response): Promise<Response> {
-    const { id } = request.validatedParams as ProjectIdParams
-    const result = await ProjectUpdateService.listByProject(id)
+    const { id } = requireValidated(request, "params", IdParamSchema)
+    const result = await ProjectUpdateService.listByProject(
+      id,
+      requireValidated(request, "query", PaginationQuerySchema)
+    )
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectUpdateErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectUpdateErrorHttpStatusMap)
 
-    return response.status(200).json({ success: true, data: result.data })
+    return sendSuccess(response, "Atualizações carregadas.", result.data)
   }
 
   async create(request: Request, response: Response): Promise<Response> {
-    const { id } = request.validatedParams as ProjectIdParams
-    const result = await ProjectUpdateService.create(id, request.body as ProjectUpdateFormValues)
+    const { id } = requireValidated(request, "params", IdParamSchema)
+    const result = await ProjectUpdateService.create(id, requireValidated(request, "body", ProjectUpdatePayloadSchema))
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectUpdateErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectUpdateErrorHttpStatusMap)
 
-    return response.status(201).json({
-      success: true,
-      message: "Atualização publicada.",
-      data: result.data,
-    })
+    return sendSuccess(response, "Atualização publicada.", result.data, 201)
   }
 
   async update(request: Request, response: Response): Promise<Response> {
-    const { id, updateId } = request.validatedParams as ProjectUpdateParams
+    const { id, updateId } = requireValidated(request, "params", ProjectUpdateParamSchema)
     const result = await ProjectUpdateService.update(
       id,
       updateId,
-      request.body as ProjectUpdateFormValues
+      requireValidated(request, "body", ProjectUpdatePayloadSchema)
     )
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectUpdateErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectUpdateErrorHttpStatusMap)
 
-    return response.status(200).json({
-      success: true,
-      message: "Atualização salva.",
-      data: result.data,
-    })
+    return sendSuccess(response, "Atualização salva.", result.data)
   }
 
   async remove(request: Request, response: Response): Promise<Response> {
-    const { id, updateId } = request.validatedParams as ProjectUpdateParams
+    const { id, updateId } = requireValidated(request, "params", ProjectUpdateParamSchema)
     const result = await ProjectUpdateService.remove(id, updateId)
 
-    if (!result.status) {
-      return sendServiceError(response, result.error, projectUpdateErrorHttpStatusMap)
-    }
+    if (!result.status) return sendFailure(response, result.error, projectUpdateErrorHttpStatusMap)
 
-    return response.status(200).json({
-      success: true,
-      message: "Atualização excluída.",
-    })
+    return sendSuccess(response, "Atualização excluída.")
   }
 }
 
