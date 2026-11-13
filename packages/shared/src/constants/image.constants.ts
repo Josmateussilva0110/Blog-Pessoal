@@ -1,12 +1,19 @@
 /** Larguras máximas das imagens de projeto geradas no upload (usadas no processamento e no srcSet) */
 export const PROJECT_IMAGE_MAX_WIDTH = 1920;
-/** Cobre os cards de projeto (~600px) em telas 1.5x sem precisar do original */
-export const PROJECT_THUMB_MAX_WIDTH = 960;
+/**
+ * Larguras das miniaturas de projeto geradas no upload, da menor para a maior.
+ * O aparelho dos cards tem ~240px: 240 atende DPR 1, 480 DPR 2 e 960 DPR 3.
+ * Reduzir no servidor (e não no navegador) é o que mantém os prints nítidos:
+ * o Chrome reduzindo 960px para 240px produz imagem borrada.
+ */
+export const PROJECT_THUMB_WIDTHS = [240, 480, 960] as const;
+/** A maior miniatura é a `.thumb.webp` original; as menores levam a largura no nome */
+export const PROJECT_THUMB_MAX_WIDTH = PROJECT_THUMB_WIDTHS[PROJECT_THUMB_WIDTHS.length - 1];
 /**
  * Versão das miniaturas de projeto, vai na URL (?v=) para furar o cache do CDN
  * e do navegador. Incrementar sempre que rodar o regenerate-thumbnails.
  */
-export const PROJECT_THUMB_VERSION = 2;
+export const PROJECT_THUMB_VERSION = 3;
 
 const MEGABYTE = 1024 * 1024;
 

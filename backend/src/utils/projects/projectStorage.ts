@@ -6,6 +6,8 @@ import type { UploadableFile } from "../../types/projects/upload"
 import {
   expandStoragePathsWithThumbnails,
   processProjectImage,
+  PROJECT_THUMB_WIDTHS,
+  toThumbnailStoragePath,
 } from "../image/imageProcessing"
 
 function normalizeImageMime(mime: string): string {
@@ -44,7 +46,7 @@ async function uploadBuffer(
   }
 }
 
-async function uploadProjectImagePair(
+async function uploadProjectImageSet(
   projectId: string,
   file: Pick<UploadableFile, "buffer" | "mimetype">,
 ): Promise<string> {
@@ -57,11 +59,17 @@ async function uploadProjectImagePair(
   const processed = await processProjectImage(file.buffer)
   const imageId = randomUUID()
   const mainPath = `${projectId}/images/${imageId}.webp`
-  const thumbPath = `${projectId}/images/${imageId}.thumb.webp`
 
   await Promise.all([
     uploadBuffer(PROJECT_IMAGES_BUCKET, mainPath, processed.main, processed.contentType),
-    uploadBuffer(PROJECT_IMAGES_BUCKET, thumbPath, processed.thumb, processed.contentType),
+    ...processed.thumbs.map((thumb) =>
+      uploadBuffer(
+        PROJECT_IMAGES_BUCKET,
+        toThumbnailStoragePath(mainPath, thumb.width),
+        thumb.buffer,
+        processed.contentType,
+      ),
+    ),
   ])
 
   return getStoragePublicUrl(PROJECT_IMAGES_BUCKET, mainPath)
@@ -71,7 +79,7 @@ export async function uploadProjectImages(
   projectId: string,
   files: UploadableFile[],
 ): Promise<string[]> {
-  return Promise.all(files.map((file) => uploadProjectImagePair(projectId, file)))
+  return Promise.all(files.map((file) => uploadProjectImageSet(projectId, file)))
 }
 
 export async function listStoragePaths(
@@ -115,7 +123,7 @@ export async function removeStoragePaths(
 ): Promise<void> {
   if (paths.length === 0) return
 
-  const expandedPaths = expandStoragePathsWithThumbnails(paths)
+  const expandedPaths = expandStoragePathsWithThumbnails(paths, PROJECT_THUMB_WIDTHS)
   const { error } = await supabaseAdmin.storage.from(bucket).remove(expandedPaths)
 
   if (error) {

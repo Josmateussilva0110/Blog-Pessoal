@@ -4,7 +4,7 @@ import { useState, type CSSProperties, type ImgHTMLAttributes } from "react";
 export const DEFAULT_IMAGE_FALLBACK = "/profile-placeholder.svg";
 
 type ImageFit = "cover" | "contain";
-type ImageRadius = "none" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full";
+export type ImageRadius = "none" | "md" | "lg" | "tile" | "xl" | "2xl" | "3xl" | "full";
 type ImageVariant = "default" | "profile" | "icon" | "cover" | "banner" | "avatar";
 
 export type ImageSize =
@@ -33,10 +33,16 @@ const sizeStyles: Record<Exclude<ImageSize, "full">, string> = {
   "6xl": "w-56 h-56",
 };
 
+/** Classe de raio de cada preset; também usada por placeholders que imitam a imagem */
+export function imageRadiusClass(radius: ImageRadius) {
+  return radiusStyles[radius];
+}
+
 const radiusStyles: Record<ImageRadius, string> = {
   none: "rounded-none",
   md: "rounded-md",
   lg: "rounded-lg",
+  tile: "rounded-tile",
   xl: "rounded-xl",
   "2xl": "rounded-2xl",
   "3xl": "rounded-3xl",

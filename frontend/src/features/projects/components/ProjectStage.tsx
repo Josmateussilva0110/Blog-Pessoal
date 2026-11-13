@@ -4,6 +4,19 @@ import { getProjectCover } from "@/features/projects/lib/projectCover";
 import { cn } from "@/lib/cn";
 import { normalizeProjectPlatform, PLATFORM_KIND_LABELS } from "@/lib/projectPlatform";
 
+/**
+ * `sizes` do print no palco (também usados no preload da lista). Web desktop: 37rem =
+ * paddings do main, do card e do palco + lista + gap; ajuste se o layout mudar.
+ */
+export const STAGE_SIZES = {
+  mobile: "236px",
+  web: "min(calc(100vw - 37rem), 47.5rem)",
+  compactMobile: "136px",
+  // Card do carrossel: 78% (45% a partir de sm) da faixa, até 20rem, menos os paddings
+  compactWeb:
+    "(min-width: 640px) calc(min(45vw - 2.9rem, 20rem) - 3.5rem), calc(min(78vw - 3.1rem, 20rem) - 3.5rem)",
+} as const;
+
 interface ProjectStageProps {
   project: Project;
   /** Versão menor, sem os rótulos no topo, usada nos cards do carrossel no celular */
@@ -50,7 +63,7 @@ export function ProjectStage({ project, compact = false }: ProjectStageProps) {
           <Image
             src={cover.thumb}
             srcSet={cover.srcSet}
-            sizes={compact ? "136px" : "236px"}
+            sizes={compact ? STAGE_SIZES.compactMobile : STAGE_SIZES.mobile}
             fallback={cover.original}
             alt={alt}
             fit="cover"
@@ -68,7 +81,7 @@ export function ProjectStage({ project, compact = false }: ProjectStageProps) {
           <Image
             src={cover.thumb}
             srcSet={cover.srcSet}
-            sizes={compact ? "320px" : "(min-width: 1024px) 760px, 100vw"}
+            sizes={compact ? STAGE_SIZES.compactWeb : STAGE_SIZES.web}
             fallback={cover.original}
             alt={alt}
             fit="cover"

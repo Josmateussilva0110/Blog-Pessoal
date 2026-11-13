@@ -12,7 +12,7 @@ import { SECTION_IDS } from "@/config/routes";
 const GRID_CLASS = "grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-2";
 const TILE_BASE_CLASS = "flex h-full flex-col items-center gap-2.5 rounded-2xl bg-home-inset px-2 pb-3.5 pt-4.5";
 const TILE_CLASS = `group ${TILE_BASE_CLASS} transition-[transform,background-color] duration-300 hover:-translate-y-0.5 hover:bg-home-raised focus-visible:outline-2 focus-visible:outline-brand`;
-const ICON_CLASS = "size-11 rounded-[0.625rem]";
+const ICON_CLASS = "size-11 rounded-tile";
 /** Quantidade de tiles provisórios: perto da lista cadastrada, para a seção não mudar muito de altura */
 const SKELETON_TILE_COUNT = 15;
 

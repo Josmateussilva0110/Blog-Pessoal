@@ -4,13 +4,24 @@ import { useEffect, useRef, useState } from "react";
 import { Image } from "@/components/ui/Image";
 import { ImageLightbox } from "@/components/ui/ImageLightbox";
 import { cn } from "@/lib/cn";
-import { getThumbnailUrl } from "@/lib/imageUrl";
+import { getThumbnailSrcSet, getThumbnailUrl } from "@/lib/imageUrl";
 
 interface ProjectImageGalleryProps {
   images: string[];
   projectTitle: string;
   platform: ProjectPlatform;
 }
+
+/**
+ * Imagem principal da galeria web: 16/10 limitada pelos max-h (320/460/600/680px de
+ * altura = 512/736/960/1088px de largura) e pela largura da página
+ */
+const MAIN_IMAGE_SIZES =
+  "(min-width: 1280px) min(calc(100vw - 3rem), 1088px), (min-width: 768px) min(calc(100vw - 3rem), 960px), (min-width: 640px) min(calc(100vw - 3rem), 736px), min(calc(100vw - 2rem), 512px)";
+/** Mesmas larguras das classes dos aparelhos (62vw até 240px; 210px em sm; 230px em lg) */
+const PHONE_SIZES = "(min-width: 1024px) 230px, (min-width: 640px) 210px, min(62vw, 240px)";
+/** Mesmas larguras das classes da tira de miniaturas (w-28 / sm:w-36) */
+const FILMSTRIP_SIZES = "(min-width: 640px) 9rem, 7rem";
 
 function padIndex(index: number) {
   return String(index + 1).padStart(2, "0");
@@ -63,9 +74,17 @@ export function ProjectImageGallery({
           aria-label={`Ampliar imagem ${activeIndex + 1} de ${projectTitle}`}
         >
           {/* Proporção fixa reserva a altura antes do download: sem layout shift */}
-          <img
-            src={activeImage}
+          {/* Provável LCP do detalhe: miniatura da largura certa e prioridade alta */}
+          <Image
+            src={getThumbnailUrl(activeImage)}
+            srcSet={getThumbnailSrcSet(activeImage)}
+            sizes={MAIN_IMAGE_SIZES}
+            fallback={activeImage}
             alt={`${projectTitle} — imagem ${activeIndex + 1}`}
+            fit="contain"
+            rounded="none"
+            loading="eager"
+            fetchPriority="high"
             decoding="async"
             className={cn(
               "mx-auto block aspect-[16/10] w-full object-contain",
@@ -107,6 +126,8 @@ export function ProjectImageGallery({
               >
                 <Image
                   src={getThumbnailUrl(image)}
+                  srcSet={getThumbnailSrcSet(image)}
+                  sizes={FILMSTRIP_SIZES}
                   fallback={image}
                   alt=""
                   rounded="none"
@@ -205,6 +226,8 @@ function PhoneGallery({
                 {/* Aparelho tem no máximo 240px: a miniatura basta; o original fica para o lightbox */}
                 <Image
                   src={getThumbnailUrl(image)}
+                  srcSet={getThumbnailSrcSet(image)}
+                  sizes={PHONE_SIZES}
                   fallback={image}
                   alt={`${projectTitle} — imagem ${index + 1}`}
                   rounded="none"

@@ -30,8 +30,9 @@ export function HomePage() {
       <ScrollReveal enter={false}>
         <HeroSection />
       </ScrollReveal>
-      {/* Sem saída: o palco tem TiltCard, e 3D dentro do painel girando gera artefatos no Chrome */}
-      <ScrollReveal exit={false}>
+      {/* Sem 3D: o palco tem prints (ver `flat`). Sem saída: o TiltCard girando
+          dentro do painel inclinado gera artefatos no Chrome */}
+      <ScrollReveal exit={false} flat>
         <ProjectsSection
           home={home}
           isLoading={isPending}

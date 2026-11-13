@@ -17,8 +17,10 @@ type ScrollRevealProps = {
   className?: string;
   /** Entra de baixo inclinada; desligar em seções acima da dobra (ex.: hero) */
   enter?: boolean;
-  /** Inclina e esmaece a seção quando ela sai pelo topo da tela */
+  /** Inclina e esmaece a seção quando ela sai pelo topo da tela (com `flat`, só esmaece) */
   exit?: boolean;
+  /** Só desliza e esmaece, sem 3D: para seções com prints (ver `useRestingTransform`) */
+  flat?: boolean;
 };
 
 // Mola mais lenta e sem quique: os cards deslizam em vez de "pular" para a posição
@@ -37,6 +39,7 @@ export function ScrollReveal({
   className,
   enter: enterEnabled = true,
   exit = true,
+  flat = false,
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const skipEntrance = useSkipEntrance();
@@ -70,7 +73,7 @@ export function ScrollReveal({
     () => entered(0.3, 1) - mix(0, 0.45, leave) * leaveAmount,
   );
 
-  const transform = useRestingTransform({ perspective: 1400, y, scale, rotateX });
+  const transform = useRestingTransform({ perspective: 1400, y, scale, rotateX, flat });
 
   // Mesmo elemento nos dois casos: ao religar o efeito nada é remontado, e as
   // springs já estão acompanhando o scroll, então não há salto

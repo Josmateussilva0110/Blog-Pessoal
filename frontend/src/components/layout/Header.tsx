@@ -41,7 +41,7 @@ function handleHomeNavClick(
 function getLinkClassName(isActive: boolean, mobile = false) {
   return cn(
     // Rótulos vêm do admin em minúsculas ("projects", "github")
-    "inline-flex items-center gap-1 rounded-[0.625rem] text-sm capitalize transition-colors focus-visible:outline-2 focus-visible:outline-brand",
+    "inline-flex items-center gap-1 rounded-tile text-sm capitalize transition-colors focus-visible:outline-2 focus-visible:outline-brand",
     mobile ? "min-h-11 px-3" : "min-h-10 px-3.5",
     isActive
       ? "bg-home-inset text-home-ink"
@@ -159,7 +159,7 @@ export function Header() {
 
           <button
             type="button"
-            className="inline-flex size-10 shrink-0 items-center justify-center rounded-[0.625rem] text-home-muted transition-colors hover:bg-home-inset hover:text-home-ink focus-visible:outline-2 focus-visible:outline-brand sm:hidden"
+            className="inline-flex size-10 shrink-0 items-center justify-center rounded-tile text-home-muted transition-colors hover:bg-home-inset hover:text-home-ink focus-visible:outline-2 focus-visible:outline-brand sm:hidden"
             aria-expanded={mobileNavOpen}
             aria-controls="mobile-nav"
             aria-label={mobileNavOpen ? "Fechar menu" : "Abrir menu"}
