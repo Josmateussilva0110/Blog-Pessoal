@@ -1,9 +1,10 @@
 import type { Project } from "@blog/shared";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Image } from "@/components/ui/Image";
 import { getProjectCover } from "@/features/projects/lib/projectCover";
 import { useProjectCardLink } from "@/features/projects/hooks/useProjectCardLink";
-import { ProjectStage } from "@/features/projects/components/ProjectStage";
+import { ProjectStage, STAGE_SIZES } from "@/features/projects/components/ProjectStage";
 import { cn } from "@/lib/cn";
 import { normalizeProjectPlatform, PLATFORM_KIND_LABELS } from "@/lib/projectPlatform";
 import { ROUTES } from "@/config/routes";
@@ -11,27 +12,36 @@ import { ROUTES } from "@/config/routes";
 const ROW_CLASS =
   "group flex w-full items-center gap-3.5 rounded-[0.875rem] px-3 py-2.5 text-left text-home-ink transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
+/** Miniatura da lista em px: mesma medida do `size-11` */
+const LIST_THUMB_SIZE = 44;
+
 function Thumbnail({ project }: { project: Project }) {
   const cover = getProjectCover(project);
 
   if (!cover) {
     return (
-      <span className="flex size-11 shrink-0 items-center justify-center rounded-[0.625rem] border border-home-line bg-home-inset font-semibold text-home-muted">
+      <span className="flex size-11 shrink-0 items-center justify-center rounded-tile border border-home-line bg-home-inset font-semibold text-home-muted">
         {project.title.charAt(0).toUpperCase()}
       </span>
     );
   }
 
   return (
-    <img
+    <Image
       src={cover.thumb}
+      srcSet={cover.srcSet}
+      sizes={`${LIST_THUMB_SIZE}px`}
+      // Imagens antigas sem alguma miniatura caem no original em vez de quebrar
+      fallback={cover.original}
       alt=""
-      width={44}
-      height={44}
+      width={LIST_THUMB_SIZE}
+      height={LIST_THUMB_SIZE}
+      fit="cover"
+      rounded="tile"
       loading="lazy"
       decoding="async"
       fetchPriority="low"
-      className="size-11 shrink-0 rounded-[0.625rem] border border-home-line object-cover object-top"
+      className="size-11 shrink-0 border border-home-line object-top"
     />
   );
 }
@@ -45,16 +55,11 @@ function RowText({ project, detail }: { project: Project; detail: string }) {
   );
 }
 
-/** Mesmo `sizes` do palco: o navegador escolhe a mesma variante que o palco vai pedir */
-const STAGE_SIZES: Record<"mobile" | "web", string> = {
-  mobile: "236px",
-  web: "(min-width: 1024px) 760px, 100vw",
-};
-
 function preloadStage(project: Project) {
   const cover = getProjectCover(project);
   if (!cover) return;
   const image = new window.Image();
+  // Mesmo `sizes` do palco: o navegador escolhe a mesma variante que o palco vai pedir
   image.sizes = STAGE_SIZES[normalizeProjectPlatform(project.platform)];
   if (cover.srcSet) image.srcset = cover.srcSet;
   image.src = cover.thumb;

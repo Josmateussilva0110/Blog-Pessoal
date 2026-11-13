@@ -14,6 +14,7 @@ export const SITE = {
 
 /** Textos do bloco de apresentação da home */
 export const HOME_HERO = {
+  eyebrow: `dev ${SITE.role} · android e web`,
   title: "Software que funciona no bolso e no navegador.",
   description: `Sou ${SITE.author}. Crio apps Android e sistemas web, do banco de dados à interface.`,
 } as const;

@@ -50,6 +50,11 @@
   --tracking-logo: -0.01em;
   --tracking-heading: -0.02em;
   --tracking-eyebrow: 0.08em;
+  /* Título grande da hero */
+  --tracking-display: -0.045em;
+
+  /* Raio dos itens de 40–44px (links do menu, ícones, miniaturas de lista) */
+  --radius-tile: 0.625rem;
 
   /* Sombras: botão ativo, miniatura de celular e palco do projeto */
   --shadow-control: 0 1px 2px rgb(0 0 0 / 0.4);
@@ -118,6 +123,11 @@
   .project-cover-empty {
     background-image: radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px);
     background-size: 16px 16px;
+  }
+
+  /* Painéis pintados na ordem do DOM: um painel ainda com transform cobria o seguinte já parado */
+  .scroll-panel {
+    position: relative;
   }
 
   /* backdrop-filter dentro de um ancestral com transform 3D renderiza com
