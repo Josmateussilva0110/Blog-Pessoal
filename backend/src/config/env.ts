@@ -32,6 +32,16 @@ const envSchema = z.object({
         .transform((val) => val.split(",").map((s) => s.trim()).filter(Boolean)),
     /** Use "none" quando o frontend estiver em outro domínio (ex.: Vercel + API no Belmo). */
     AUTH_COOKIE_SAME_SITE: z.enum(["lax", "none", "strict"]).optional(),
+    /**
+     * Chave do agente de publicação (Authorization: Bearer <chave>). Só cria projetos e
+     * cria/edita atualizações; sem ela definida, o acesso por chave fica desligado.
+     * Gere com: node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+     */
+    AGENT_API_KEY: z
+        .string()
+        .trim()
+        .min(32, "AGENT_API_KEY deve ter pelo menos 32 caracteres")
+        .optional(),
     TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(5).default(1),
     REFRESH_COOKIE_MAX_AGE_DAYS: z.coerce.number().int().min(1).max(90).default(30),
     RENDER_EXTERNAL_URL: z.string().url().optional(),
