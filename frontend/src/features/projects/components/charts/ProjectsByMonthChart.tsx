@@ -22,7 +22,7 @@ export function ProjectsByMonthChart({ data }: { data: MonthUsage[] }) {
         <span className="block text-xl font-semibold tracking-heading text-home-ink">
           Projetos por mês
         </span>
-        <span className="text-sm text-home-muted">Pela data de cadastro no portfólio.</span>
+        <span className="text-sm text-home-muted">Pela data de cadastro no portfólio</span>
       </figcaption>
 
       <div className="flex min-h-60 flex-1 flex-col justify-end">

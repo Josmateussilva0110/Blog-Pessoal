@@ -101,9 +101,9 @@ export function ProjectUpdatesManager({ projectId }: { projectId: string }) {
                 className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="font-mono text-2xs uppercase tracking-wider text-home-muted">
+                  <p className="font-mono text-xs text-home-muted">
                     {formatDate(update.publishedAt)}
-                    {update.version && <span className="ml-2 normal-case text-brand">{update.version}</span>}
+                    {update.version && <span className="text-brand"> · {update.version}</span>}
                   </p>
                   <p className="truncate text-sm font-medium text-home-ink">{update.title}</p>
                 </div>

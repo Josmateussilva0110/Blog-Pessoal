@@ -40,7 +40,7 @@ export function HeroSection() {
     <section className="grid gap-3 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       {/* Sem altura mínima: a seção de projetos sobe para perto da dobra */}
       <div className="home-card flex flex-col justify-center p-6 sm:p-10">
-        <p className="mb-4 font-mono text-xs uppercase tracking-eyebrow text-home-muted">
+        <p className="mb-4 font-mono text-xs text-home-muted">
           {HOME_HERO.eyebrow}
         </p>
         <RevealText
@@ -58,7 +58,6 @@ export function HeroSection() {
           <MotionLink
             to={ROUTES.projectsSection}
             onClick={handleExploreClick}
-            whileHover={{ y: -2 }}
             whileTap={{ scale: 0.97 }}
             className={buttonClassName({ size: "cta" })}
           >
@@ -69,7 +68,6 @@ export function HeroSection() {
             href={SITE.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
-            whileHover={{ y: -2 }}
             whileTap={{ scale: 0.97 }}
             className={buttonClassName({ variant: "outline", size: "cta" })}
           >

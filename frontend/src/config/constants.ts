@@ -15,7 +15,7 @@ export const SITE = {
 /** Textos do bloco de apresentação da home */
 export const HOME_HERO = {
   eyebrow: `dev ${SITE.role} · android e web`,
-  title: "Software que funciona no bolso e no navegador.",
+  title: "Software que funciona no bolso e no navegador",
   description: `Sou ${SITE.author}. Crio apps Android e sistemas web, do banco de dados à interface.`,
 } as const;
 
@@ -23,8 +23,8 @@ export const HOME_HERO = {
 export const DESKTOP_MEDIA_QUERY = "(min-width: 1024px)";
 
 export const NAV_LINKS = [
-  { label: "home", href: ROUTES.home },
-  { label: "projects", href: ROUTES.projectsSection },
-  { label: "about", href: ROUTES.aboutSection },
-  { label: "github", href: SITE.githubUrl, external: true },
+  { label: "início", href: ROUTES.home },
+  { label: "projetos", href: ROUTES.projectsSection },
+  { label: "sobre", href: ROUTES.aboutSection },
+  { label: "GitHub", href: SITE.githubUrl, external: true },
 ] as const;

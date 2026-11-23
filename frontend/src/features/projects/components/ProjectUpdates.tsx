@@ -13,12 +13,14 @@ export const PROJECT_UPDATES_SECTION_ID = "atualizacoes";
 /** Data e versão da atualização (timeline e página própria) */
 export function ProjectUpdateMeta({ update }: { update: ProjectUpdate }) {
   return (
-    <p className="flex flex-wrap items-center gap-2 font-mono text-2xs uppercase tracking-wider text-home-muted">
+    <p className="flex flex-wrap items-center gap-2 font-mono text-xs text-home-muted">
       <time dateTime={update.publishedAt}>{formatDate(update.publishedAt)}</time>
       {update.version && (
-        <span className="rounded-full bg-brand/15 px-2 py-0.5 normal-case tracking-normal text-brand">
-          {update.version}
-        </span>
+        <>
+          {/* Separador em texto: copiado ou lido em voz alta, data e versão não grudam */}
+          <span aria-hidden>·</span>
+          <span className="text-brand">{update.version}</span>
+        </>
       )}
     </p>
   );
@@ -52,7 +54,7 @@ function ProjectUpdateItem({ update, projectSlug, latest }: ProjectUpdateItemPro
         className={cn(
           "absolute left-0 top-1 size-[11px] -translate-x-1/2 rounded-full border-2",
           latest
-            ? "border-brand bg-brand shadow-[0_0_0_4px] shadow-brand/15"
+            ? "border-brand bg-brand"
             : "border-home-raised bg-home-card",
         )}
       />

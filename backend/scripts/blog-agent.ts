@@ -213,6 +213,16 @@ async function createProject(file: string, dryRun: boolean) {
   console.log(`✅ Projeto criado: ${project.slug} (${project.id})`)
 }
 
+/**
+ * Só a data ("2026-11-22") vira meio-dia no fuso local: lida como meia-noite UTC, ela
+ * apareceria como o dia anterior no Brasil
+ */
+function parsePublishedAt(value: string): string {
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00` : value)
+  if (Number.isNaN(date.getTime())) fail(`publishedAt inválido: "${value}" (use AAAA-MM-DD)`)
+  return date.toISOString()
+}
+
 async function createUpdate(slug: string, file: string, dryRun: boolean) {
   const { meta, body } = parseMarkdownFile(file)
   const publishedAt = asString(meta, "publishedAt")
@@ -221,7 +231,7 @@ async function createUpdate(slug: string, file: string, dryRun: boolean) {
     title: asString(meta, "title"),
     version: asString(meta, "version"),
     contentMarkdown: body,
-    publishedAt: publishedAt ? new Date(publishedAt).toISOString() : new Date().toISOString(),
+    publishedAt: publishedAt ? parsePublishedAt(publishedAt) : new Date().toISOString(),
   })
   if (!parsed.success) printIssues(parsed.error.issues)
 

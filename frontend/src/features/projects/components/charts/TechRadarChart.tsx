@@ -51,7 +51,7 @@ export function TechRadarChart({ data, total }: TechRadarChartProps) {
         <span className="block text-xl font-semibold tracking-heading text-home-ink">
           Radar de habilidades
         </span>
-        <span className="text-sm text-home-muted">As {axes.length} tecnologias mais presentes nos projetos.</span>
+        <span className="text-sm text-home-muted">As {axes.length} tecnologias mais presentes nos projetos</span>
       </figcaption>
 
       <svg

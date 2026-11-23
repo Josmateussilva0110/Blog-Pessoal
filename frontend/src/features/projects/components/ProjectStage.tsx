@@ -41,7 +41,7 @@ export function ProjectStage({ project, compact = false }: ProjectStageProps) {
       )}
     >
       {!compact && (
-        <div className="absolute inset-x-6 top-5 flex items-center justify-between gap-3 font-mono text-2xs uppercase tracking-eyebrow text-on-scrim/60">
+        <div className="absolute inset-x-6 top-5 flex items-center justify-between gap-3 font-mono text-xs text-on-scrim/60">
           <span className="truncate">{project.title}</span>
           <span className="shrink-0">{PLATFORM_KIND_LABELS[platform]}</span>
         </div>

@@ -41,7 +41,7 @@ export function PlatformDonutChart({ data, total }: { data: PlatformUsage[]; tot
         <span className="block text-xl font-semibold tracking-heading text-home-ink">
           Distribuição por plataforma
         </span>
-        <span className="text-sm text-home-muted">Quantos projetos são apps mobile e quantos são web.</span>
+        <span className="text-sm text-home-muted">Quantos projetos são apps mobile e quantos são web</span>
       </figcaption>
 
       <div className="relative mx-auto my-auto w-full max-w-[15rem]">
