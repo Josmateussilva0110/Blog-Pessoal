@@ -11,7 +11,7 @@ export function ProjectStackCard({ techStack }: { techStack: string[] }) {
 
   return (
     <section aria-labelledby="project-stack" className="home-card p-5">
-      <h2 id="project-stack" className="mb-3.5 text-sm font-semibold text-home-ink">
+      <h2 id="project-stack" className="mb-3 text-sm font-semibold text-home-ink">
         Stack
       </h2>
       <ul className="flex flex-col gap-1.5">
@@ -21,15 +21,15 @@ export function ProjectStackCard({ techStack }: { techStack: string[] }) {
               <img
                 src={getSkillIconUrl(tech.icon)}
                 alt=""
-                width={26}
-                height={26}
+                width={24}
+                height={24}
                 loading="lazy"
-                className="size-[1.625rem] rounded-md"
+                className="size-6 rounded-md"
               />
             ) : (
               <span
                 aria-hidden
-                className="flex size-[1.625rem] items-center justify-center rounded-md bg-home-raised text-xs font-semibold text-home-muted"
+                className="flex size-6 items-center justify-center rounded-md bg-home-raised text-xs font-semibold text-home-muted"
               >
                 {tech.label.charAt(0).toUpperCase()}
               </span>

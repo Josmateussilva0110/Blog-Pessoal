@@ -78,7 +78,7 @@ export function TypingText({
   onDone,
   className,
 }: TypingTextProps) {
-  const { ref, length } = useTypewriter<HTMLSpanElement>(text.length, {
+  const { ref, length, done } = useTypewriter<HTMLSpanElement>(text.length, {
     speed,
     delay,
     startOnView,
@@ -89,7 +89,8 @@ export function TypingText({
     <span ref={ref} className={cn("inline-flex items-baseline", className)}>
       <span className="sr-only">{text}</span>
       <span aria-hidden>{text.slice(0, length)}</span>
-      <span className="typing-cursor" aria-hidden />
+      {/* Cursor só enquanto digita: piscando para sempre vira movimento sem motivo */}
+      {!done && <span className="typing-cursor" aria-hidden />}
     </span>
   );
 }

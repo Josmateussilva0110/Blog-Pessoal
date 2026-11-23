@@ -12,6 +12,7 @@ export default defineConfig({
       SUPABASE_JWT_SECRET: "test-jwt-secret",
       ADMIN_USER_ID: "11111111-1111-4111-8111-111111111111",
       ALLOWED_ORIGINS: "http://localhost:5173",
+      AGENT_API_KEY: "test-agent-key-0123456789abcdefghijklmnop",
     },
   },
 })

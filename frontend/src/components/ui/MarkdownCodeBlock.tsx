@@ -111,7 +111,7 @@ export function MarkdownCodeBlock({
       )}
     >
       <div className="flex items-center justify-between gap-3 border-b border-home-line bg-home-inset/60 px-4 py-2">
-        <span className="font-mono text-2xs uppercase tracking-wide text-home-muted">
+        <span className="font-mono text-2xs text-home-muted">
           {label}
         </span>
         <button

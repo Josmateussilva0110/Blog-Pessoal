@@ -10,6 +10,7 @@
     "create-user": "tsx scripts/create-user.ts",
     "reset-user-password": "tsx scripts/reset-user-password.ts",
     "regenerate-thumbnails": "tsx scripts/regenerate-project-thumbnails.ts",
+    "agent": "tsx scripts/blog-agent.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p . && tsc -p tsconfig.test.json"
   },

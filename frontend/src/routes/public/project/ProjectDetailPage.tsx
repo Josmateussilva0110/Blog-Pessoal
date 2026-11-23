@@ -69,7 +69,7 @@ export function ProjectDetailPage() {
   if (!project) {
     if (isError) {
       return (
-        <MessageCard tone="error" message="Não foi possível carregar o projeto.">
+        <MessageCard tone="error" message="Não foi possível carregar o projeto">
           <Button variant="secondary" size="sm" onClick={() => void refetch()} disabled={isRefetching}>
             Tentar novamente
           </Button>
@@ -81,7 +81,7 @@ export function ProjectDetailPage() {
     }
 
     return (
-      <MessageCard message="Projeto não encontrado.">
+      <MessageCard message="Projeto não encontrado">
         <Link to={ROUTES.home} className={INLINE_LINK_CLASS}>
           Voltar ao início
         </Link>
@@ -115,7 +115,7 @@ export function ProjectDetailPage() {
 
         <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
           <div className="min-w-0 flex-[999_1_32rem]">
-            <p className="font-mono text-xs uppercase tracking-eyebrow text-home-muted">
+            <p className="font-mono text-xs text-home-muted">
               {PLATFORM_KIND_LABELS[platform]} · {year}
             </p>
             <h1 className="mt-3 text-4xl font-semibold leading-[1.02] tracking-[-0.045em] text-home-ink sm:text-5xl lg:text-7xl">

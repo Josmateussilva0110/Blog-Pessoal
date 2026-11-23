@@ -220,7 +220,7 @@ function PhoneGallery({
               <button
                 type="button"
                 onClick={() => onOpen(index)}
-                className="block w-[62vw] max-w-[240px] cursor-zoom-in overflow-hidden rounded-[1.75rem] border border-on-scrim/15 bg-home-device p-1.5 shadow-media transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand sm:w-[210px] lg:w-[230px]"
+                className="block w-[62vw] max-w-[240px] cursor-zoom-in overflow-hidden rounded-[1.75rem] border border-on-scrim/15 bg-home-device p-1.5 shadow-media focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand sm:w-[210px] lg:w-[230px]"
                 aria-label={`Ampliar imagem ${index + 1} de ${projectTitle}`}
               >
                 {/* Aparelho tem no máximo 240px: a miniatura basta; o original fica para o lightbox */}
@@ -242,7 +242,7 @@ function PhoneGallery({
       </div>
 
       {overflowing && images.length > 1 && (
-        <div className="-mt-4 flex justify-center gap-1.5 pb-5">
+        <div className="-mt-6 flex justify-center pb-3">
           {images.map((image, index) => (
             <button
               key={image}
@@ -250,11 +250,17 @@ function PhoneGallery({
               onClick={() => scrollToPhone(index)}
               aria-label={`Ir para a imagem ${index + 1}`}
               aria-current={index === current ? "true" : undefined}
-              className={cn(
-                "h-1.5 rounded-full transition-all duration-300",
-                index === current ? "w-5 bg-brand" : "w-1.5 bg-home-raised hover:bg-home-muted",
-              )}
-            />
+              // Área de toque de 24px em volta do ponto de 6px
+              className="group flex size-6 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-brand"
+            >
+              <span
+                aria-hidden
+                className={cn(
+                  "size-1.5 rounded-full transition-colors duration-200",
+                  index === current ? "bg-brand" : "bg-home-muted/40 group-hover:bg-home-muted",
+                )}
+              />
+            </button>
           ))}
         </div>
       )}

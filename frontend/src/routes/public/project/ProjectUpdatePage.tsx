@@ -39,7 +39,7 @@ function UpdateNavLink({ slug, update, direction }: UpdateNavLinkProps) {
     >
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 font-mono text-2xs uppercase tracking-wider text-home-muted",
+          "inline-flex items-center gap-1.5 font-mono text-xs text-home-muted",
           isNewer && "sm:justify-end",
         )}
       >
@@ -129,7 +129,7 @@ export function ProjectUpdatePage() {
         </Link>
 
         <div>
-          <p className="mb-3 font-mono text-xs uppercase tracking-eyebrow text-home-muted">
+          <p className="mb-3 font-mono text-xs text-home-muted">
             Atualização do projeto
           </p>
           <ProjectUpdateMeta update={update} />

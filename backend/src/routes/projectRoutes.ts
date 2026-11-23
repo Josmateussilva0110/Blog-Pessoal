@@ -2,6 +2,7 @@ import express, { Router } from "express"
 import { PROJECT_UPDATE_BODY_LIMIT } from "../constants/http"
 import ProjectController from "../controllers/projectController"
 import ProjectUpdateController from "../controllers/projectUpdateController"
+import { agentOrAdminAuth } from "../middleware/agentAuth"
 import { authMiddleware } from "../middleware/auth"
 import { parseJsonField } from "../middleware/parseJsonField"
 import { rejectIfMustChangePassword } from "../middleware/rejectIfMustChangePassword"
@@ -19,6 +20,9 @@ const router = Router()
 const parseProjectUpdateBody = express.json({ limit: PROJECT_UPDATE_BODY_LIMIT })
 
 const adminOnly = [authMiddleware, rejectIfMustChangePassword]
+// Criar projeto e criar/editar atualização também aceitam a chave do agente de publicação.
+// Editar e apagar projeto e apagar atualização continuam só com a sessão do admin.
+const adminOrAgent = [agentOrAdminAuth]
 
 router.get("/", validate({ query: PaginationQuerySchema }), ProjectController.list)
 router.get("/home", ProjectController.listHome)
@@ -37,7 +41,7 @@ router.get("/:slug", validate({ params: ProjectSlugParamSchema }), ProjectContro
 // Multipart: o multer lê o corpo, o JSON do campo "data" vira o body e só então é validado
 router.post(
   "/",
-  ...adminOnly,
+  ...adminOrAgent,
   uploadProjectFiles,
   parseJsonField("data"),
   validate({ body: ProjectPayloadSchema }),
@@ -56,7 +60,7 @@ router.delete("/:id", ...adminOnly, validate({ params: IdParamSchema }), Project
 
 router.post(
   "/:id/updates",
-  ...adminOnly,
+  ...adminOrAgent,
   validate({ params: IdParamSchema }),
   parseProjectUpdateBody,
   validate({ body: ProjectUpdatePayloadSchema }),
@@ -64,7 +68,7 @@ router.post(
 )
 router.put(
   "/:id/updates/:updateId",
-  ...adminOnly,
+  ...adminOrAgent,
   validate({ params: ProjectUpdateParamSchema }),
   parseProjectUpdateBody,
   validate({ body: ProjectUpdatePayloadSchema }),

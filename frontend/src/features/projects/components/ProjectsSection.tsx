@@ -134,7 +134,7 @@ export function ProjectsSection({
                   aria-pressed={active}
                   onClick={() => setFilter(item.id)}
                   className={cn(
-                    "inline-flex min-h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[0.5625rem] px-3 text-sm sm:px-3.5 font-medium text-home-ink transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand",
+                    "inline-flex min-h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-sm sm:px-3.5 font-medium text-home-ink transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand",
                     active ? "bg-home-raised shadow-control" : "hover:bg-home-raised/50",
                   )}
                 >
